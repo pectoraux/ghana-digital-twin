@@ -654,3 +654,26 @@ Stage Summary:
 - ✅ Package Lifecycle: Draft→Built→Validated→Signed→Verified→Official→Deprecated→Archived trust pipeline.
 - Lint: 0 errors, 0 warnings. All APIs verified: 2 solutions, 10 approvals, 13 contracts, 2 knowledge packages, 2 agents.
 - The platform is now a DEVELOPER PLATFORM. Third parties can create, build, test, sign, publish, install, and upgrade packages. The kernel is stable. Multi-Agent Intelligence (Milestone 8) becomes an application of the platform — agents are just another package type running on a mature composable runtime.
+
+---
+Task ID: 32
+Agent: orchestrator
+Task: Capability Negotiation & DAG Dependency Resolution — final kernel refinement
+
+Work Log:
+- Extended schema with 3 new models: ProviderCapability (what a package provides: capability string, type, quality, cost, latency, outputType), PackageDependency (DAG edges: type=package|capability, target, versionRange, required, preferredQuality, maxCost, resolved, resolvedPackage), PackageManifest (unified: provides, requires, exports, permissions, composes, portable). db:push to Neon succeeded.
+- Built Capability Negotiation engine (src/lib/platform/negotiation.ts): packages declare PROVIDES (capabilities like optical.imagery.multispectral, reasoning.bayesian, planning.mission.evi) and REQUIRES (either specific packages OR any provider of a capability). negotiateCapability() finds the best provider by quality (highest) then cost (lowest), filtered by preferences (minQuality, maxCost). Returns alternatives if no exact match.
+- Built DAG Dependency Resolution: resolveDependencyGraph() builds the full dependency graph recursively. For each package, resolves all dependencies (specific packages looked up directly; capabilities negotiated). Produces: topological execution order, parallel groups (packages at same depth that can execute in parallel), unresolved dependencies with reasons.
+- Built Unified Package Manifests: every package has provides (capabilities), requires (dependencies — package or capability), exports (observations, hypotheses, missions, features, alerts), permissions (kernel capabilities needed), composes (packages this composes from), portable (can use alternative providers).
+- Registered 14 manifests with 14 provider capabilities: 8 dataset connectors (optical, SAR, weather, DEM, rivers, nightlights, population, OSM), 4 reusable reasoners (Bayesian, mission planner, active learner, evidence fuser), 2 domain packages (mining, flood). All marked portable.
+- Verified capability negotiation: optical.imagery.multispectral → found provider sentinel2-connector (quality 0.95). 17 dependencies declared, 4 resolved.
+- Built API routes: GET/POST /api/negotiate (list capabilities, negotiate, register manifests), GET /api/resolve-graph (resolve DAG).
+- Pushed to GitHub (commit 68f11c8).
+
+Stage Summary:
+- ✅ Capability Negotiation: packages declare capabilities, not specific dependencies. Runtime finds the best provider. Packages are portable across deployments.
+- ✅ DAG Dependency Resolution: topological sort + parallel group detection. Capability dependencies resolved during traversal.
+- ✅ Unified Package Manifests: provides/requires/exports/permissions/composes/portable. 14 manifests, all portable.
+- ✅ 14 Provider Capabilities: 8 datasets + 4 reasoners + 2 domain. Quality-scored, cost-tracked.
+- Lint: 0 errors, 0 warnings. APIs verified: negotiation works, graph resolution works.
+- The kernel is now STABLE. Everything is a Package. Packages provide/require capabilities. The runtime negotiates. Packages are portable. Multi-Agent Intelligence (Milestone 8) can now be built as agents are just another package type that plugs cleanly into the composable ecosystem.
