@@ -598,3 +598,32 @@ Stage Summary:
 - Lint: 0 errors, 0 warnings. APIs verified working.
 - Pushed to GitHub (commit f3ecd61).
 - The platform is now an OPERATING SYSTEM. The kernel is stable. Domain expertise evolves through independently developed, permission-gated, sandboxed extensions.
+
+---
+Task ID: 30
+Agent: orchestrator
+Task: Platform Orchestration — Composable Packages, Artifact Store, Event Bus, Policy Engine, AI Provider Router, Job Scheduler
+
+Work Log:
+- Extended schema with 9 new models: TypedContribution (unified registry with 25 kinds), Artifact (unified provenance store), PlatformPackage (composable packages with composes/dependsOn), PackageProfile (solution bundles), Workflow (reusable DAG workflows), PolicyRule (should-it governance), AIProvider (LLM abstraction), ScheduledJob (agents as jobs), EventSubscription (declarative event subscriptions). db:push to Neon succeeded.
+- Built Typed Contribution Registry: single unified registry replacing separate DynamicHypothesisType/DynamicRule/DynamicMissionType. 25 contribution kinds (dataset, feature_extractor, hypothesis_type, rule, mission_type, workflow, ontology, ui_view, widget, dashboard, command, agent, model, pipeline_stage, etc.). Extensions contribute typed objects; kernel has one concept.
+- Built Artifact Store: unified provenance for everything (observations, evidence, hypotheses, missions, scenarios, reports, benchmarks, replays, phenomena, ground truth, alerts, feature vectors, raster products). Each artifact has kind, ownerPackage, createdBy, parentIds (lineage), version, metadata. getArtifactLineage() recursively traces derivation chain.
+- Built Event Bus with declarative subscriptions: 15 event types (ObservationCreated, EvidenceAdded, MissionCompleted, GroundTruthReceived, etc.). Packages subscribe declaratively with filters. Enables event sourcing + replay.
+- Built Policy Engine: 'should it?' separate from capability 'can it?'. Declarative policies: allow/deny/require with conditions (confidence>0.8, budget>100, season!=rainy). 3 default policies registered. evaluatePolicy() checks all applicable policies before any action.
+- Built Package Composition: packages compose other packages (composes field). 16 packages total: 4 domain + 8 connectors + 4 reusable reasoning. 2 Package Profiles bundling solutions (Ghana Illegal Mining = 7 packages, National Flood Monitoring = 7 packages).
+- Built AI Provider Router: 3 providers (OpenAI, Gemini, Claude). Extensions use ctx.ai.reason/extract/classify/embed/chat — kernel chooses provider. Extensions never call models directly.
+- Built Job Scheduler: agents become schedulable jobs (ReasoningJob, PlannerJob, VerificationJob, LearningJob, ReportingJob). Jobs have schedule, priority, input/output artifacts.
+- Built API routes: /api/contributions, /api/artifacts, /api/workflows, /api/policies, /api/packages, /api/profiles, /api/jobs, /api/ai-providers.
+- Initialized: 16 packages, 2 profiles, 3 policies, 3 AI providers, 5+ typed contributions.
+- Pushed to GitHub (commit 668c984).
+
+Stage Summary:
+- ✅ Typed Contribution Registry: single unified registry with 25 kinds. Kernel has one concept: extensions contribute typed objects.
+- ✅ Artifact Store: unified provenance for all platform outputs. Recursive lineage tracing.
+- ✅ Event Bus: 15 event types with declarative subscriptions. Event sourcing enables replay.
+- ✅ Policy Engine: 'should it?' governance separate from 'can it?' capabilities. 3 default policies.
+- ✅ Package Composition: 16 composable packages (domain + connectors + reusable). 2 solution profiles.
+- ✅ AI Provider Router: 3 providers. Extensions use ctx.ai.* — kernel chooses model.
+- ✅ Job Scheduler: agents as schedulable jobs with priority and artifact I/O.
+- Lint: 0 errors, 0 warnings. All APIs verified working.
+- The platform is now a COMPOSABLE ORCHESTRATION SYSTEM. Solutions are assembled from reusable building blocks. The illegal mining solution composes: Sentinel-2 Connector + Weather Connector + Bayesian Reasoner + Mission Planner + Illegal Mining Domain. The flood solution reuses many of the same packages. This is composability as a core design principle.
