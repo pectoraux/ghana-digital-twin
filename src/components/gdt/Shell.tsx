@@ -28,6 +28,7 @@ import { CommunityView } from "./views/CommunityView";
 import { CivicTrustView } from "./views/CivicTrustView";
 import { MarketplaceView } from "./views/MarketplaceView";
 import { FinanceView } from "./views/FinanceView";
+import { FederationView } from "./views/FederationView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -70,6 +71,7 @@ export function Shell() {
               {view === "civic-trust" && <CivicTrustView />}
               {view === "marketplace" && <MarketplaceView />}
               {view === "finance" && <FinanceView />}
+              {view === "federation" && <FederationView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>

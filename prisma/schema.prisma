@@ -4215,3 +4215,239 @@ model IntelligenceFinancePackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 10 — FEDERATED INTELLIGENCE NETWORK (Package Layer)
+// Multiple intelligence civilizations interoperate without surrendering sovereignty.
+// Federation protocol: discovery, trust proof exchange (not copies), asset/capability
+// exchange, cross-border markets, intelligence treaties. Data stays local; only
+// proofs + assets + capabilities are exchanged. The kernel is FROZEN.
+// ===========================================================================
+
+// FederationNode — a participating intelligence network (country/org).
+// Each node maintains sovereignty over its data, citizens, trust graph.
+model FederationNode {
+  id              String   @id @default(uuid())
+  nodeId          String   @unique // "ghana" | "kenya" | "nigeria" | "ci" | "ecowas"
+  name            String   // "Ghana Intelligence Network"
+  countryCode     String   // "GH" | "KE" | "NG" | "CI"
+  nodeType        String   // national | regional | organizational
+  // endpoint
+  endpointUrl     String   // federation API endpoint
+  // status
+  status          String   @default("active") // active | degraded | offline | suspended
+  lastSeenAt      DateTime?
+  // federation stats
+  trustScore      Float    @default(0.5) // this node's trust in the federation
+  assetsShared    Int      @default(0)
+  assetsConsumed  Int      @default(0)
+  citizensFederated Int    @default(0)
+  // treaty membership
+  treatiesCount   Int      @default(0)
+  // temporal
+  joinedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([countryCode])
+}
+
+// FederatedIdentityProof — trust proofs exchanged between nodes. NOT copies.
+// Ghana sends a proof that Kwesi is trusted. Nigeria imports an initial trust
+// score but local evidence updates it. The proof is a cryptographic attestation.
+model FederatedIdentityProof {
+  id              String   @id @default(uuid())
+  proofId         String   @unique
+  // the identity being attested
+  subjectId       String   // citizenId/agentId in the home network
+  subjectName     String
+  subjectType     String   // citizen | agent | organization
+  // issuing node (home network)
+  issuingNodeId   String   // "ghana"
+  issuingNodeName String
+  // receiving node (importing network)
+  receivingNodeId String   // "nigeria"
+  // the attestation
+  homeTrustScore  Float    // trust score in home network
+  confirmedEvents Int      // confirmed contributions
+  sybilFlags      Int      // 0 = clean
+  verificationLevel String // "biometric" | "national" | "phone"
+  // cryptographic proof
+  proofHash       String   // hash of the attestation
+  proofSignature  String?  // cryptographic signature
+  // imported trust (receiving node's initial trust for this identity)
+  importedTrust   Float    @default(40) // starts lower than home trust
+  // status
+  status          String   @default("active") // active | revoked | expired
+  expiresAt       DateTime?
+  // temporal
+  issuedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([subjectId])
+  @@index([issuingNodeId])
+  @@index([receivingNodeId])
+}
+
+// TrustAttestation — a node attests to the trustworthiness of another node
+// or a cross-border identity. Builds the federated trust graph.
+model TrustAttestation {
+  id              String   @id @default(uuid())
+  attestationId   String   @unique
+  // attester → subject
+  attesterNodeId  String
+  subjectNodeId   String?  // null if attesting to a citizen/agent
+  subjectId       String?  // citizenId/agentId (if non-node subject)
+  // attestation
+  attestationType String   // node_trust | identity_trust | capability_quality
+  trustValue      Float    // 0..1
+  note            String?
+  // temporal
+  attestedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([attesterNodeId])
+  @@index([subjectNodeId])
+}
+
+// FederatedAssetListing — an asset listed for cross-border consumption.
+// The asset stays in its home network; only the listing is federated.
+model FederatedAssetListing {
+  id              String   @id @default(uuid())
+  listingId       String   @unique
+  // source
+  homeNodeId      String   // "ghana"
+  homeAssetId     String   // IntelligenceAsset.assetId in home network
+  assetTitle      String
+  assetDescription String
+  category        String
+  producerName    String
+  producerType    String
+  // quality (snapshot at listing time)
+  iqs             Float
+  trustScore      Float
+  confidence      Float
+  // pricing
+  price           Float
+  currency        String   @default("IC")
+  // licensing (federated)
+  licenseType     String   // commercial_africa | open_intelligence | government_only
+  transferable    Boolean  @default(true)
+  // treaty compliance
+  treatyCompliant Boolean  @default(true)
+  // consumption stats (federated)
+  crossBorderPurchases Int  @default(0)
+  revenueFromFederation Float @default(0)
+  // status
+  status          String   @default("listed") // listed | delisted | expired
+  listedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([homeNodeId])
+  @@index([category])
+  @@index([status])
+}
+
+// CrossBorderRequest — a request from one node for intelligence from others.
+// Enables cross-border intelligence markets (e.g. ECOWAS posts a regional request).
+model CrossBorderRequest {
+  id              String   @id @default(uuid())
+  requestId       String   @unique
+  // requester
+  requesterNodeId String   // "ecowas" | "ghana" | "nigeria"
+  requesterName   String
+  // the request
+  title           String
+  description     String
+  category        String
+  geography       String   // "west_africa" | "volta_basin" | "shared_rivers"
+  // budget
+  budget          Float
+  currency        String   @default("IC")
+  // participation
+  participatingNodes String @default("[]") // JSON: [nodeId, ...]
+  submissionCount Int      @default(0)
+  acceptedCount   Int      @default(0)
+  // distribution
+  distributedTotal Float   @default(0)
+  // status
+  status          String   @default("open") // open | accepting | reviewing | completed | closed
+  deadline        DateTime?
+  // temporal
+  postedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([requesterNodeId])
+  @@index([category])
+}
+
+// FederationTreaty — bilateral or multilateral agreement between nodes.
+// Defines what intelligence can be shared, what's restricted. Governance as a package.
+model FederationTreaty {
+  id              String   @id @default(uuid())
+  treatyId        String   @unique // "TR-GH-CI-001"
+  name            String
+  description     String
+  // parties
+  partyNodeIds    String   @default("[]") // JSON: [nodeId, ...]
+  treatyType      String   // bilateral | multilateral | regional
+  // scope
+  allowedCategories String  @default("[]") // JSON: [flood, climate, agriculture]
+  restrictedCategories String @default("[]") // JSON: [citizen_identity, enforcement, investigations]
+  // data sovereignty
+  citizenIdentitiesShared Boolean @default(false)
+  rawEvidenceShared Boolean @default(false)
+  onlyProofsExchanged Boolean @default(true)
+  // economics
+  revenueSharingModel String @default("producer_60_consumer_20_federation_20")
+  // status
+  status          String   @default("active") // draft | active | suspended | terminated
+  signedAt        DateTime?
+  expiresAt       DateTime?
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([treatyType])
+}
+
+// FederationSyncRun — record of a federation sync pass between nodes.
+model FederationSyncRun {
+  id              String   @id @default(uuid())
+  runId           String   @unique
+  // sync
+  sourceNodeId    String
+  targetNodeId    String
+  syncType        String   // trust_proofs | asset_listings | treaty_updates | capability_registry
+  // results
+  itemsSynced     Int      @default(0)
+  itemsRejected   Int      @default(0)
+  // temporal
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+  createdAt       DateTime @default(now())
+
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+}
+
+// FederationPackage — package manifest for the federation protocol.
+model FederationPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

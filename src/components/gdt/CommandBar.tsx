@@ -48,6 +48,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   "civic-trust": { title: "Civic Trust Graph", sub: "Trust propagation, Sybil resistance, identity vouching" },
   marketplace: { title: "Intelligence Marketplace", sub: "Requests, assets, bounties, value attribution" },
   finance: { title: "Intelligence Finance", sub: "Credits, licensing, royalties, agent economy, insurance" },
+  federation: { title: "Federated Intelligence Network", sub: "Cross-border intelligence: nodes, trust proofs, treaties, markets" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };
 

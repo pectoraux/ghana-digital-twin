@@ -30,6 +30,7 @@ import {
   Network,
   Store,
   Coins,
+  Globe,
   Clock,
 } from "lucide-react";
 
@@ -46,6 +47,7 @@ const VIEWS = [
   { id: "civic-trust", label: "Civic Trust Graph", icon: Network, hint: "Trust propagation, Sybil resistance, identity vouching" },
   { id: "marketplace", label: "Intelligence Marketplace", icon: Store, hint: "Requests, assets, bounties, value attribution" },
   { id: "finance", label: "Intelligence Finance", icon: Coins, hint: "Credits, licensing, royalties, agent economy, insurance" },
+  { id: "federation", label: "Federated Intelligence Network", icon: Globe, hint: "Cross-border intelligence: nodes, trust proofs, treaties" },
   { id: "api", label: "API Explorer", icon: Terminal, hint: "Programmatic access" },
 ] as const;
 
