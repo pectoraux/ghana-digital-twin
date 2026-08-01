@@ -5200,3 +5200,148 @@ model RealityFeedPackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 12.5 — GOVERNANCE INTELLIGENCE & INSTITUTIONAL MEMORY (Package Layer)
+// Governance agents (constitutional auditor, court research, council intelligence),
+// legal precedent system, institutional reputation, automated compliance audits.
+// Makes governance itself intelligent — not just a static rulebook. Kernel FROZEN.
+// ===========================================================================
+
+// GovernanceAgent — AI agents that assist governance (not replace it).
+// Constitutional Auditor: checks policy compliance. Court Research: finds precedents.
+// Council Intelligence: provides impact analysis before votes.
+model GovernanceAgent {
+  id              String   @id @default(uuid())
+  agentId         String   @unique // "constitutional-auditor" | "court-research" | "council-intelligence"
+  name            String
+  description     String
+  agentType       String   // "constitutional_auditor" | "court_research" | "council_intelligence" | "compliance_monitor" | "policy_analyst"
+  // capabilities
+  capabilities    String   @default("[]") // JSON: ["policy.compliance.check", "precedent.search", "impact.analysis"]
+  // operational scope
+  scope           String   // "constitutional" | "judicial" | "legislative" | "executive"
+  // authority — advisory only, never decision-making
+  authority       String   @default("advisory") // advisory | recommend | monitor (never "decide")
+  // status
+  status          String   @default("active")
+  lastRunAt       DateTime?
+  totalRuns       Int      @default(0)
+  totalFindings   Int      @default(0)
+  totalRecommendations Int @default(0)
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([agentType])
+  @@index([status])
+}
+
+// GovernanceAuditRun — execution of a governance agent (e.g., constitutional audit).
+model GovernanceAuditRun {
+  id              String   @id @default(uuid())
+  runId           String   @unique
+  agentId         String   // GovernanceAgent.agentId
+  agentName       String
+  // what was audited
+  auditType       String   // "policy_compliance" | "package_deployment" | "constitutional_violation" | "precedent_search" | "impact_analysis"
+  targetType      String?  // "package" | "proposal" | "case" | "institution" | "deployment"
+  targetId        String?
+  // findings
+  findings        String   @default("[]") // JSON: [{severity, article, description, recommendation}]
+  findingCount    Int      @default(0)
+  violationCount  Int      @default(0)
+  recommendationCount Int  @default(0)
+  // result
+  result          String   @default("compliant") // compliant | violations_found | recommendations_made
+  summary         String
+  // temporal
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+  createdAt       DateTime @default(now())
+
+  @@index([agentId])
+  @@index([auditType])
+  @@index([result])
+}
+
+// GovernancePrecedent — legal precedent system. Past verdicts establish principles
+// that guide future decisions. Like common law.
+model GovernancePrecedent {
+  id              String   @id @default(uuid())
+  precedentId     String   @unique // "PRE-2026-001"
+  // source case
+  caseId          String   // CourtCase.caseId
+  courtId         String
+  caseTitle       String
+  // the principle established
+  principleEstablished String
+  principleSummary String
+  // applicability
+  caseType        String   // "false_enforcement" | "license_violation" | "reputation_attack" | ...
+  appliesTo       String   @default("[]") // JSON: [caseType, ...] — which case types this precedent applies to
+  // authority
+  precedentLevel  String   @default("binding") // binding | persuasive | distinguishable
+  courtLevel      String   // "national" | "regional" | "global"
+  // citations
+  citedByCount    Int      @default(0)
+  citedByCases    String   @default("[]") // JSON: [caseId, ...]
+  // confidence
+  confidence      Float    @default(0.8) // how clearly the principle was established
+  // temporal
+  establishedAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([caseType])
+  @@index([precedentLevel])
+  @@index([courtLevel])
+}
+
+// InstitutionReputation — accountability for institutions (EPA, NADMO, UoG, etc.)
+// Like citizen civic scores but for organizations operating in the intelligence civilization.
+model InstitutionReputation {
+  id              String   @id @default(uuid())
+  institutionId   String   @unique // "epa-ghana" | "nadmo" | "dev-uog-ghana"
+  name            String
+  institutionType String   // "government" | "university" | "ngo" | "corporation" | "developer" | "regional_body"
+  countryCode     String?
+  // reputation components (0..100)
+  complianceScore Float    @default(50) // adherence to constitution + policies
+  decisionQualityScore Float @default(50) // quality of governance decisions
+  transparencyScore Float  @default(50) // openness of operations
+  publicTrustScore Float   @default(50) // citizen/community trust
+  overallScore    Float    @default(50) // weighted composite
+  trustTier       String   @default("unproven") // unproven | emerging | trusted | anchor
+  // stats
+  totalDecisions  Int      @default(0)
+  totalCases      Int      @default(0)
+  casesWon        Int      @default(0)
+  casesLost       Int      @default(0)
+  packagesPublished Int    @default(0)
+  packagesSuspended Int    @default(0)
+  // temporal
+  lastEvaluatedAt DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([institutionType])
+  @@index([overallScore])
+  @@index([trustTier])
+}
+
+// GovernanceIntelligencePackage — package manifest.
+model GovernanceIntelligencePackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

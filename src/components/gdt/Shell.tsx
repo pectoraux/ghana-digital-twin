@@ -32,6 +32,7 @@ import { FederationView } from "./views/FederationView";
 import { OSMarketplaceView } from "./views/OSMarketplaceView";
 import { RealityFeedView } from "./views/RealityFeedView";
 import { GovernanceView } from "./views/GovernanceView";
+import { GovernanceIntelView } from "./views/GovernanceIntelView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -78,6 +79,7 @@ export function Shell() {
               {view === "os" && <OSMarketplaceView />}
               {view === "reality" && <RealityFeedView />}
               {view === "governance" && <GovernanceView />}
+              {view === "gov-intel" && <GovernanceIntelView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>

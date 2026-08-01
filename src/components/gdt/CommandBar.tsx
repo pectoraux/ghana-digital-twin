@@ -52,6 +52,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   os: { title: "Intelligence OS Marketplace", sub: "Package registry, developer economy, solutions, intelligence graph" },
   reality: { title: "Intelligence Reality Feed", sub: "Continuous ingestion, freshness monitoring, observation triggers" },
   governance: { title: "Intelligence Governance", sub: "Constitution, council, courts, proposals — who governs the civilization" },
+  "gov-intel": { title: "Governance Intelligence", sub: "Governance agents, legal precedents, institutional reputation, compliance audits" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };
 
