@@ -14,7 +14,7 @@ import {
   Plane,
   Users,
   ClipboardCheck,
-  Sensor,
+  Gauge,
   DollarSign,
   TrendingUp,
   Clock,
@@ -28,7 +28,7 @@ const MISSION_ICONS: Record<string, React.ElementType> = {
   drone: Plane,
   community: Users,
   inspector: ClipboardCheck,
-  iot: Sensor,
+  iot: Gauge,
 };
 
 const MISSION_COLORS: Record<string, string> = {
