@@ -23,6 +23,7 @@ import {
   Users,
   Network,
   Store,
+  Coins,
   Terminal,
   Settings,
   HelpCircle,
@@ -50,6 +51,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "community", label: "Community", icon: Users, hint: "Citizen intelligence network: events, witnesses, civic scores, rewards" },
   { id: "civic-trust", label: "Civic Trust", icon: Network, hint: "Trust graph, propagation, Sybil resistance, identity vouching" },
   { id: "marketplace", label: "Marketplace", icon: Store, hint: "Intelligence marketplace: requests, assets, bounties, value attribution" },
+  { id: "finance", label: "Finance", icon: Coins, hint: "Intelligence finance: credits, licensing, royalties, agent economy, insurance" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 

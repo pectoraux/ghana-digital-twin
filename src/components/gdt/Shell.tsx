@@ -27,6 +27,7 @@ import { CommandCenterView } from "./views/CommandCenterView";
 import { CommunityView } from "./views/CommunityView";
 import { CivicTrustView } from "./views/CivicTrustView";
 import { MarketplaceView } from "./views/MarketplaceView";
+import { FinanceView } from "./views/FinanceView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -68,6 +69,7 @@ export function Shell() {
               {view === "community" && <CommunityView />}
               {view === "civic-trust" && <CivicTrustView />}
               {view === "marketplace" && <MarketplaceView />}
+              {view === "finance" && <FinanceView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>

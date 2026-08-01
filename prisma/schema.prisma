@@ -3940,3 +3940,278 @@ model MarketplacePackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 9.5 — INTELLIGENCE FINANCE & INCENTIVE PROTOCOL (Package Layer)
+// Turns the marketplace from a catalog into an actual economy. Intelligence
+// ownership/licensing, non-speculative Intelligence Credits, asset derivatives
+// with royalty lineage, producer market scores, agents as economic actors, and
+// intelligence insurance (prediction markets). The kernel is FROZEN.
+// ===========================================================================
+
+// IntelligenceLicense — ownership + licensing per asset. Like GitHub licenses.
+// Defines who can use the intelligence and under what terms.
+model IntelligenceLicense {
+  id              String   @id @default(uuid())
+  licenseId       String   @unique
+  assetId         String   // IntelligenceAsset.assetId
+  // ownership
+  ownerId         String   // primary owner (producer)
+  ownerName       String
+  contributors    String   @default("[]") // JSON: [{id, role, share}] — shared ownership
+  // license type
+  licenseType     String   // open_intelligence | government_only | commercial | exclusive | time_limited_exclusive
+  // terms
+  commercialUse   Boolean  @default(true)
+  governmentUse   Boolean  @default(true)
+  exclusiveUntil  DateTime? // for time-limited exclusivity
+  redistributionAllowed Boolean @default(false)
+  attributionRequired Boolean @default(true)
+  // royalty rate (for derivative assets — % of downstream value flows to owner)
+  royaltyRate     Float    @default(0.05) // 5% of downstream asset value
+  // status
+  status          String   @default("active") // active | revoked | expired
+  // temporal
+  issuedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([assetId])
+  @@index([ownerId])
+  @@index([licenseType])
+}
+
+// CreditAccount — Intelligence Credits balance per entity. Non-speculative
+// accounting unit. Not transferable money — represents verified contribution
+// value + deposited budget for consumers.
+model CreditAccount {
+  id              String   @id @default(uuid())
+  accountId       String   @unique
+  ownerId         String   // citizenId | agentId | orgId | sensorId
+  ownerType       String   // citizen | agent | organization | sensor | platform
+  ownerName       String
+  // balance
+  balance         Float    @default(0) // current credit balance
+  totalEarned     Float    @default(0) // lifetime earnings
+  totalSpent      Float    @default(0) // lifetime spending
+  totalDeposited  Float    @default(0) // lifetime deposits (consumers)
+  // status
+  active          Boolean  @default(true)
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([ownerType])
+}
+
+// CreditTransaction — every credit movement. Deposit, spend, reward, royalty.
+model CreditTransaction {
+  id              String   @id @default(uuid())
+  transactionId   String   @unique
+  // parties
+  fromAccountId   String?  // CreditAccount.accountId (null = mint/platform)
+  toAccountId     String?  // CreditAccount.accountId (null = burn/platform)
+  fromOwnerName   String?
+  toOwnerName     String?
+  // amount
+  amount          Float    // positive = credit movement
+  // type
+  type            String   // deposit | purchase | reward | royalty | refund | platform_fee
+  // context
+  referenceType   String?  // marketplace_transaction | bounty | attribution | lineage_royalty | insurance
+  referenceId     String?  // ID of the reference
+  description     String
+  // temporal
+  processedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([fromAccountId])
+  @@index([toAccountId])
+  @@index([type])
+  @@index([processedAt])
+}
+
+// AssetLineage — derivative tracking. An intelligence asset can spawn downstream
+// assets. The lineage tracks the full chain so royalties flow to original
+// contributors. Like intellectual property royalties.
+model AssetLineage {
+  id              String   @id @default(uuid())
+  lineageId       String   @unique
+  // the derivative asset
+  assetId         String   // IntelligenceAsset.assetId (the downstream/derived asset)
+  // parent assets this was derived from
+  parentAssetIds  String   @default("[]") // JSON: [assetId, ...]
+  // lineage chain (full ancestor path)
+  lineageChain    String   @default("[]") // JSON: [{assetId, producerId, role, depth}]
+  // derivation type
+  derivationType  String   // derived_from | fused_with | enhanced_by | verified_by
+  // depth (0 = original, 1 = direct derivative, 2 = derivative of derivative)
+  depth           Int      @default(0)
+  // temporal
+  createdAt       DateTime @default(now())
+
+  @@index([assetId])
+  @@index([derivationType])
+}
+
+// RoyaltyDistribution — when a derivative asset creates value, original
+// contributors receive royalties based on the lineage chain + royalty rates.
+model RoyaltyDistribution {
+  id              String   @id @default(uuid())
+  royaltyId       String   @unique
+  // the transaction that generated value
+  sourceTransactionId String // CreditTransaction.transactionId
+  sourceAssetId   String   // the derivative asset that was purchased/rewarded
+  totalRoyaltyAmount Float // total royalty distributed
+  // per-ancestor breakdown
+  royaltyRecipients String @default("[]") // JSON: [{assetId, producerId, amount, royaltyRate, depth}]
+  // temporal
+  distributedAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([sourceAssetId])
+  @@index([sourceTransactionId])
+}
+
+// ProducerMarketScore — Intelligence Market Score. Every producer gets a
+// composite score: trust + civic + IQS contribution + historical value created.
+// Enables professional intelligence producers.
+model ProducerMarketScore {
+  id              String   @id @default(uuid())
+  producerId      String   @unique
+  producerType    String   // citizen | agent | sensor | organization
+  producerName    String
+  // components (0..100)
+  trustScore      Float    @default(50)
+  civicScore      Float    @default(50)
+  iqsContribution Float    @default(50) // avg IQS of their assets
+  valueCreated    Float    @default(0) // lifetime $ value produced
+  // composite
+  marketScore     Float    @default(50) // 0..100
+  marketRank      Int      @default(0) // rank among all producers
+  marketTier      String   @default("amateur") // amateur | emerging | professional | expert | elite
+  // stats
+  totalAssets     Int      @default(0)
+  totalSales      Int      @default(0)
+  avgRating       Float    @default(0)
+  // temporal
+  lastUpdated     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([marketScore])
+  @@index([marketTier])
+  @@index([producerType])
+}
+
+// AgentRevenue — agents as economic actors. Agents earn revenue from their
+// intelligence outputs. Revenue is allocated across developer, training data,
+// infrastructure, platform.
+model AgentRevenue {
+  id              String   @id @default(uuid())
+  agentId         String   @unique
+  agentName       String
+  // earnings
+  totalRevenue    Float    @default(0) // lifetime credits earned
+  monthlyRevenue  Float    @default(0) // current month
+  pendingPayout   Float    @default(0) // unallocated
+  // allocation split (must sum to 1.0)
+  developerShare  Float    @default(0.70)
+  trainingDataShare Float  @default(0.15)
+  infrastructureShare Float @default(0.10)
+  platformShare   Float    @default(0.05)
+  // allocated totals
+  developerPaid   Float    @default(0)
+  trainingDataPaid Float   @default(0)
+  infrastructurePaid Float  @default(0)
+  platformPaid    Float    @default(0)
+  // stats
+  totalOutputs    Int      @default(0)
+  totalConsumers  Int      @default(0)
+  // temporal
+  lastEarnedAt    DateTime?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+// InsurancePolicy — intelligence insurance / prediction markets. An insurer
+// posts a question with a payout. Producers submit predictions. Payouts based
+// on accuracy once the outcome is known.
+model InsurancePolicy {
+  id              String   @id @default(uuid())
+  policyId        String   @unique
+  // insurer
+  insurerId       String
+  insurerName     String
+  // the question
+  title           String
+  description     String
+  category        String   // drought | flood | crop_loss | mining_activity | ...
+  geography       String
+  // prediction window
+  predictionWindow String  // "2026-Q1" | "next_30_days"
+  deadline        DateTime // when predictions close
+  resolutionDate  DateTime // when outcome is known
+  // payout
+  totalPayout     Float    // total credits to distribute
+  payoutModel     String   @default("accuracy_weighted") // accuracy_weighted | winner_takes_all | proportional
+  // resolution
+  outcome         String?  // confirmed | denied | partial (set at resolution)
+  outcomeNotes    String?
+  resolvedAt      DateTime?
+  // stats
+  predictionCount Int      @default(0)
+  // status
+  status          String   @default("open") // open | predicting | resolving | resolved | cancelled
+  // temporal
+  postedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+}
+
+// InsurancePrediction — a producer's prediction on an insurance question.
+// Payout based on accuracy once the outcome is known.
+model InsurancePrediction {
+  id              String   @id @default(uuid())
+  predictionId    String   @unique
+  policyId        String   // InsurancePolicy.policyId
+  // predictor
+  predictorId     String
+  predictorType   String   // citizen | agent | organization
+  predictorName   String
+  // the prediction
+  predictedOutcome String  // confirmed | denied | partial
+  confidence      Float    @default(0.5) // predictor's confidence
+  reasoning       String?  // why
+  // quality (at submission time)
+  trustScore      Float    @default(0.5)
+  // resolution
+  accuracyScore   Float?   // 0..1 — computed at resolution
+  payoutAmount    Float    @default(0) // credits paid
+  // temporal
+  submittedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@unique([policyId, predictorId])
+  @@index([policyId])
+  @@index([predictorId])
+}
+
+// IntelligenceFinancePackage — package manifest.
+model IntelligenceFinancePackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
