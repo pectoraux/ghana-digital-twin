@@ -5059,3 +5059,144 @@ model GovernancePackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 11.5 — INTELLIGENCE REALITY FEED (Package Layer)
+// Continuous ingestion of reality. Data source scheduler, freshness monitoring,
+// automatic observation triggers, health dashboard. Turns the platform from
+// "an intelligence ecosystem built on data" into "a living intelligence system
+// connected to reality." The kernel is FROZEN. All package-layer.
+// ===========================================================================
+
+// DataSourceConnector — registered connectors with ingestion schedules.
+// Each connector knows its source, cadence, and last run status.
+model DataSourceConnector {
+  id              String   @id @default(uuid())
+  connectorId     String   @unique // "stac-sentinel-2" | "chirps-weather" | "osm-overpass"
+  name            String
+  description     String
+  sourceType      String   // satellite | weather | osm | sensor | community | dem | landcover
+  provider        String   // "ESA/Copernicus" | "UCSB CHC" | "OSM Community"
+  endpoint        String?  // API URL
+  // schedule
+  cadenceMinutes  Int      @default(360) // how often to run (6h default for Sentinel-2)
+  cadenceLabel    String   @default("every 6 hours") // human-readable
+  // status
+  status          String   @default("active") // active | paused | degraded | failed
+  lastRunAt       DateTime?
+  lastSuccessAt   DateTime?
+  lastRunStatus   String?  // success | partial | failed
+  lastRunDurationMs Int?
+  lastError       String?
+  // stats
+  totalRuns       Int      @default(0)
+  totalSuccess    Int      @default(0)
+  totalFailed     Int      @default(0)
+  totalRecordsIngested Int @default(0)
+  // freshness
+  latestDataTimestamp DateTime? // when the latest ingested data was captured (scene date, not ingestion date)
+  freshnessStatus String   @default("unknown") // fresh | recent | stale | unknown
+  freshnessHoursAgo Float? // how old is the latest data
+  // auto-trigger observation generation on new data
+  autoTriggerObservations Boolean @default(true)
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([sourceType])
+  @@index([freshnessStatus])
+}
+
+// IngestionRun — record of each ingestion execution.
+model IngestionRun {
+  id              String   @id @default(uuid())
+  runId           String   @unique
+  connectorId     String   // DataSourceConnector.connectorId
+  // execution
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+  status          String   @default("running") // running | success | partial | failed | timeout
+  // results
+  recordsFound    Int      @default(0)
+  recordsIngested Int      @default(0)
+  recordsSkipped  Int      @default(0) // duplicates
+  recordsFailed   Int      @default(0)
+  // trigger
+  triggeredBy     String   @default("scheduler") // scheduler | manual | event
+  // errors
+  errors          String   @default("[]") // JSON: [{record, error}]
+  // downstream effects
+  observationsTriggered Int @default(0)
+  // temporal
+  createdAt       DateTime @default(now())
+
+  @@index([connectorId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+// DataFreshness — per-capability freshness tracking. Each intelligence capability
+// exposes its freshness status. The Atlas/Command Center shows live/delayed/stale.
+model DataFreshness {
+  id              String   @id @default(uuid())
+  freshnessId     String   @unique
+  capabilityId    String   @unique // "satellite.sentinel2" | "weather.chirps" | "community.events" | "osm.roads"
+  capabilityLabel String
+  sourceType      String   // satellite | weather | community | osm | sensor
+  // freshness
+  latestDataTimestamp DateTime?
+  freshnessHoursAgo Float?
+  freshnessStatus String   @default("unknown") // fresh (<6h) | recent (<24h) | stale (<72h) | expired (>72h) | unknown
+  expectedCadenceHours Float @default(24) // how often we expect new data
+  // health
+  healthStatus    String   @default("unknown") // healthy | degraded | down | unknown
+  lastCheckAt     DateTime @default(now())
+  // temporal
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([freshnessStatus])
+  @@index([sourceType])
+  @@index([healthStatus])
+}
+
+// FreshnessAlert — alerts when data goes stale or connectors fail.
+model FreshnessAlert {
+  id              String   @id @default(uuid())
+  alertId         String   @unique
+  connectorId     String?  // DataSourceConnector.connectorId (if connector-specific)
+  capabilityId    String?  // DataFreshness.capabilityId (if capability-specific)
+  alertType       String   // "stale_data" | "connector_failed" | "ingestion_timeout" | "data_gap" | "freshness_restored"
+  severity        String   @default("warn") // info | warn | critical
+  title           String
+  description     String
+  // status
+  status          String   @default("active") // active | acknowledged | resolved
+  acknowledgedBy  String?
+  acknowledgedAt  DateTime?
+  resolvedAt      DateTime?
+  // temporal
+  triggeredAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([severity])
+  @@index([connectorId])
+}
+
+// RealityFeedPackage — package manifest.
+model RealityFeedPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

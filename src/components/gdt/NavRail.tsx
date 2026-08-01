@@ -25,6 +25,7 @@ import {
   Store,
   Coins,
   Globe,
+  Activity,
   Terminal,
   Settings,
   HelpCircle,
