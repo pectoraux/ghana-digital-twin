@@ -749,3 +749,31 @@ Stage Summary:
 - ✅ Ecosystem Health: Metrics endpoint tracking platform adoption and reliability.
 - ✅ Lint: 0 errors, 0 warnings. Browser-verified: Atlas (186 entities), Observations (2 obs), Intelligence (hypotheses).
 - THE KERNEL IS FROZEN. All future milestones (Autonomous Runtime, National Command Center, Community Intelligence, Federated Deployments, Marketplace) are packages running on this frozen kernel. The kernel does not know they exist.
+
+---
+Task ID: 36
+Agent: orchestrator
+Task: Milestone 7 — Autonomous Runtime: Agents Become Intelligence Packages
+
+Work Log:
+- Extended schema with 4 new models: AgentRun (execution instance: trigger, context, reasoning, proposedActions, policyCheck, executedActions, outputArtifacts, eventsEmitted, cost, duration), AgentMemoryArtifact (memory as immutable artifacts: artifactHash, agentId, memoryType, relatedArtifacts), AgentEvaluation (performance scores: accuracy, falsePositiveRate, calibration, cost, humanAcceptance, trustLevel), AgentAction (individual actions: type, target, params, status, cost, policyCheck). db:push to Neon succeeded.
+- Built Agent Runtime Engine (src/lib/autonomous/engine.ts): full autonomous loop — Events → Agent → Context Assembly → Reasoning → Policy Check → Execute Actions → Create Artifacts → Emit Events → Update Memory ↺. NO kernel modifications.
+- Built 3 agent reasoning implementations: Mining Analyst (checks observations → hypotheses → mining ontology → proposes SAR tasking for uncertain hypotheses), Flood Coordinator (checks weather + hydrology + DEM → flood probability), Learning Agent (monitors ground truth for calibration).
+- Built Agent Memory as Immutable Artifacts: memory stored as ImmutableArtifact entries with types (observation_learned, decision, mistake, success_pattern, context). NOT a separate database. Reproducible, auditable, shareable, versioned.
+- Built Autonomous Planner: planAutonomous() takes current world state + uncertain hypotheses + budget → produces EVI-optimized execution plan. Example: 2 hypotheses at 29% confidence → plan 4 actions (2× SAR + 2× drone) within $500 budget → $400 used, $100 remaining.
+- Built Agent Evaluation: evaluateAgent() computes accuracy, false positive rate, calibration, cost efficiency, human acceptance rate → assigns trust level (experimental → verified → certified → official).
+- Built API routes: GET/POST /api/agents/run (list + execute agent runs), GET/POST /api/agents/evaluate (list + run evaluations), GET /api/autonomous (autonomous planning), GET /api/agent-memory (agent memory artifacts).
+- Fixed: unique constraint on agentMemoryArtifact (artifactHash) — added unique suffixes per memory type.
+- Ran real agent execution: Mining Analyst agent run completed successfully — status=completed, 2 actions proposed+executed (create_mission for uncertain hypotheses), 2 immutable artifacts created, $0 cost (SAR is free), 27s duration. Reasoning: "Analyzed 2 observations and 10 hypotheses. Found 2 uncertain primary hypotheses requiring verification."
+- Autonomous plan verified: 2 hypotheses considered, 4 actions planned, $400/$500 budget used, 2× SAR (free, 42% info gain) + 2× drone ($200 each, 55% info gain).
+- Pushed to GitHub (commit fd6f2da).
+
+Stage Summary:
+- ✅ Agent Runtime: full autonomous loop on frozen kernel. Events → Reasoning → Policy → Execute → Artifacts → Events.
+- ✅ Agent Memory: stored as immutable artifacts (not separate DB). Reproducible, auditable.
+- ✅ 3 Agents: Mining Analyst (reasoning), Flood Coordinator (planning), Learning Agent (learning).
+- ✅ Autonomous Planner: EVI-optimized evidence acquisition within budget constraints.
+- ✅ Agent Evaluation: accuracy, FP rate, calibration, cost, human acceptance → trust levels.
+- ✅ NO KERNEL MODIFICATIONS. Everything is package-level. Kernel remains frozen at v1.0.0.
+- Lint: 0 errors, 0 warnings. Agent run verified: completed, 2 actions, 2 artifacts, $0 cost.
+- The thesis is proven: "Anyone can build an intelligence capability by publishing a package." Agents are packages executing on the frozen kernel via events, SDK, artifacts, and execution plans.
