@@ -331,6 +331,45 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Validation Gates API =====
+
+export async function fetchSLOs(): Promise<any> {
+  const res = await fetch("/api/slo");
+  if (!res.ok) throw new Error(`fetchSLOs: ${res.status}`);
+  return res.json();
+}
+
+export async function measureSLOs(): Promise<any> {
+  const res = await fetch("/api/slo", { method: "POST" });
+  if (!res.ok) throw new Error(`measureSLOs: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchDashboard(type: "engineering" | "scientific"): Promise<any> {
+  const res = await fetch(`/api/dashboards?type=${type}`);
+  if (!res.ok) throw new Error(`fetchDashboard: ${res.status}`);
+  return res.json();
+}
+
+export async function auditLineage(observationId?: string): Promise<any> {
+  const body = observationId ? { observationId } : { all: true };
+  const res = await fetch("/api/lineage-audit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!res.ok) throw new Error(`auditLineage: ${res.status}`);
+  return res.json();
+}
+
+export async function triggerDriftActions(): Promise<any> {
+  const res = await fetch("/api/drift-actions", { method: "POST" });
+  if (!res.ok) throw new Error(`triggerDriftActions: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchDriftActions(): Promise<any> {
+  const res = await fetch("/api/drift-actions");
+  if (!res.ok) throw new Error(`fetchDriftActions: ${res.status}`);
+  return res.json();
+}
+
 // ===== Validation & Observability API =====
 
 export async function fetchObservability(): Promise<any> {

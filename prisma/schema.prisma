@@ -1407,3 +1407,120 @@ model CacheEntry {
   @@index([cacheKey])
   @@index([cacheType])
 }
+
+// ===== Milestone 6.5+: Validation Gates (SLOs, Lineage Audit, Drift Actions, Deterministic Replay) =====
+
+// Service-Level Objective — measurable production targets
+model SLO {
+  id              String   @id @default(uuid())
+  sloId           String   @unique // "scene_ingestion" | "product_generation" etc.
+  name            String
+  description     String
+  // metric
+  metricName      String   // "duration_ms" | "success_rate" | "availability"
+  target          Float    // target value (e.g. 600000 ms = 10 min, or 0.999 = 99.9%)
+  targetDirection String   @default("less") // "less" (below target is good) | "greater" (above is good)
+  unit            String   @default("") // "ms" | "%" | "ratio"
+  category        String   // "engineering" | "scientific"
+  // window
+  windowHours     Int      @default(24) // measurement window
+  // current status
+  currentValue    Float?   @default(0)
+  status          String   @default("unknown") // met | violated | unknown | warning
+  lastMeasuredAt  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  measurements    SLOMeasurement[]
+
+  @@index([category])
+  @@index([status])
+}
+
+// SLO measurement history — track SLO compliance over time
+model SLOMeasurement {
+  id              String   @id @default(uuid())
+  sloId           String
+  slo             SLO      @relation(fields: [sloId], references: [id], onDelete: Cascade)
+  value           Float
+  status          String   // met | violated | warning
+  measuredAt      DateTime @default(now())
+
+  @@index([sloId])
+  @@index([measuredAt])
+}
+
+// Lineage audit — completeness of the provenance chain per observation
+model LineageAudit {
+  id              String   @id @default(uuid())
+  observationId   String   @unique
+  // completeness checks (each stage of the chain)
+  hasEvidence     Boolean  @default(false)
+  hasRasterProduct Boolean @default(false)
+  hasBaseline     Boolean  @default(false)
+  hasScene        Boolean  @default(false)
+  hasCOG          Boolean  @default(false)
+  hasSTAC         Boolean  @default(false)
+  // overall
+  completenessPct Float    @default(0) // 0..100
+  missingStages   String   @default("[]") // JSON: ["baseline", "cog"]
+  auditedAt       DateTime @default(now())
+
+  @@index([completenessPct])
+  @@index([observationId])
+}
+
+// Drift action — operational workflow triggered by drift detection
+model DriftAction {
+  id              String   @id @default(uuid())
+  driftAlertId    String?  // FK to DriftAlert
+  actionType      String   // "increase_review_sampling" | "reduce_confidence" | "increase_sar_priority" | "notify_analysts" | "retrain_priors"
+  description     String
+  // action parameters
+  parameters      String   @default("{}") // JSON: how much to increase, who to notify, etc.
+  // execution
+  status          String   @default("pending") // pending | executed | skipped | failed
+  executedAt      DateTime?
+  result          String?  // execution result summary
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([actionType])
+}
+
+// Replay version — deterministic replay records all versions for reproducibility
+model ReplayVersion {
+  id              String   @id @default(uuid())
+  replayRunId     String?  // FK to ReplayRun
+  // versions recorded at replay time
+  codeVersion     String?  // git commit hash
+  schemaVersion   String?  // prisma schema hash
+  ruleVersion     String?  // rule set version
+  modelVersion    String?  // hypothesis model version
+  connectorVersions String @default("{}") // JSON: {geoboundaries: "2024-01", osm: "2024-08-01", stac: "sentinel-2-l2a"}
+  datasetVersions String   @default("{}") // JSON: {baseline: "v5", worldcover: "2021"}
+  configSnapshot  String   @default("{}") // JSON: thresholds, priors, weights at replay time
+  environment     String   @default("production") // production | staging | development
+  createdAt       DateTime @default(now())
+
+  @@index([replayRunId])
+}
+
+// Benchmark diversity tag — ensures benchmark coverage across conditions
+model BenchmarkDiversityTag {
+  id              String   @id @default(uuid())
+  benchmarkSampleId String
+  // diversity dimensions
+  season          String?  // "dry" | "rainy" | "transitional"
+  biome           String?  // "forest" | "savanna" | "wetland" | "urban" | "coastal" | "mining" | "agriculture"
+  topoPosition    String?  // "lowland" | "upland" | "riparian" | "plateau"
+  cloudCondition  String?  // "clear" | "cloudy" | "mixed"
+  // difficulty
+  difficulty      String?  // "easy" | "moderate" | "hard" // how hard to detect
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  @@index([benchmarkSampleId])
+  @@index([season])
+  @@index([biome])
+}
