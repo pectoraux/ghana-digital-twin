@@ -2711,3 +2711,162 @@ model AgentAction {
   @@index([actionType])
   @@index([status])
 }
+
+// ===== Milestone 7.5: Intelligence Governance & Agent Economy =====
+// Agent reputation, multi-agent debate, arbitration, communication, safety boundaries.
+// ALL package-level. NO kernel modifications.
+
+// Agent Reputation — performance-based trust scoring
+model AgentReputation {
+  id              String   @id @default(uuid())
+  agentId         String   @unique
+  // metrics (accumulated)
+  totalPredictions Int     @default(0)
+  confirmedCorrect Int     @default(0)
+  falsePositives  Int      @default(0)
+  falseNegatives  Int      @default(0)
+  // scores (0..1)
+  accuracyScore   Float    @default(0.5)
+  calibrationScore Float   @default(0.5)
+  costEfficiencyScore Float @default(0.5)
+  responseTimeScore Float  @default(0.5)
+  overallScore    Float    @default(0.5)
+  // trust
+  trustLevel      String   @default("experimental") // experimental | verified | certified | official
+  reputationRank  Int      @default(0) // ranking among all agents
+  // temporal
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([trustLevel])
+  @@index([overallScore])
+  @@index([reputationRank])
+}
+
+// Agent Debate — multi-agent debate session
+model AgentDebate {
+  id              String   @id @default(uuid())
+  debateId        String   @unique
+  // topic
+  observationId   String?
+  hypothesisId    String?
+  topic           String   // "What explains the vegetation loss at [location]?"
+  // participants
+  participants    String   @default("[]") // JSON: [{agentId, role, initialPosition}]
+  // arguments
+  arguments       String   @default("[]") // JSON: [{agentId, position, confidence, reasoning, evidence}]
+  // coordinator
+  coordinatorId   String?  // which agent coordinated
+  // result
+  finalAssessment String?  // "seasonal flooding" | "artisanal mining" | "inconclusive"
+  finalConfidence Float?
+  finalReasoning  String?  // JSON: reasoning chain
+  consensusReached Boolean @default(false)
+  // status
+  status          String   @default("open") // open | debating | resolved | inconclusive
+  // timing
+  startedAt       DateTime @default(now())
+  resolvedAt      DateTime?
+
+  @@index([status])
+  @@index([observationId])
+  @@index([startedAt])
+}
+
+// Agent Message — agent-to-agent communication protocol
+model AgentMessage {
+  id              String   @id @default(uuid())
+  messageId       String   @unique
+  fromAgent       String   // sender agent ID
+  toAgent         String   // recipient agent ID (or "broadcast")
+  // message
+  type            String   // "request_analysis" | "share_evidence" | "challenge_hypothesis" | "support_hypothesis" | "request_verification"
+  artifactRef     String?  // artifact hash being discussed
+  content         String   // message content
+  // response
+  responseTo      String?  // messageId this responds to
+  responseArtifact String? // artifact hash of response
+  // status
+  status          String   @default("sent") // sent | received | responded | ignored
+  createdAt       DateTime @default(now())
+  respondedAt     DateTime?
+
+  @@index([fromAgent])
+  @@index([toAgent])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Intelligence Arbitration — resolve conflicts between agents
+model AgentArbitration {
+  id              String   @id @default(uuid())
+  arbitrationId   String   @unique
+  // the conflict
+  debateId        String?  // FK to AgentDebate
+  observationId   String?
+  // conflicting claims
+  claims          String   @default("[]") // JSON: [{agentId, assessment, confidence, evidence}]
+  // arbitration
+  arbiterAgent    String?  // which agent arbitrated
+  finalAssessment String?
+  finalConfidence Float?
+  reasoning       String   @default("[]") // JSON: reasoning steps
+  evidenceConsidered String @default("[]") // JSON: evidence artifacts considered
+  // outcome
+  outcome         String   @default("pending") // pending | resolved | escalated | inconclusive
+  resolvedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([outcome])
+  @@index([debateId])
+}
+
+// Agent Safety Boundary — risk levels and action gates
+model AgentSafetyBoundary {
+  id              String   @id @default(uuid())
+  agentId         String   @unique
+  // current risk level (0-5)
+  riskLevel       Int      @default(1) // 0=observe, 1=hypothesize, 2=request evidence, 3=recommend, 4=alert, 5=intervene
+  // allowed actions per level
+  allowedActions  String   @default("{}") // JSON: {0: ["read", "observe"], 1: ["hypothesize"], ...}
+  // requires approval
+  approvalRequired String  @default("[]") // JSON: actions that require human approval
+  // constraints
+  maxDailyRuns    Int      @default(100)
+  maxDailyCost    Float    @default(50)
+  maxConcurrent   Int      @default(5)
+  // current usage
+  runsToday       Int      @default(0)
+  costToday       Float    @default(0)
+  // temporal
+  lastResetAt     DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([riskLevel])
+}
+
+// Agent Evaluation Arena — competition between agents
+model AgentArenaChallenge {
+  id              String   @id @default(uuid())
+  challengeId     String   @unique
+  name            String
+  description     String
+  // dataset
+  datasetName     String   // "ghana-mining-2019-2021"
+  sampleCount     Int
+  // participants
+  participants    String   @default("[]") // JSON: [{agentId, results}]
+  // results
+  results         String   @default("[]") // JSON: [{agentId, precision, recall, f1, falseAlarm, costPerInference}]
+  winner          String?  // agentId of winner
+  // status
+  status          String   @default("open") // open | running | completed
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([datasetName])
+}
