@@ -9,8 +9,10 @@ import { CommandPalette } from "./CommandPalette";
 import { LiveEngine } from "./LiveEngine";
 import { AtlasView } from "./views/AtlasView";
 import { ObservationsView } from "./views/ObservationsView";
+import { PhenomenaView } from "./views/PhenomenaView";
 import { EntitiesView } from "./views/EntitiesView";
 import { GraphView } from "./views/GraphView";
+import { KnowledgeGraphView } from "./views/KnowledgeGraphView";
 import { SourcesView } from "./views/SourcesView";
 import { EOView } from "./views/EOView";
 import { RasterIntelligenceView } from "./views/RasterIntelligenceView";
@@ -37,8 +39,10 @@ export function Shell() {
             >
               {view === "atlas" && <AtlasView />}
               {view === "observations" && <ObservationsView />}
+              {view === "phenomena" && <PhenomenaView />}
               {view === "entities" && <EntitiesView />}
               {view === "graph" && <GraphView />}
+              {view === "knowledge" && <KnowledgeGraphView />}
               {view === "sources" && <SourcesView />}
               {view === "eo" && <EOView />}
               {view === "raster" && <RasterIntelligenceView />}

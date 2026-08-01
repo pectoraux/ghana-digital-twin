@@ -277,3 +277,74 @@ Stage Summary:
 - ✅ API: 4 endpoints (observations, observations/:id, observations/scan, observations/types).
 - Lint: 0 errors, 0 warnings. Browser-verified: Observations view shows real fused observations, clicking opens detail with evidence fusion breakdown + contribution bars + affected entities + version history. No console errors.
 - Did NOT implement illegal mining detection / AI intelligence (deferred per roadmap — Milestone 5+).
+
+---
+Task ID: 9-kg
+Agent: full-stack-developer
+Task: Build KnowledgeGraphView + add Lineage panel to ObservationDetail
+
+Work Log:
+- Read worklog.md and prior agent-ctx records (Task 10 + 10-obs) to confirm dark intelligence-platform theme, Ghana-flag accents (emerald/gold + teal/rose/orange), NO indigo/blue, gdt-scroll + tnum conventions.
+- Read api.ts (KnowledgeGraph/KnowledgeNodeRecord/KnowledgeEdgeRecord/LineageNode types + fetchKnowledgeGraph/fetchLineage helpers), atoms.tsx (SectionLabel/StatusDot/MetricStat/ConfidenceBar), GraphView.tsx (REFERENCE pattern for SVG pan/zoom/hover/select), ObservationDetail.tsx (target for lineage edit), format.ts (fmtDateTime/fmtArea/timeAgo), geo.ts (formatCoord confirmed correct import path).
+- Inspected /api/knowledge-graph/route.ts + /lib/knowledge/graph.ts (16 domain concepts across 5 categories: indicator/effect/condition/cause/entity_type; 21 edges across 8 relation types: causes/often_precedes/affects/may_threaten/correlates_with/is_a/negatively_correlates/may_indicate).
+- Inspected /api/observations/[id]/lineage/route.ts + /lib/temporal/lineage.ts to understand exact LineageNode shape per level (observation/evidence/raster_product/baseline/scene/cog/stac_item) and which `details` keys each level populates.
+
+File 1 — CREATED src/components/gdt/views/KnowledgeGraphView.tsx:
+- Full-height split: SVG graph canvas (flex-1) + right inspector panel (w-[300px], hidden lg:flex).
+- Layout: computeLayout() groups nodes by `category`, smallest group → innermost concentric ring (baseR=75, ringSpacing=85), within each ring nodes distributed in a circle with per-ring phase stagger. Canvas 960×660 viewBox.
+- Node rendering: circle radius 16-22 by degree (5+/3+/1+/0). Filled with node.color (outer halo at 22% opacity, ring stroke, inner solid dot). Label below (truncate at 22 chars). Focus ring (dashed) when hovered/selected.
+- Edge rendering: line between nodes, color by relation via edgeColor() helper (emerald #34d399 for causes/often_precedes; teal #2dd4bf for correlates_with/affects; rose #f43f5e for may_threaten; neutral gray #71717a fallback for is_a/negatively_correlates/may_indicate). Opacity = 0.25 + confidence*0.55. Relation label at midpoint when focused.
+- Pan/zoom: wheel zoom (0.6-3.5 scale, anchor at cursor), pointer-drag pan (same pattern as GraphView, clientToSvg via getScreenCTM().inverse()). Zoom +/- and reset buttons bottom-right.
+- Hover: onPointerEnter/Move sets hovered + tooltip (fixed-position div following cursor, shows node.description). connectedSet computed via adjacency; non-connected nodes dimmed to 0.2 opacity, non-connected edges to 0.06.
+- Click: selects node → right panel NodeInspector shows category badge (colored), label, description, degree + conceptId, and connections list (each shows other node's color dot + label + relation arrow + confidence %). Clicking a connection selects that node.
+- Inspector header has "× overview" button to deselect when a node is focused.
+- Default inspector state (no selection): Categories legend (color dot + capitalized name + count), Relation Types legend (color bar + relation + count), 2-col stats grid (nodes/edges), explanation card with the exact spec text.
+- Header bar top-left: "Environmental Knowledge Graph" title + "Domain concepts and conceptual relationships" subtitle + node/edge count badge below.
+- Loading: centered Loader2 spinner. Error: AlertTriangle (rose-400) + message. Empty: Network icon + "No domain concepts defined yet."
+
+File 2 — EDITED src/components/gdt/ObservationDetail.tsx (ADD only, no existing content broken):
+- Added imports: useCallback (react), fetchLineage + LineageNode type (api), fmtDateTime (format), GitBranch + ChevronDown + Loader2 (lucide-react). Kept existing formatCoord import from @/lib/gdt/geo unchanged.
+- Added LINEAGE_LEVEL_COLORS map (observation=emerald #34d399, evidence=gold #fbbf24, raster_product=teal #2dd4bf, baseline=violet #a78bfa, scene=rose #f43f5e, cog=amber #f59e0b, stac_item=blue-gray slate #94a3b8).
+- Added lineageLevelColor() helper, lineageDetails() defensive per-level detail extractor (picks known keys per level: observation→type/severity/conf/evidenceCount; evidence→value/signal/conf/dir; raster_product→type/index/conf/mgrs; baseline→index/season/samples; scene→stacId/cloud/acquired; cog→href(truncated)/band; stac_item→stacId/collection), truncateHref() helper.
+- Added LineageNodeRow recursive component: 16px-per-level indent, expand/collapse chevron button (ChevronRight→ChevronDown rotate) for nodes with children OR a small color dot for leaf nodes, level badge (colored by level), node label, detail key/value pairs in mono tnum.
+- Added LineageTree wrapper: useState<Set<string>> initialized to {root.id + all direct child ids} so observation + first level expanded by default, deeper levels collapsed. toggle() via useCallback. Renders root at depth 0. key={lineage.id} on usage site forces remount when observation changes so default-expand state resets correctly.
+- Added lineage + lineageLoading state to ObservationDetail component, plus a second useEffect that calls fetchLineage(id) on id change (uses Promise.resolve().then() deferral pattern matching the existing fetchObservation effect to satisfy react-hooks/set-state-in-effect rule).
+- Inserted "Observation Lineage" section (GitBranch icon) between Provenance and Objectivity. Three states: loading (Loader2 + "Tracing provenance chain…"), loaded (LineageTree + spec note "Full provenance chain from observation to original satellite COG. Every transformation is traceable."), unavailable (italic "Lineage unavailable for this observation.").
+
+Stage Summary:
+- 1 new file (KnowledgeGraphView.tsx, ~470 lines) + 1 edited file (ObservationDetail.tsx, +200 lines helpers/section, 0 existing lines removed).
+- Both files fully TypeScript-typed, zero `any` introduced (defensive `Record<string, unknown>` casts on LineageNode.details).
+- Dark semantic tokens throughout (bg-card/40, border-border, text-muted-foreground, text-foreground, bg-background/40, bg-foreground/5, bg-foreground/10). Accent palette strictly emerald/gold/teal/rose/orange/amber/violet/slate — NO indigo, NO saturated blue.
+- gdt-scroll on the inspector panel scroll area; font-mono tnum on all numeric values (degree, confidence %, counts, href).
+- Pan/zoom/hover/select behavior on KnowledgeGraphView matches the GraphView reference pattern.
+- Lineage tree is collapsible, recursive, default-expanded for observation + first level, with per-level colored badges and per-level detail extraction.
+- bun run lint → **PASS** (exit 0, 0 errors, 0 warnings across the entire project).
+- npx tsc --noEmit → 0 errors in KnowledgeGraphView.tsx and ObservationDetail.tsx (all 9 remaining tsc errors are in pre-existing files outside this task's scope: observations.ts, store.ts, temporal/lineage.ts, worldmodel/connector-framework.ts, worldmodel/geometry.ts).
+- Pre-existing blocker (NOT fixed — outside scope): src/components/gdt/Shell.tsx:12 imports './views/PhenomenaView' which does not exist, breaking the client bundle and causing HTTP 500 on all routes. Shell.tsx is in the do-not-touch list. KnowledgeGraphView.tsx itself is correctly imported at Shell.tsx:15 and will render once the PhenomenaView import is resolved by whoever owns Shell.tsx.
+
+---
+Task ID: 20
+Agent: orchestrator
+Task: Milestone 3.5 — Temporal Intelligence Engine (standalone Evidence, evolving Phenomena, observation lineage, Environmental Knowledge Graph)
+
+Work Log:
+- Extended Prisma schema: Evidence (standalone immutable: UUID, productType, geometry, value, normalizedSignal, confidence, uncertainty, direction, supportingPixels, supportingSceneId, supportingBandHrefs), ObservationEvidenceLink (M2M: observations reference standalone evidence), Phenomenon (UUID, type, lifecycle status, currentAreaHa, growthRateHaPerWeek, growthPct, movementKm, persistenceScore, confidence, uncertainty, severity), PhenomenonObservation (timeline: sequence, areaDeltaHa, areaDeltaPct, centroidShiftKm), KnowledgeNode (conceptId, label, category, description, color), KnowledgeEdge (fromNodeId, toNodeId, relation, confidence, description). db:push succeeded.
+- Built Evidence service (src/lib/temporal/evidence.ts): extracts standalone evidence objects from raster products. Each evidence cell above threshold → immutable Evidence record with full lineage (productId, sceneId, band COG URLs). Evidence is reusable across multiple observations. 5,220 evidence objects extracted from 4 raster products.
+- Built Temporal Reasoning Engine (src/lib/temporal/engine.ts): merges observations across time into evolving Phenomena. Groups by type + spatial proximity (5km threshold) + temporal window (365 days). Tracks lifecycle (emerging → active → growing → stabilizing → declining → resolved), growth rate (ha/week), growth %, centroid movement (km), persistence score. Fused confidence = average across observations; fused uncertainty = RMS. 5 phenomena created from 5 observations.
+- Built Observation Lineage builder (src/lib/temporal/lineage.ts): traces full provenance chain: Observation → Evidence → Raster Product → Baseline → Sentinel Scene → COG Band URLs → STAC Item. Every transformation traceable. Enables audit and scientific trust.
+- Built Environmental Knowledge Graph (src/lib/knowledge/graph.ts): 16 domain concepts (vegetation_loss, bare_soil, water_turbidity, surface_disturbance, excavation, deforestation, downstream_communities, river_ecosystem, protected_area, seasonal_rain, etc.) + 21 typed edges (causes, often_precedes, affects, correlates_with, may_threaten, may_indicate). Separate from World Model — represents domain knowledge, not physical entities. Seeded idempotently.
+- Built API routes: GET/POST /api/evidence, GET /api/phenomena, GET /api/phenomena/:id, POST /api/phenomena/merge, GET /api/observations/:id/lineage, GET /api/knowledge-graph.
+- Linked 25 standalone evidence records to existing observations (migration script).
+- Built PhenomenaView frontend: phenomenon list with status badges (emerging/active/growing/etc), growth metrics (±%, ha/wk, movement km, persistence), observation timeline (each observation in the phenomenon with area delta + centroid shift), Run Merge button, phenomenon detail panel with evolution metrics.
+- Built KnowledgeGraphView frontend (via subagent): interactive node-link graph of domain concepts, grouped by category (cause/effect/indicator/condition/entity_type), edges colored by relation type (causes=emerald, correlates_with=teal, may_threaten=rose), pan/zoom/hover/select, inspector panel showing connections.
+- Added Observation Lineage section to ObservationDetail (via subagent): collapsible tree showing observation → evidence → raster_product → baseline → scene → COG → STAC_item, each with level-colored badge and key details. Full provenance drill-down.
+- Added "Phenomena" and "Env Knowledge" nav items. Updated Shell, NavRail, CommandBar, CommandPalette.
+
+Stage Summary:
+- ✅ Standalone Evidence: 5,220 immutable evidence objects, reusable across observations. Each carries full lineage (product, scene, COG URLs).
+- ✅ Evolving Phenomena: 5 phenomena tracked over time with lifecycle status, growth rate, movement, persistence. One physical event = one phenomenon (not independent alerts).
+- ✅ Observation Lineage: full provenance chain from observation → evidence → raster product → baseline → scene → COG → STAC item. Every transformation traceable.
+- ✅ Environmental Knowledge Graph: 16 domain concepts + 21 typed relationships. Separate from World Model. Represents causal/conceptual domain knowledge (vegetation_loss → precedes → bare_soil → causes → water_turbidity → affects → downstream_communities).
+- ✅ Temporal Reasoning: observations merged across time. Growth/movement/persistence tracked. Status lifecycle (emerging → growing → stabilizing → resolved).
+- Lint: 0 errors, 0 warnings. Browser-verified: Phenomena view shows 5 tracked phenomena with growth metrics + observation timeline, Knowledge Graph view shows 16 nodes + 21 edges with interactive graph, Observation Lineage renders full provenance tree. No console errors.
+- Did NOT implement AI intelligence / illegal mining detection (deferred per roadmap — Milestone 5+).

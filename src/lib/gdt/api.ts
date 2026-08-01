@@ -331,6 +331,137 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Temporal Intelligence API =====
+
+export interface EvidenceRecord {
+  id: string;
+  uuid: string;
+  productType: string;
+  indexName: string | null;
+  productId: string | null;
+  geometry: GeoJSON.Geometry;
+  centroid: [number, number];
+  observedAt: string;
+  value: number;
+  normalizedSignal: number;
+  confidence: number;
+  uncertainty: number;
+  direction: string;
+  description: string;
+  supportingPixels: number;
+  supportingSceneId: string | null;
+  supportingBandHrefs: string[];
+}
+
+export async function fetchEvidence(productType?: string, limit = 200): Promise<{ evidence: EvidenceRecord[]; total: number; count: number }> {
+  const sp = new URLSearchParams();
+  if (productType) sp.set("productType", productType);
+  sp.set("limit", String(limit));
+  const res = await fetch(`/api/evidence?${sp}`);
+  if (!res.ok) throw new Error(`fetchEvidence: ${res.status}`);
+  return res.json();
+}
+
+export interface PhenomenonRecord {
+  id: string;
+  uuid: string;
+  type: string;
+  title: string;
+  summary: string;
+  status: string;
+  centroid: [number, number];
+  bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+  currentAreaHa: number;
+  firstObserved: string;
+  lastObserved: string;
+  durationDays: number;
+  observationCount: number;
+  growthRateHaPerWeek: number | null;
+  growthPct: number | null;
+  movementKm: number | null;
+  persistenceScore: number | null;
+  confidence: number;
+  uncertainty: number;
+  severity: string;
+  mgrsTile: string | null;
+  observations: {
+    observationId: string;
+    sequence: number;
+    areaHa: number;
+    areaDeltaHa: number | null;
+    areaDeltaPct: number | null;
+    centroidShiftKm: number | null;
+    observedAt: string;
+    confidence: number;
+  }[];
+}
+
+export async function fetchPhenomena(type?: string, status?: string, limit = 50): Promise<{ phenomena: PhenomenonRecord[]; total: number; count: number }> {
+  const sp = new URLSearchParams();
+  if (type) sp.set("type", type);
+  if (status) sp.set("status", status);
+  sp.set("limit", String(limit));
+  const res = await fetch(`/api/phenomena?${sp}`);
+  if (!res.ok) throw new Error(`fetchPhenomena: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchPhenomenon(id: string): Promise<PhenomenonRecord> {
+  const res = await fetch(`/api/phenomena/${id}`);
+  if (!res.ok) throw new Error(`fetchPhenomenon: ${res.status}`);
+  return res.json();
+}
+
+export async function triggerTemporalMerge(): Promise<any> {
+  const res = await fetch("/api/phenomena/merge", { method: "POST" });
+  if (!res.ok) throw new Error(`triggerTemporalMerge: ${res.status}`);
+  return res.json();
+}
+
+export interface LineageNode {
+  level: string;
+  id: string;
+  label: string;
+  type: string;
+  details: Record<string, any>;
+  children?: LineageNode[];
+}
+
+export async function fetchLineage(observationId: string): Promise<LineageNode> {
+  const res = await fetch(`/api/observations/${observationId}/lineage`);
+  if (!res.ok) throw new Error(`fetchLineage: ${res.status}`);
+  return res.json();
+}
+
+export interface KnowledgeNodeRecord {
+  id: string;
+  conceptId: string;
+  label: string;
+  category: string;
+  description: string;
+  color: string;
+}
+
+export interface KnowledgeEdgeRecord {
+  id: string;
+  from: KnowledgeNodeRecord;
+  to: KnowledgeNodeRecord;
+  relation: string;
+  confidence: number;
+  description: string;
+}
+
+export interface KnowledgeGraph {
+  nodes: KnowledgeNodeRecord[];
+  edges: KnowledgeEdgeRecord[];
+}
+
+export async function fetchKnowledgeGraph(): Promise<KnowledgeGraph> {
+  const res = await fetch("/api/knowledge-graph");
+  if (!res.ok) throw new Error(`fetchKnowledgeGraph: ${res.status}`);
+  return res.json();
+}
+
 // ===== Raster Intelligence API =====
 
 export interface RasterProductMeta {

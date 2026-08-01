@@ -29,8 +29,10 @@ import { fmtInt } from "@/lib/gdt/format";
 const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   atlas: { title: "Atlas", sub: "National geospatial world view" },
   observations: { title: "Observations", sub: "Fused evidence from multiple raster products" },
+  phenomena: { title: "Phenomena", sub: "Evolving events tracked over time" },
   entities: { title: "Entities", sub: "Entity registry & version history" },
-  graph: { title: "Knowledge Graph", sub: "Geospatial relationship graph" },
+  graph: { title: "Entity Graph", sub: "Geospatial relationship graph" },
+  knowledge: { title: "Environmental Knowledge", sub: "Domain knowledge graph" },
   eo: { title: "Earth Observation", sub: "Sentinel-2 imagery & spectral indices" },
   raster: { title: "Raster Intelligence", sub: "Anomaly maps, baselines & uncertainty" },
   sources: { title: "Data Sources", sub: "Ingestion pipeline & connectors" },

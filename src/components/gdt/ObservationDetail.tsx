@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useGDT } from "@/lib/gdt/store";
-import { fetchObservation, type ObservationDetail } from "@/lib/gdt/api";
+import { fetchObservation, fetchLineage, type ObservationDetail, type LineageNode } from "@/lib/gdt/api";
 import { formatCoord } from "@/lib/gdt/geo";
-import { fmtArea, timeAgo } from "@/lib/gdt/format";
+import { fmtArea, fmtDateTime, timeAgo } from "@/lib/gdt/format";
 import { SectionLabel, StatusDot, ConfidenceBar } from "./atoms";
 import { cn } from "@/lib/utils";
 import {
@@ -20,8 +20,185 @@ import {
   Layers,
   AlertCircle,
   ChevronRight,
+  ChevronDown,
   Sigma,
+  GitBranch,
+  Loader2,
 } from "lucide-react";
+
+// Level → accent color for the lineage tree badge
+const LINEAGE_LEVEL_COLORS: Record<string, string> = {
+  observation: "#34d399", // emerald
+  evidence: "#fbbf24", // gold
+  raster_product: "#2dd4bf", // teal
+  baseline: "#a78bfa", // violet
+  scene: "#f43f5e", // rose
+  cog: "#f59e0b", // amber
+  stac_item: "#94a3b8", // blue-gray (slate)
+};
+
+function lineageLevelColor(level: string): string {
+  return LINEAGE_LEVEL_COLORS[level] ?? "#a1a1aa";
+}
+
+// Per-level detail extraction (defensive — picks known keys per level)
+function lineageDetails(level: string, details: Record<string, unknown>): { label: string; value: string }[] {
+  const out: { label: string; value: string }[] = [];
+  const get = (k: string): unknown => details[k];
+  const num = (v: unknown): number | null =>
+    typeof v === "number" ? v : typeof v === "string" && v !== "" && !Number.isNaN(Number(v)) ? Number(v) : null;
+
+  switch (level) {
+    case "observation":
+      if (get("type")) out.push({ label: "type", value: String(get("type")).replace(/_/g, " ") });
+      if (get("severity")) out.push({ label: "severity", value: String(get("severity")) });
+      if (num(get("confidence")) != null)
+        out.push({ label: "conf", value: `${(num(get("confidence"))! * 100).toFixed(0)}%` });
+      if (get("evidenceCount") != null) out.push({ label: "evidence", value: String(get("evidenceCount")) });
+      break;
+    case "evidence":
+      if (num(get("value")) != null) out.push({ label: "value", value: num(get("value"))!.toFixed(3) });
+      if (num(get("normalizedSignal")) != null)
+        out.push({ label: "signal", value: `${(num(get("normalizedSignal"))! * 100).toFixed(0)}%` });
+      if (num(get("confidence")) != null)
+        out.push({ label: "conf", value: `${(num(get("confidence"))! * 100).toFixed(0)}%` });
+      if (get("direction")) out.push({ label: "dir", value: String(get("direction")) });
+      break;
+    case "raster_product":
+      if (get("type")) out.push({ label: "type", value: String(get("type")).replace(/_/g, " ") });
+      if (get("indexName")) out.push({ label: "index", value: String(get("indexName")) });
+      if (num(get("confidence")) != null)
+        out.push({ label: "conf", value: `${(num(get("confidence"))! * 100).toFixed(0)}%` });
+      if (get("mgrsTile")) out.push({ label: "mgrs", value: String(get("mgrsTile")) });
+      break;
+    case "baseline":
+      if (get("indexName")) out.push({ label: "index", value: String(get("indexName")) });
+      if (get("season")) out.push({ label: "season", value: String(get("season")) });
+      if (get("sampleCount") != null) out.push({ label: "samples", value: String(get("sampleCount")) });
+      break;
+    case "scene":
+      if (get("stacId")) out.push({ label: "stacId", value: String(get("stacId")) });
+      if (num(get("cloudCover")) != null)
+        out.push({ label: "cloud", value: `${num(get("cloudCover"))!.toFixed(1)}%` });
+      if (get("datetime")) out.push({ label: "acquired", value: fmtDateTime(String(get("datetime"))) });
+      break;
+    case "cog":
+      if (get("href")) out.push({ label: "href", value: truncateHref(String(get("href"))) });
+      if (get("commonName")) out.push({ label: "band", value: String(get("commonName")) });
+      break;
+    case "stac_item":
+      if (get("stacId")) out.push({ label: "stacId", value: String(get("stacId")) });
+      if (get("collection")) out.push({ label: "collection", value: String(get("collection")) });
+      break;
+  }
+  return out;
+}
+
+function truncateHref(href: string, max = 48): string {
+  if (href.length <= max) return href;
+  return href.slice(0, max - 1) + "…";
+}
+
+// Recursive lineage row
+function LineageNodeRow({
+  node,
+  depth,
+  expanded,
+  onToggle,
+}: {
+  node: LineageNode;
+  depth: number;
+  expanded: Set<string>;
+  onToggle: (id: string) => void;
+}) {
+  const hasChildren = (node.children?.length ?? 0) > 0;
+  const isExpanded = expanded.has(node.id);
+  const color = lineageLevelColor(node.level);
+  const details = lineageDetails(node.level, node.details);
+
+  return (
+    <div style={{ paddingLeft: depth * 16 }}>
+      <div className="flex items-start gap-1.5 py-1">
+        {hasChildren ? (
+          <button
+            onClick={() => onToggle(node.id)}
+            className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
+            aria-label={isExpanded ? "Collapse" : "Expand"}
+            aria-expanded={isExpanded}
+          >
+            {isExpanded ? (
+              <ChevronDown className="size-3" />
+            ) : (
+              <ChevronRight className="size-3" />
+            )}
+          </button>
+        ) : (
+          <span className="mt-1.5 flex size-4 shrink-0 items-center justify-center">
+            <span className="size-1 rounded-full" style={{ background: color }} />
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span
+              className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+              style={{ color, background: `${color}1a`, border: `1px solid ${color}33` }}
+            >
+              {node.level.replace(/_/g, " ")}
+            </span>
+            <span className="text-[11px] font-medium truncate">{node.label}</span>
+          </div>
+          {details.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[9px] font-mono text-muted-foreground">
+              {details.map((d, i) => (
+                <span key={i} className="truncate">
+                  <span className="text-muted-foreground/60">{d.label}:</span>{" "}
+                  <span className="text-foreground/80 tnum">{d.value}</span>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      {hasChildren && isExpanded && (
+        <div>
+          {node.children!.map((c) => (
+            <LineageNodeRow
+              key={c.id}
+              node={c}
+              depth={depth + 1}
+              expanded={expanded}
+              onToggle={onToggle}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LineageTree({ root }: { root: LineageNode }) {
+  // default expanded: observation (root) + its direct children (first level)
+  const [expanded, setExpanded] = useState<Set<string>>(() => {
+    const initial = new Set<string>([root.id]);
+    (root.children ?? []).forEach((c) => initial.add(c.id));
+    return initial;
+  });
+
+  const toggle = useCallback((id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  return (
+    <div className="rounded-lg border border-border bg-card/40 p-2">
+      <LineageNodeRow node={root} depth={0} expanded={expanded} onToggle={toggle} />
+    </div>
+  );
+}
 
 const SEVERITY_COLORS: Record<string, string> = {
   critical: "#f43f5e",
@@ -41,6 +218,8 @@ const TYPE_COLORS: Record<string, string> = {
 export function ObservationDetail({ id }: { id: string }) {
   const [data, setData] = useState<ObservationDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [lineage, setLineage] = useState<LineageNode | null>(null);
+  const [lineageLoading, setLineageLoading] = useState(false);
   const selectEntity = useGDT((s) => s.selectEntity);
   const toggleInspector = useGDT((s) => s.toggleInspector);
 
@@ -50,6 +229,20 @@ export function ObservationDetail({ id }: { id: string }) {
     fetchObservation(id)
       .then((d) => { if (active) { setData(d); setLoading(false); } })
       .catch(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [id]);
+
+  useEffect(() => {
+    let active = true;
+    Promise.resolve().then(() => {
+      if (active) {
+        setLineage(null);
+        setLineageLoading(true);
+      }
+    });
+    fetchLineage(id)
+      .then((d) => { if (active) { setLineage(d); setLineageLoading(false); } })
+      .catch(() => { if (active) setLineageLoading(false); });
     return () => { active = false; };
   }, [id]);
 
@@ -223,6 +416,30 @@ export function ObservationDetail({ id }: { id: string }) {
             <div className="flex items-center gap-1.5"><GitCommit className="size-3" /> Source models: {o.sourceModels.join(", ")}</div>
             <div className="flex items-center gap-1.5"><MapPin className="size-3" /> MGRS: {o.mgrsTile ?? "—"}</div>
           </div>
+        </div>
+
+        {/* observation lineage — full provenance chain */}
+        <div>
+          <SectionLabel className="mb-2 flex items-center gap-1.5">
+            <GitBranch className="size-3" /> Observation Lineage
+          </SectionLabel>
+          {lineageLoading ? (
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card/40 p-3 text-[11px] text-muted-foreground">
+              <Loader2 className="size-3 animate-spin text-primary" />
+              Tracing provenance chain…
+            </div>
+          ) : lineage ? (
+            <div className="space-y-2">
+              <LineageTree key={lineage.id} root={lineage} />
+              <p className="text-[10px] text-muted-foreground leading-relaxed px-1">
+                Full provenance chain from observation to original satellite COG. Every transformation is traceable.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-border bg-card/40 p-3 text-[11px] text-muted-foreground italic">
+              Lineage unavailable for this observation.
+            </div>
+          )}
         </div>
 
         {/* objectivity note */}

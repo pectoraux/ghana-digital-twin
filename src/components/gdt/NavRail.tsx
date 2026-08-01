@@ -6,8 +6,10 @@ import { cn } from "@/lib/utils";
 import {
   Map as MapIcon,
   Eye,
+  Clock,
   Boxes,
   Share2,
+  Brain,
   Database,
   Satellite,
   Grid3x3,
@@ -19,9 +21,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[] = [
   { id: "atlas", label: "Atlas", icon: MapIcon, hint: "Geospatial world view" },
-  { id: "observations", label: "Change Log", icon: Eye, hint: "Entity version history" },
+  { id: "observations", label: "Observations", icon: Eye, hint: "Fused evidence observations" },
+  { id: "phenomena", label: "Phenomena", icon: Clock, hint: "Evolving events tracked over time" },
   { id: "entities", label: "Entities", icon: Boxes, hint: "Entity registry" },
-  { id: "graph", label: "Knowledge Graph", icon: Share2, hint: "Relationship graph" },
+  { id: "graph", label: "Entity Graph", icon: Share2, hint: "Entity relationship graph" },
+  { id: "knowledge", label: "Env Knowledge", icon: Brain, hint: "Domain knowledge graph" },
   { id: "eo", label: "Earth Observation", icon: Satellite, hint: "Sentinel-2 imagery & spectral indices" },
   { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps, baselines & uncertainty" },
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
