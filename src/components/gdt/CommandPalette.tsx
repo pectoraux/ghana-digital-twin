@@ -31,6 +31,7 @@ import {
   Store,
   Coins,
   Globe,
+  Activity,
   Clock,
 } from "lucide-react";
 
@@ -49,6 +50,7 @@ const VIEWS = [
   { id: "finance", label: "Intelligence Finance", icon: Coins, hint: "Credits, licensing, royalties, agent economy, insurance" },
   { id: "federation", label: "Federated Intelligence Network", icon: Globe, hint: "Cross-border intelligence: nodes, trust proofs, treaties" },
   { id: "os", label: "Intelligence OS Marketplace", icon: Boxes, hint: "Package registry, developers, solutions, intelligence graph" },
+  { id: "reality", label: "Intelligence Reality Feed", icon: Activity, hint: "Continuous ingestion, freshness monitoring, observation triggers" },
   { id: "api", label: "API Explorer", icon: Terminal, hint: "Programmatic access" },
 ] as const;
 

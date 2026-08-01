@@ -50,6 +50,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   finance: { title: "Intelligence Finance", sub: "Credits, licensing, royalties, agent economy, insurance" },
   federation: { title: "Federated Intelligence Network", sub: "Cross-border intelligence: nodes, trust proofs, treaties, markets" },
   os: { title: "Intelligence OS Marketplace", sub: "Package registry, developer economy, solutions, intelligence graph" },
+  reality: { title: "Intelligence Reality Feed", sub: "Continuous ingestion, freshness monitoring, observation triggers" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };
 

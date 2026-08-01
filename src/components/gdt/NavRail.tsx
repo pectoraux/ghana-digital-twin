@@ -56,6 +56,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "finance", label: "Finance", icon: Coins, hint: "Intelligence finance: credits, licensing, royalties, agent economy, insurance" },
   { id: "federation", label: "Federation", icon: Globe, hint: "Federated intelligence network: nodes, trust proofs, cross-border markets, treaties" },
   { id: "os", label: "OS Marketplace", icon: Boxes, hint: "Intelligence OS: package registry, developers, solutions, intelligence graph" },
+  { id: "reality", label: "Reality Feed", icon: Activity, hint: "Continuous ingestion, freshness monitoring, automatic observation triggers" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 

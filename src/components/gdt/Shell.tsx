@@ -30,6 +30,7 @@ import { MarketplaceView } from "./views/MarketplaceView";
 import { FinanceView } from "./views/FinanceView";
 import { FederationView } from "./views/FederationView";
 import { OSMarketplaceView } from "./views/OSMarketplaceView";
+import { RealityFeedView } from "./views/RealityFeedView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -74,6 +75,7 @@ export function Shell() {
               {view === "finance" && <FinanceView />}
               {view === "federation" && <FederationView />}
               {view === "os" && <OSMarketplaceView />}
+              {view === "reality" && <RealityFeedView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>
