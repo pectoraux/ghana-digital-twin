@@ -26,6 +26,7 @@ import {
   Coins,
   Globe,
   Activity,
+  Scale,
   Terminal,
   Settings,
   HelpCircle,
@@ -57,6 +58,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "federation", label: "Federation", icon: Globe, hint: "Federated intelligence network: nodes, trust proofs, cross-border markets, treaties" },
   { id: "os", label: "OS Marketplace", icon: Boxes, hint: "Intelligence OS: package registry, developers, solutions, intelligence graph" },
   { id: "reality", label: "Reality Feed", icon: Activity, hint: "Continuous ingestion, freshness monitoring, automatic observation triggers" },
+  { id: "governance", label: "Governance", icon: Scale, hint: "Constitution, council, courts, proposals — who governs the intelligence civilization" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 
