@@ -4761,3 +4761,301 @@ model OSPackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 12 — INTELLIGENCE GOVERNANCE & CONSTITUTIONAL LAYER (Package Layer)
+// Who governs the intelligence civilization? Constitution (rules), Council
+// (federated governance), Courts (dispute resolution), Proposals (change process).
+// The kernel is FROZEN. All package-layer.
+// ===========================================================================
+
+// IntelligenceConstitution — the foundational rules of the intelligence civilization.
+// Defines who can create agents, publish intelligence, override AI decisions,
+// access evidence, suspend packages. Like a constitution for a nation.
+model IntelligenceConstitution {
+  id              String   @id @default(uuid())
+  constitutionId  String   @unique // "constitution-v1"
+  version         String   @default("1.0.0")
+  title           String
+  preamble        String   // founding principles
+  status          String   @default("ratified") // draft | ratified | amended | superseded
+  ratifiedAt      DateTime?
+  articleCount    Int      @default(0)
+  amendmentCount  Int      @default(0)
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+// ConstitutionArticle — individual articles of the constitution.
+// Each article governs a specific aspect of intelligence civilization.
+model ConstitutionArticle {
+  id              String   @id @default(uuid())
+  articleId       String   @unique // "ART-001"
+  constitutionId  String   // IntelligenceConstitution.constitutionId
+  number          Int      // article number
+  title           String
+  body            String   // the rule text
+  category        String   // rights | obligations | procedures | limits | oversight
+  // what this article governs
+  governs         String   // "agent_creation" | "intelligence_publication" | "ai_override" | "evidence_access" | "package_suspension" | "citizen_rights" | "developer_rights" | "federation"
+  // enforcement
+  enforcementMechanism String // "automatic" | "council_review" | "court_arbitration"
+  // status
+  status          String   @default("active") // active | amended | repealed
+  // temporal
+  ratifiedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([constitutionId])
+  @@index([category])
+  @@index([governs])
+}
+
+// ConstitutionAmendment — amendments to the constitution.
+// Changes require council approval. Full audit trail.
+model ConstitutionAmendment {
+  id              String   @id @default(uuid())
+  amendmentId     String   @unique // "AMD-001"
+  constitutionId  String
+  articleId       String?  // null = new article; non-null = amending existing
+  amendmentType   String   // "add" | "modify" | "repeal"
+  title           String
+  description     String
+  proposedText    String?  // new text if add/modify
+  // proposer
+  proposedBy      String
+  proposerName    String
+  // voting
+  voteCount       Int      @default(0)
+  approveCount    Int      @default(0)
+  rejectCount     Int      @default(0)
+  // status
+  status          String   @default("proposed") // proposed | under_review | approved | rejected | ratified
+  ratifiedAt      DateTime?
+  // temporal
+  proposedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([constitutionId])
+  @@index([status])
+}
+
+// GovernanceCouncil — the federated governing body. Not a central authority —
+// a federation of representatives from governments, institutions, citizens,
+// developers, and scientific organizations.
+model GovernanceCouncil {
+  id              String   @id @default(uuid())
+  councilId       String   @unique // "global-intelligence-council"
+  name            String
+  description     String
+  councilType     String   // "global" | "regional" | "national" | "domain"
+  scope           String   // "planetary" | "africa" | "ghana" | "mining"
+  // composition
+  memberCount     Int      @default(0)
+  seatCount       Int      @default(12) // total seats
+  // voting rules
+  quorumThreshold Float    @default(0.6) // 60% of members must vote
+  approvalThreshold Float @default(0.66) // 66% of votes must approve
+  // status
+  status          String   @default("active")
+  // temporal
+  establishedAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([councilType])
+  @@index([status])
+}
+
+// CouncilMember — representatives on the council. Each represents a constituency.
+model CouncilMember {
+  id              String   @id @default(uuid())
+  memberId        String   @unique
+  councilId       String   // GovernanceCouncil.councilId
+  // identity
+  representativeName String
+  representativeId String  // citizenId | developerId | orgId
+  // constituency
+  constituencyType String  // "government" | "citizen" | "developer" | "scientific" | "ngo" | "regional"
+  constituencyName String  // "EPA Ghana" | "Citizen Representatives" | "University of Ghana"
+  // voting weight (1 = equal; some constituencies may have more weight)
+  votingWeight    Float    @default(1.0)
+  // term
+  termStart       DateTime @default(now())
+  termEnd         DateTime?
+  // status
+  status          String   @default("active") // active | suspended | expired
+  // temporal
+  seatedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([councilId])
+  @@index([constituencyType])
+  @@index([status])
+}
+
+// CouncilVote — votes on proposals, amendments, and decisions.
+model CouncilVote {
+  id              String   @id @default(uuid())
+  voteId          String   @unique
+  councilId       String
+  memberId        String   // CouncilMember.memberId
+  memberName      String
+  // what's being voted on
+  proposalType    String   // "amendment" | "package_approval" | "court_appointment" | "budget" | "treaty" | "suspension"
+  proposalId      String   // ID of the proposal/amendment/etc.
+  proposalTitle   String
+  // vote
+  vote            String   // "approve" | "reject" | "abstain"
+  rationale       String?
+  votingWeight    Float    @default(1.0)
+  // temporal
+  votedAt         DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@unique([proposalType, proposalId, memberId])
+  @@index([proposalType, proposalId])
+  @@index([memberId])
+}
+
+// IntelligenceCourt — dispute resolution. For cases like: agent caused false
+// enforcement, package manipulated evidence, developer violated license,
+// citizen reputation attacked unfairly.
+model IntelligenceCourt {
+  id              String   @id @default(uuid())
+  courtId         String   @unique // "court-ghana" | "court-ecowas" | "court-global"
+  name            String
+  description     String
+  jurisdiction    String   // "national" | "regional" | "global" | "domain"
+  scope           String   // "ghana" | "africa" | "planetary" | "mining"
+  // composition
+  justiceCount    Int      @default(5)
+  // status
+  status          String   @default("active")
+  establishedAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([jurisdiction])
+  @@index([status])
+}
+
+// CourtCase — a dispute brought before an intelligence court.
+model CourtCase {
+  id              String   @id @default(uuid())
+  caseId          String   @unique // "CASE-2026-0001"
+  courtId         String   // IntelligenceCourt.courtId
+  // parties
+  plaintiffId     String
+  plaintiffName   String
+  plaintiffType   String   // citizen | developer | organization | agent | government
+  defendantId     String
+  defendantName   String
+  defendantType   String
+  // the dispute
+  caseType        String   // "false_enforcement" | "evidence_manipulation" | "license_violation" | "reputation_attack" | "attribution_dispute" | "package_misconduct" | "contract_breach"
+  title           String
+  description     String
+  // evidence
+  evidenceArtifacts String  @default("[]") // JSON: [artifactHash, ...]
+  // damages claimed
+  damagesClaimed  Float    @default(0) // IC
+  // verdict
+  verdict         String?  // "for_plaintiff" | "for_defendant" | "settled" | "dismissed"
+  verdictSummary  String?
+  damagesAwarded  Float    @default(0)
+  // appeals
+  appealedFrom    String?  // caseId if appealed from lower court
+  // status
+  status          String   @default("filed") // filed | under_review | hearing | ruled | appealed | closed
+  filedAt         DateTime @default(now())
+  ruledAt         DateTime?
+  closedAt        DateTime?
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([courtId])
+  @@index([caseType])
+  @@index([status])
+}
+
+// CourtVerdict — the formal ruling on a case. Includes reasoning + remedies.
+model CourtVerdict {
+  id              String   @id @default(uuid())
+  verdictId       String   @unique
+  caseId          String   // CourtCase.caseId
+  courtId         String
+  // the ruling
+  ruling          String   // "for_plaintiff" | "for_defendant" | "settled" | "dismissed"
+  summary         String
+  reasoning       String
+  // remedies
+  remedies        String   @default("[]") // JSON: [{type, target, action, amount}]
+  damagesAwarded  Float    @default(0)
+  // justices
+  justiceCount    Int      @default(5)
+  concurringVotes Int      @default(0)
+  dissentingVotes Int      @default(0)
+  // temporal
+  ruledAt         DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([caseId])
+  @@index([ruling])
+}
+
+// GovernanceProposal — any proposal before the council (budget, treaty,
+// suspension, appointment, policy change). Not just constitutional amendments.
+model GovernanceProposal {
+  id              String   @id @default(uuid())
+  proposalId      String   @unique // "PROP-2026-0001"
+  councilId       String
+  // proposer
+  proposedBy      String
+  proposerName    String
+  // the proposal
+  proposalType    String   // "amendment" | "package_approval" | "suspension" | "budget" | "treaty" | "appointment" | "policy_change"
+  title           String
+  description     String
+  // details
+  details         String   @default("{}") // JSON: type-specific fields
+  // voting
+  voteCount       Int      @default(0)
+  approveCount    Int      @default(0)
+  rejectCount     Int      @default(0)
+  abstainCount    Int      @default(0)
+  weightedApprove Float    @default(0) // sum of voting weights
+  weightedReject  Float    @default(0)
+  // status
+  status          String   @default("proposed") // proposed | under_review | voting | approved | rejected | enacted | vetoed
+  enactedAt       DateTime?
+  // temporal
+  proposedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([councilId])
+  @@index([proposalType])
+  @@index([status])
+}
+
+// GovernancePackage — package manifest for the governance layer.
+model GovernancePackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
