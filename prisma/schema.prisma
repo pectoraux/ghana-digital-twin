@@ -1,8 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Ghana Digital Twin — World Model Foundation schema
+// Spatial storage on SQLite: geometry stored as GeoJSON + dedicated bbox/centroid
+// columns for indexed spatial queries. Turf provides precise geometry ops in app layer.
 
 generator client {
   provider = "prisma-client-js"
@@ -13,20 +11,153 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ===== Core Entity (versioned, provenance-tracked) =====
+model Entity {
+  id              String   @id @default(uuid())
+  uuid            String   @unique
+  // stable external identifier (e.g. "geoboundaries:GHA-ADM1-ashanti", "osm:way:4790617")
+  externalId      String   @unique
+  kind            String   // river | lake | watershed | forest | road | settlement | ...
+  type            String   // natural | infrastructure | administrative | human_activity
+  name            String
+  regionId        String?
+  geometryType    String   // Point | LineString | Polygon | MultiPolygon
+  geometryGeoJson String   // full GeoJSON geometry (WGS84)
+  // spatial index columns
+  centroidLng     Float
+  centroidLat     Float
+  minLng          Float
+  minLat          Float
+  maxLng          Float
+  maxLat          Float
+  areaKm2         Float?
+  lengthKm        Float?
+  attributes      String   @default("{}") // JSON
+  tags            String   @default("[]") // JSON array
+  confidence      Float    @default(1.0)
+  // provenance
+  datasetSourceId String
+  sourceName      String
+  sourceVersion   String
+  // temporal
+  firstObserved   DateTime
+  lastObserved    DateTime
+  currentVersion  Int      @default(1)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  datasetSource     DatasetSource  @relation(fields: [datasetSourceId], references: [id])
+  versions          EntityVersion[]
+  relationshipsFrom Relationship[] @relation("fromEntity")
+  relationshipsTo   Relationship[] @relation("toEntity")
+
+  @@index([kind])
+  @@index([type])
+  @@index([regionId])
+  @@index([minLng, maxLng, minLat, maxLat])
+  @@index([centroidLng, centroidLat])
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
+// ===== Versioned history (nothing is overwritten) =====
+model EntityVersion {
+  id              String   @id @default(uuid())
+  entityId        String
+  entity          Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  version         Int
+  change          String   // human description of what changed
+  geometryGeoJson String
+  attributes      String
+  confidence      Float
+  sourceName      String
+  sourceVersion   String
+  observedAt      DateTime
+  createdAt       DateTime @default(now())
+
+  @@unique([entityId, version])
+  @@index([entityId, version])
+  @@index([observedAt])
+}
+
+// ===== Spatial relationship graph =====
+model Relationship {
+  id           String   @id @default(uuid())
+  fromEntityId String
+  toEntityId   String
+  relation     String   // contains | within | intersects | adjacent_to | tributary_of | flows_to | part_of | near
+  inferredBy   String   // spatial | source | manual
+  confidence   Float    @default(1.0)
+  createdAt    DateTime @default(now())
+
+  fromEntity Entity @relation("fromEntity", fields: [fromEntityId], references: [id], onDelete: Cascade)
+  toEntity   Entity @relation("toEntity", fields: [toEntityId], references: [id], onDelete: Cascade)
+
+  @@unique([fromEntityId, toEntityId, relation])
+  @@index([fromEntityId])
+  @@index([toEntityId])
+  @@index([relation])
+}
+
+// ===== Dataset source registry (provenance + health) =====
+model DatasetSource {
+  id            String    @id @default(uuid())
+  sourceId      String    @unique // "geoboundaries", "osm-overpass", "hydrosheds", ...
+  name          String
+  category      String    // administrative | hydrology | dem | landcover | weather | infrastructure | environmental | population | forest
+  provider      String
+  license       String
+  resolution    String
+  cadence       String
+  coverage      String
+  description   String
+  storageType   String    @default("vector") // vector | raster | metadata
+  status        String    @default("pending") // pending | healthy | syncing | degraded | offline
+  recordCount   Int       @default(0)
+  version       String?
+  lastSyncAt    DateTime?
+  lastSuccessAt DateTime?
+  metadata      String    @default("{}") // JSON
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  entities Entity[]
+  runs     ConnectorRun[]
+
+
+  @@index([status])
+}
+
+// ===== Connector run history (observability) =====
+model ConnectorRun {
+  id             String   @id @default(uuid())
+  sourceId       String
+  source         DatasetSource @relation(fields: [sourceId], references: [id])
+  startedAt      DateTime
+  finishedAt     DateTime?
+  status         String   // running | success | failed | partial
+  stage          String   @default("") // current pipeline stage
+  recordsRead    Int      @default(0)
+  recordsWritten Int     @default(0)
+  durationMs     Int      @default(0)
+  error          String?
+  events         String   @default("[]") // JSON array of pipeline stage events
+  createdAt      DateTime @default(now())
+
+  @@index([sourceId, startedAt])
+  @@index([status])
+}
+
+// ===== Event log (powers downstream AI + observability) =====
+model IngestionEvent {
+  id        String   @id @default(uuid())
+  type      String   // DatasetDownloaded | DatasetValidated | EntityCreated | EntityUpdated | EntityVersionCreated | RelationshipsUpdated | ConnectorFailed | ConnectorRecovered | ...
+  sourceId  String?
+  entityId  String?
+  message   String
+  level     String   @default("info") // info | warn | error
+  payload   String   @default("{}") // JSON
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([sourceId])
+  @@index([createdAt])
 }

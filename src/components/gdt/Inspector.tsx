@@ -1,9 +1,7 @@
 "use client";
 
 import { useGDT } from "@/lib/gdt/store";
-import { ENTITIES } from "@/lib/gdt/entities";
-import { OBSERVATIONS } from "@/lib/gdt/observations";
-import { DATA_SOURCES } from "@/lib/gdt/sources";
+import { fetchStats } from "@/lib/gdt/api";
 import { REGIONS } from "@/lib/gdt/geo";
 import { fmtInt, timeAgo } from "@/lib/gdt/format";
 import { ObservationDetail } from "./ObservationDetail";
@@ -12,6 +10,7 @@ import { SectionLabel, StatusDot, MetricStat } from "./atoms";
 import { cn } from "@/lib/utils";
 import { X, Activity, Eye, Boxes, Database, Radio, ChevronRight, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export function Inspector() {
   const open = useGDT((s) => s.inspectorOpen);
@@ -81,9 +80,15 @@ function Overview({
   onOpenEntity: (id: string) => void;
   onGoto: (v: "observations" | "entities" | "sources") => void;
 }) {
-  const activeObs = OBSERVATIONS.filter((o) => o.status === "active");
-  const criticalObs = OBSERVATIONS.filter((o) => o.severity === "critical");
-  const healthySources = DATA_SOURCES.filter((s) => s.status === "healthy").length;
+  const [stats, setStats] = useState<any>(null);
+  useEffect(() => {
+    fetchStats().then(setStats).catch(() => {});
+  }, [feed.length]);
+
+  const totalEntities = stats?.totalEntities ?? 0;
+  const totalRels = stats?.totalRelationships ?? 0;
+  const totalVersions = stats?.totalVersions ?? 0;
+  const totalSources = stats?.totalSources ?? 0;
 
   return (
     <div className="flex h-full flex-col gdt-scroll overflow-y-auto p-3 gap-4">
@@ -91,49 +96,29 @@ function Overview({
       <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-3.5">
         <div className="flex items-center gap-2 mb-2">
           <StatusDot color="#34d399" pulse />
-          <span className="text-[11px] font-semibold text-primary">DIGITAL TWIN · LIVE</span>
+          <span className="text-[11px] font-semibold text-primary">WORLD MODEL · LIVE</span>
         </div>
         <p className="text-[12px] text-foreground/80 leading-relaxed">
-          Continuously ingesting Earth-observation data and detecting physical-world change across{" "}
-          <span className="font-medium text-foreground">{REGIONS.length} regions</span> of Ghana.
+          Continuously ingesting authoritative datasets and maintaining a versioned spatial model across{" "}
+          <span className="font-medium text-foreground">{REGIONS.length} regions</span> of Ghana. Every entity has provenance.
         </p>
       </div>
 
       {/* metrics */}
       <div className="grid grid-cols-2 gap-2">
-        <MetricStat
-          label="Entities"
-          value={fmtInt(ENTITIES.length)}
-          sub="tracked & versioned"
-          accent="#34d399"
-        />
-        <MetricStat
-          label="Observations"
-          value={fmtInt(OBSERVATIONS.length)}
-          sub={`${activeObs.length} active`}
-          accent="#f43f5e"
-        />
-        <MetricStat
-          label="Data sources"
-          value={fmtInt(DATA_SOURCES.length)}
-          sub={`${healthySources} healthy`}
-          accent="#fbbf24"
-        />
-        <MetricStat
-          label="Critical"
-          value={fmtInt(criticalObs.length)}
-          sub="requires attention"
-          accent="#fb7185"
-        />
+        <MetricStat label="Entities" value={fmtInt(totalEntities)} sub="versioned" accent="#34d399" />
+        <MetricStat label="Relationships" value={fmtInt(totalRels)} sub="spatial" accent="#2dd4bf" />
+        <MetricStat label="Versions" value={fmtInt(totalVersions)} sub="historical" accent="#fbbf24" />
+        <MetricStat label="Data sources" value={fmtInt(totalSources)} sub="registered" accent="#fb923c" />
       </div>
 
       {/* quick nav */}
       <div>
         <SectionLabel className="mb-2">Navigate</SectionLabel>
         <div className="grid grid-cols-1 gap-1">
-          <QuickNav icon={Eye} label="Observations" sub={`${activeObs.length} active changes`} onClick={() => onGoto("observations")} />
-          <QuickNav icon={Boxes} label="Entity registry" sub={`${ENTITIES.length} tracked entities`} onClick={() => onGoto("entities")} />
-          <QuickNav icon={Database} label="Data pipeline" sub={`${healthySources}/${DATA_SOURCES.length} sources healthy`} onClick={() => onGoto("sources")} />
+          <QuickNav icon={Eye} label="Change Log" sub={`${fmtInt(totalVersions)} entity versions`} onClick={() => onGoto("observations")} />
+          <QuickNav icon={Boxes} label="Entity registry" sub={`${fmtInt(totalEntities)} real entities`} onClick={() => onGoto("entities")} />
+          <QuickNav icon={Database} label="Data pipeline" sub={`${fmtInt(totalSources)} registered sources`} onClick={() => onGoto("sources")} />
         </div>
       </div>
 

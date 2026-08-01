@@ -152,7 +152,7 @@ export const useGDT = create<GDTState>((set) => ({
   pushFeed: (item) =>
     set((s) => ({
       feed: [
-        { ...item, id: `f${++feedCounter}`, time: Date.now() },
+        { ...item, id: `f${++feedCounter}_${Date.now()}`, time: Date.now() },
         ...s.feed,
       ].slice(0, 40),
     })),

@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { GhanaMap } from "@/components/gdt/GhanaMap";
 import { useGDT, type LayerKey } from "@/lib/gdt/store";
-import { OBSERVATIONS } from "@/lib/gdt/observations";
-import { obsColor, fmtDateTime } from "@/lib/gdt/format";
+import { fetchChanges, fetchStats } from "@/lib/gdt/api";
+import { entityColor, fmtDateTime, timeAgo } from "@/lib/gdt/format";
 import { cn } from "@/lib/utils";
 import { StatusDot, SectionLabel } from "@/components/gdt/atoms";
 import {
@@ -86,7 +86,18 @@ export function AtlasView() {
   const curMs = new Date(temporalDate).getTime();
   const pct = ((curMs - START) / rangeMs) * 100;
 
-  const activeObs = OBSERVATIONS.filter((o) => o.status === "active");
+  // real recent entity changes from the world model
+  const [changes, setChanges] = useState<any[]>([]);
+  useEffect(() => {
+    fetchChanges(undefined, 8)
+      .then((r) => setChanges(r.changes))
+      .catch(() => {});
+    const t = setInterval(
+      () => fetchChanges(undefined, 8).then((r) => setChanges(r.changes)).catch(() => {}),
+      20000
+    );
+    return () => clearInterval(t);
+  }, []);
 
   return (
     <div className="relative h-full w-full">
@@ -164,15 +175,26 @@ export function AtlasView() {
         </div>
       </div>
 
-      {/* Active observations ticker (right side, below legend) */}
+      {/* Recent entity changes ticker (right side, below legend) — real world-model data */}
       <div className="absolute right-3 top-[210px] w-[176px]">
         <div className="rounded-lg border border-border bg-card/85 backdrop-blur-md shadow-lg p-2.5">
           <SectionLabel className="mb-2 flex items-center gap-1.5">
-            <Radio className="size-3 text-rose-400" /> Active Changes
+            <Radio className="size-3 text-emerald-400" /> Recent Changes
           </SectionLabel>
           <div className="space-y-1 max-h-56 overflow-y-auto gdt-scroll">
-            {activeObs.slice(0, 8).map((o) => (
-              <ObsRow key={o.id} obsId={o.id} title={o.title} type={o.type} />
+            {changes.length === 0 && (
+              <div className="text-[10px] text-muted-foreground px-1 py-2">
+                No recent changes
+              </div>
+            )}
+            {changes.map((c) => (
+              <ChangeRow
+                key={c.id}
+                entityId={c.entityId}
+                title={c.entityName ?? c.change}
+                kind={c.entityKind}
+                sub={`v${c.version} · ${timeAgo(c.observedAt)}`}
+              />
             ))}
           </div>
         </div>
@@ -325,25 +347,30 @@ function LegendRow({
   );
 }
 
-function ObsRow({
-  obsId,
+function ChangeRow({
+  entityId,
   title,
-  type,
+  kind,
+  sub,
 }: {
-  obsId: string;
+  entityId: string;
   title: string;
-  type: Parameters<typeof obsColor>[0];
+  kind: string;
+  sub: string;
 }) {
-  const selectObservation = useGDT((s) => s.selectObservation);
-  const col = obsColor(type);
+  const selectEntity = useGDT((s) => s.selectEntity);
+  const col = entityColor(kind as any) ?? "#a1a1aa";
   return (
     <button
-      onClick={() => selectObservation(obsId)}
+      onClick={() => selectEntity(entityId)}
       className="group flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left hover:bg-accent"
     >
       <span className="size-1.5 shrink-0 rounded-full" style={{ background: col, boxShadow: `0 0 6px ${col}` }} />
-      <span className="flex-1 truncate text-[10px] text-foreground/80 group-hover:text-foreground">
-        {title}
+      <span className="flex-1 min-w-0">
+        <span className="block truncate text-[10px] text-foreground/80 group-hover:text-foreground">
+          {title}
+        </span>
+        <span className="block text-[9px] text-muted-foreground font-mono truncate">{sub}</span>
       </span>
     </button>
   );

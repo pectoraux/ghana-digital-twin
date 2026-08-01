@@ -2,58 +2,95 @@
 
 import { useMemo, useState } from "react";
 import { useGDT } from "@/lib/gdt/store";
-import { OBSERVATIONS } from "@/lib/gdt/observations";
-import { REGIONS } from "@/lib/gdt/geo";
+import { fetchChanges, triggerSyncAll, useAsync } from "@/lib/gdt/api";
 import {
-  OBS_META,
-  SEVERITY_META,
-  STATUS_META,
-  obsColor,
-  fmtArea,
+  ENTITY_META,
+  entityColor,
   timeAgo,
   fmtInt,
 } from "@/lib/gdt/format";
-import type { ObservationType, ObservationStatus } from "@/lib/gdt/types";
+import type { EntityKind } from "@/lib/gdt/types";
 import { cn } from "@/lib/utils";
-import { SectionLabel, ConfidencePill, StatusDot, MetricStat } from "@/components/gdt/atoms";
+import { SectionLabel, ConfidencePill, MetricStat } from "@/components/gdt/atoms";
 import {
   Search,
   SlidersHorizontal,
   ArrowDownUp,
   Eye,
-  AlertOctagon,
-  CheckCircle2,
-  Activity,
-  TrendingUp,
+  History,
+  Loader2,
+  AlertTriangle,
+  RefreshCw,
   X,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
-type SortKey = "newest" | "confidence" | "severity" | "area";
+type SortKey = "newest" | "confidence" | "version";
+type SincePreset = "7d" | "30d" | "90d";
 
-const SEV_ORDER = { critical: 0, high: 1, moderate: 2, low: 3 } as const;
+interface ChangeRecord {
+  id: string;
+  entityId: string;
+  version: number;
+  change: string;
+  observedAt: string;
+  confidence: number;
+  source: string;
+  entityName: string | null;
+  entityKind: string | null;
+}
+
+const SINCE_DAYS: Record<SincePreset, number> = { "7d": 7, "30d": 30, "90d": 90 };
+
+function sinceIso(preset: SincePreset): string {
+  return new Date(Date.now() - SINCE_DAYS[preset] * 86400000).toISOString();
+}
+
+function kindLabel(kind: string): string {
+  const meta = ENTITY_META[kind as keyof typeof ENTITY_META];
+  if (meta) return meta.label;
+  return kind.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 export function ObservationsView() {
-  const obsFilter = useGDT((s) => s.obsFilter);
-  const setObsFilter = useGDT((s) => s.setObsFilter);
-  const selectObservation = useGDT((s) => s.selectObservation);
-  const selectedObservationId = useGDT((s) => s.selectedObservationId);
-  const [sort, setSort] = useState<SortKey>("newest");
+  const selectEntity = useGDT((s) => s.selectEntity);
+  const selectedEntityId = useGDT((s) => s.selectedEntityId);
+
+  const [since, setSince] = useState<SincePreset>("30d");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortKey>("newest");
   const [filtersOpen, setFiltersOpen] = useState(true);
+  const [kindFilter, setKindFilter] = useState<string | "all">("all");
+  const [minConfidence, setMinConfidence] = useState(0);
+  const [syncing, setSyncing] = useState(false);
+
+  const { data, loading, error, refresh } = useAsync(
+    () => fetchChanges(sinceIso(since), 200),
+    [since]
+  );
+
+  const changes: ChangeRecord[] = (data?.changes as ChangeRecord[]) ?? [];
+
+  // kind breakdown (for filter chips + analytics)
+  const kindCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    changes.forEach((c) => {
+      if (c.entityKind) m[c.entityKind] = (m[c.entityKind] ?? 0) + 1;
+    });
+    return m;
+  }, [changes]);
 
   const filtered = useMemo(() => {
-    let list = OBSERVATIONS.filter((o) => {
-      if (obsFilter.regionId !== "all" && o.regionId !== obsFilter.regionId) return false;
-      if (obsFilter.types.length && !obsFilter.types.includes(o.type)) return false;
-      if (obsFilter.statuses.length && !obsFilter.statuses.includes(o.status)) return false;
-      if (o.confidence < obsFilter.minConfidence) return false;
+    let list = changes.filter((c) => {
+      if (kindFilter !== "all" && c.entityKind !== kindFilter) return false;
+      if (c.confidence < minConfidence) return false;
       if (search) {
         const q = search.toLowerCase();
         if (
-          !o.title.toLowerCase().includes(q) &&
-          !o.id.toLowerCase().includes(q) &&
-          !o.summary.toLowerCase().includes(q)
+          !(c.entityName ?? "").toLowerCase().includes(q) &&
+          !c.entityId.toLowerCase().includes(q) &&
+          !c.change.toLowerCase().includes(q) &&
+          !(c.source ?? "").toLowerCase().includes(q)
         )
           return false;
       }
@@ -63,32 +100,67 @@ export function ObservationsView() {
       switch (sort) {
         case "confidence":
           return b.confidence - a.confidence;
-        case "severity":
-          return SEV_ORDER[a.severity] - SEV_ORDER[b.severity];
-        case "area":
-          return b.areaAffectedHa - a.areaAffectedHa;
+        case "version":
+          return b.version - a.version;
         default:
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+          return new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime();
       }
     });
     return list;
-  }, [obsFilter, search, sort]);
+  }, [changes, kindFilter, minConfidence, search, sort]);
 
   const stats = useMemo(() => {
-    const active = OBSERVATIONS.filter((o) => o.status === "active").length;
-    const critical = OBSERVATIONS.filter((o) => o.severity === "critical").length;
-    const resolved = OBSERVATIONS.filter((o) => o.status === "resolved").length;
-    const avgConf = OBSERVATIONS.reduce((a, o) => a + o.confidence, 0) / OBSERVATIONS.length;
-    return { active, critical, resolved, avgConf };
-  }, []);
+    if (changes.length === 0) {
+      return { total: 0, entities: 0, avgConf: 0, mostRecent: null as string | null };
+    }
+    const entitySet = new Set(changes.map((c) => c.entityId));
+    const avgConf = changes.reduce((a, c) => a + c.confidence, 0) / changes.length;
+    const mostRecent = changes.reduce<string | null>((latest, c) => {
+      if (!latest) return c.observedAt;
+      return new Date(c.observedAt) > new Date(latest) ? c.observedAt : latest;
+    }, null);
+    return {
+      total: changes.length,
+      entities: entitySet.size,
+      avgConf,
+      mostRecent,
+    };
+  }, [changes]);
 
-  const toggleType = (t: ObservationType) => {
-    const has = obsFilter.types.includes(t);
-    setObsFilter({ types: has ? obsFilter.types.filter((x) => x !== t) : [...obsFilter.types, t] });
+  // source breakdown for analytics
+  const sourceCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    changes.forEach((c) => {
+      if (c.source) m[c.source] = (m[c.source] ?? 0) + 1;
+    });
+    return Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [changes]);
+
+  // confidence histogram bins
+  const confBins = useMemo(() => {
+    const bins = [0, 0, 0, 0, 0]; // 0-20, 20-40, 40-60, 60-80, 80-100
+    changes.forEach((c) => {
+      const idx = Math.min(4, Math.floor(c.confidence * 5));
+      bins[idx]++;
+    });
+    return bins;
+  }, [changes]);
+
+  const onTriggerSync = async () => {
+    setSyncing(true);
+    try {
+      await triggerSyncAll();
+      refresh();
+    } finally {
+      setSyncing(false);
+    }
   };
-  const toggleStatus = (s: ObservationStatus) => {
-    const has = obsFilter.statuses.includes(s);
-    setObsFilter({ statuses: has ? obsFilter.statuses.filter((x) => x !== s) : [...obsFilter.statuses, s] });
+
+  const hasActiveFilters = kindFilter !== "all" || minConfidence > 0 || search.length > 0;
+  const clearFilters = () => {
+    setKindFilter("all");
+    setMinConfidence(0);
+    setSearch("");
   };
 
   return (
@@ -98,34 +170,61 @@ export function ObservationsView() {
         {/* header */}
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-3">
-            <h2 className="text-base font-semibold">Change Detection Feed</h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-              {filtered.length} / {OBSERVATIONS.length} shown
+            <div className="min-w-0">
+              <h2 className="text-base font-semibold flex items-center gap-2">
+                <History className="size-4 text-primary" />
+                Change Log
+              </h2>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Entity version history — change detection (Observations) activates in Milestone 3
+              </p>
+            </div>
+            <span className="ml-auto rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+              {loading ? "…" : (
+                <>
+                  <span className="tnum">{filtered.length}</span> / <span className="tnum">{changes.length}</span>
+                </>
+              )}
             </span>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              {/* since selector */}
+              <div className="flex items-center rounded-md border border-border bg-background/40 h-8 p-0.5">
+                {(["7d", "30d", "90d"] as SincePreset[]).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setSince(p)}
+                    className={cn(
+                      "px-2 h-7 rounded text-[10px] font-mono tnum transition-colors",
+                      since === p
+                        ? "bg-primary/15 text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
               <div className="flex items-center gap-1.5 rounded-md border border-border bg-background/40 px-2.5 h-8">
                 <Search className="size-3.5 text-muted-foreground" />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search observations…"
-                  className="w-40 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                  placeholder="Search changes…"
+                  className="w-36 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
                 />
               </div>
               <button
                 onClick={() => setFiltersOpen((v) => !v)}
                 className={cn(
                   "flex items-center gap-1.5 rounded-md border px-2.5 h-8 text-xs transition-colors",
-                  filtersOpen || obsFilter.types.length || obsFilter.statuses.length || obsFilter.minConfidence > 0
+                  filtersOpen || hasActiveFilters
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-border bg-background/40 text-muted-foreground hover:text-foreground"
                 )}
               >
                 <SlidersHorizontal className="size-3.5" /> Filters
-                {(obsFilter.types.length || obsFilter.statuses.length) > 0 && (
-                  <span className="rounded bg-primary/20 px-1 text-[9px] font-mono">
-                    {obsFilter.types.length + obsFilter.statuses.length}
-                  </span>
+                {hasActiveFilters && (
+                  <span className="rounded bg-primary/20 px-1 text-[9px] font-mono">•</span>
                 )}
               </button>
               <div className="flex items-center gap-1 rounded-md border border-border bg-background/40 px-2 h-8">
@@ -137,8 +236,7 @@ export function ObservationsView() {
                 >
                   <option value="newest">Newest</option>
                   <option value="confidence">Confidence</option>
-                  <option value="severity">Severity</option>
-                  <option value="area">Area affected</option>
+                  <option value="version">Version</option>
                 </select>
               </div>
             </div>
@@ -146,10 +244,29 @@ export function ObservationsView() {
 
           {/* stat strip */}
           <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
-            <MetricStat label="Total" value={fmtInt(OBSERVATIONS.length)} sub="observations" />
-            <MetricStat label="Active" value={fmtInt(stats.active)} sub="in progress" accent="#f43f5e" />
-            <MetricStat label="Critical" value={fmtInt(stats.critical)} sub="high priority" accent="#fb7185" />
-            <MetricStat label="Avg confidence" value={`${(stats.avgConf * 100).toFixed(0)}%`} sub="all observations" accent="#34d399" />
+            <MetricStat
+              label="Total Changes"
+              value={loading ? "…" : fmtInt(stats.total)}
+              sub={`last ${since}`}
+            />
+            <MetricStat
+              label="Entities Changed"
+              value={loading ? "…" : fmtInt(stats.entities)}
+              sub="unique entities"
+              accent="#2dd4bf"
+            />
+            <MetricStat
+              label="Avg Confidence"
+              value={loading ? "…" : `${(stats.avgConf * 100).toFixed(0)}%`}
+              sub="across changes"
+              accent="#34d399"
+            />
+            <MetricStat
+              label="Most Recent"
+              value={loading || !stats.mostRecent ? "…" : timeAgo(stats.mostRecent)}
+              sub="latest version"
+              accent="#fbbf24"
+            />
           </div>
         </div>
 
@@ -158,67 +275,54 @@ export function ObservationsView() {
           <div className="border-b border-border bg-card/20 px-4 py-2.5 space-y-2">
             <div className="flex items-start gap-4 flex-wrap">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">Type</span>
-                {(Object.keys(OBS_META) as ObservationType[]).map((t) => {
-                  const on = obsFilter.types.includes(t);
-                  const col = obsColor(t);
-                  return (
-                    <button
-                      key={t}
-                      onClick={() => toggleType(t)}
-                      className={cn(
-                        "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition-all",
-                        on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
-                      style={{
-                        borderColor: on ? col : "var(--border)",
-                        background: on ? `${col}1a` : "transparent",
-                      }}
-                    >
-                      <span className="size-1.5 rounded-full" style={{ background: col }} />
-                      {OBS_META[t].label}
-                    </button>
-                  );
-                })}
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">Kind</span>
+                {Object.entries(kindCounts)
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 10)
+                  .map(([k, count]) => {
+                    const on = kindFilter === k;
+                    const col = entityColor(k as EntityKind);
+                    return (
+                      <button
+                        key={k}
+                        onClick={() => setKindFilter(on ? "all" : k)}
+                        className={cn(
+                          "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition-all",
+                          on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                        )}
+                        style={{
+                          borderColor: on ? col : "var(--border)",
+                          background: on ? `${col}1a` : "transparent",
+                        }}
+                      >
+                        <span className="size-1.5 rounded-full" style={{ background: col }} />
+                        {kindLabel(k)}
+                        <span className="font-mono tnum opacity-70">{count}</span>
+                      </button>
+                    );
+                  })}
+                {Object.keys(kindCounts).length === 0 && (
+                  <span className="text-[10px] text-muted-foreground italic">no kinds in current window</span>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">Status</span>
-                {(Object.keys(STATUS_META) as ObservationStatus[]).map((s) => {
-                  const on = obsFilter.statuses.includes(s);
-                  const col = STATUS_META[s].color;
-                  return (
-                    <button
-                      key={s}
-                      onClick={() => toggleStatus(s)}
-                      className={cn(
-                        "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition-all",
-                        on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                      )}
-                      style={{ borderColor: on ? col : "var(--border)", background: on ? `${col}1a` : "transparent" }}
-                    >
-                      <StatusDot color={col} /> {STATUS_META[s].label}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex items-center gap-2 min-w-[200px]">
+              <div className="flex items-center gap-2 min-w-[220px]">
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                  Min conf {(obsFilter.minConfidence * 100).toFixed(0)}%
+                  Min conf {(minConfidence * 100).toFixed(0)}%
                 </span>
                 <Slider
-                  value={[obsFilter.minConfidence * 100]}
-                  onValueChange={(v) => setObsFilter({ minConfidence: v[0] / 100 })}
+                  value={[minConfidence * 100]}
+                  onValueChange={(v) => setMinConfidence(v[0] / 100)}
                   max={100}
                   step={5}
                   className="flex-1"
                 />
               </div>
-              {(obsFilter.types.length > 0 || obsFilter.statuses.length > 0 || obsFilter.minConfidence > 0) && (
+              {hasActiveFilters && (
                 <button
-                  onClick={() => setObsFilter({ types: [], statuses: [], minConfidence: 0 })}
-                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+                  onClick={clearFilters}
+                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="size-3" /> Clear
                 </button>
@@ -227,67 +331,105 @@ export function ObservationsView() {
           </div>
         )}
 
-        {/* list */}
+        {/* list / states */}
         <div className="min-h-0 flex-1 gdt-scroll overflow-y-auto p-3 space-y-1.5">
-          {filtered.map((o) => {
-            const om = OBS_META[o.type];
-            const sev = SEVERITY_META[o.severity];
-            const st = STATUS_META[o.status];
-            const region = REGIONS.find((r) => r.id === o.regionId);
-            const selected = selectedObservationId === o.id;
-            return (
-              <button
-                key={o.id}
-                onClick={() => selectObservation(o.id)}
-                className={cn(
-                  "group flex w-full items-stretch gap-3 rounded-lg border bg-card/40 px-3 py-2.5 text-left transition-all",
-                  selected
-                    ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
-                    : "border-border hover:border-primary/30 hover:bg-card/60"
-                )}
-              >
-                {/* severity bar */}
-                <div className="w-0.5 shrink-0 rounded-full" style={{ background: sev.color }} />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span
-                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-semibold"
-                      style={{ color: om.color, background: `${om.color}1a` }}
-                    >
-                      <span className="size-1.5 rounded-full" style={{ background: om.color }} />
-                      {om.label}
-                    </span>
-                    <span className="font-mono text-[10px] text-muted-foreground">{o.id}</span>
-                    <span className="text-[10px] text-muted-foreground">· {region?.name}</span>
-                    <span className="ml-auto text-[10px] text-muted-foreground font-mono">{timeAgo(o.timestamp)}</span>
-                  </div>
-                  <div className="text-[13px] font-medium leading-snug truncate">{o.title}</div>
-                  <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <StatusDot color={st.color} pulse={o.status === "active"} /> {st.label}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <span className="size-1.5 rounded-full" style={{ background: sev.color }} /> {sev.label}
-                    </span>
-                    <span className="font-mono tnum">{fmtArea(o.areaAffectedHa)}</span>
-                    <span className="font-mono tnum">{o.modelVersion}</span>
-                  </div>
-                </div>
-                <div className="flex shrink-0 flex-col items-end justify-center gap-1.5 w-[120px]">
-                  <ConfidencePill value={o.confidence} />
-                  <span className="text-[9px] text-muted-foreground font-mono">
-                    {o.affectedEntities.length} entities · {o.evidence.length} sources
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-          {filtered.length === 0 && (
+          {loading && (
             <div className="flex h-40 flex-col items-center justify-center gap-2 text-muted-foreground">
-              <Eye className="size-8 opacity-30" />
-              <span className="text-sm">No observations match your filters</span>
+              <Loader2 className="size-6 animate-spin text-primary" />
+              <span className="text-xs">Loading change log…</span>
             </div>
           )}
+          {error && !loading && (
+            <div className="flex h-40 flex-col items-center justify-center gap-2 text-muted-foreground">
+              <AlertTriangle className="size-6 text-rose-400" />
+              <span className="text-xs">Failed to load changes: {error}</span>
+            </div>
+          )}
+          {!loading && !error && changes.length === 0 && (
+            <div className="flex h-56 flex-col items-center justify-center gap-3 text-muted-foreground">
+              <History className="size-9 opacity-30" />
+              <div className="text-center">
+                <div className="text-sm font-medium text-foreground/80">No entity changes yet</div>
+                <div className="text-[11px] mt-1 max-w-xs">
+                  Run a connector sync to populate the world model. Entity versions will appear here as
+                  relationships and attributes are updated.
+                </div>
+              </div>
+              <button
+                onClick={onTriggerSync}
+                disabled={syncing}
+                className="flex items-center gap-1.5 rounded-md border border-border bg-card/60 px-3 h-8 text-xs text-foreground/90 hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {syncing ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="size-3.5" />
+                )}
+                {syncing ? "Syncing…" : "Trigger sync"}
+              </button>
+            </div>
+          )}
+          {!loading && !error && changes.length > 0 && filtered.length === 0 && (
+            <div className="flex h-40 flex-col items-center justify-center gap-2 text-muted-foreground">
+              <Eye className="size-8 opacity-30" />
+              <span className="text-sm">No changes match your filters</span>
+            </div>
+          )}
+          {!loading &&
+            !error &&
+            filtered.map((c) => {
+              const kind = c.entityKind ?? "unknown";
+              const col = entityColor(kind as EntityKind);
+              const kLabel = kindLabel(kind);
+              const selected = selectedEntityId === c.entityId;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => selectEntity(c.entityId)}
+                  className={cn(
+                    "group flex w-full items-stretch gap-3 rounded-lg border bg-card/40 px-3 py-2.5 text-left transition-all",
+                    selected
+                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
+                      : "border-border hover:border-primary/30 hover:bg-card/60"
+                  )}
+                >
+                  {/* kind accent bar */}
+                  <div className="w-0.5 shrink-0 rounded-full" style={{ background: col }} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span
+                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-semibold"
+                        style={{ color: col, background: `${col}1a` }}
+                      >
+                        <span className="size-1.5 rounded-full" style={{ background: col }} />
+                        {kLabel}
+                      </span>
+                      <span className="font-mono text-[10px] text-muted-foreground">
+                        v{c.version}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        · {c.source || "unknown"}
+                      </span>
+                      <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum">
+                        {timeAgo(c.observedAt)}
+                      </span>
+                    </div>
+                    <div className="text-[13px] font-medium leading-snug truncate">
+                      {c.entityName || c.entityId}
+                    </div>
+                    <div className="mt-1 text-[11px] text-foreground/70 leading-snug line-clamp-2">
+                      {c.change}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end justify-center gap-1.5 w-[110px]">
+                    <ConfidencePill value={c.confidence} />
+                    <span className="text-[9px] text-muted-foreground font-mono truncate max-w-full">
+                      {c.entityId.slice(0, 13)}…
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
         </div>
       </div>
 
@@ -295,48 +437,23 @@ export function ObservationsView() {
       <div className="hidden w-[280px] shrink-0 flex-col border-l border-border bg-card/20 lg:flex">
         <div className="border-b border-border px-4 py-3">
           <h3 className="flex items-center gap-2 text-xs font-semibold">
-            <TrendingUp className="size-3.5 text-primary" /> Analytics
+            <History className="size-3.5 text-primary" /> Analytics
           </h3>
         </div>
         <div className="min-h-0 flex-1 gdt-scroll overflow-y-auto p-4 space-y-5">
-          {/* by severity */}
+          {/* by kind */}
           <div>
-            <SectionLabel className="mb-2">By Severity</SectionLabel>
+            <SectionLabel className="mb-2">By Kind</SectionLabel>
             <div className="space-y-1.5">
-              {(Object.keys(SEVERITY_META) as (keyof typeof SEVERITY_META)[]).map((sev) => {
-                const count = OBSERVATIONS.filter((o) => o.severity === sev).length;
-                const pct = (count / OBSERVATIONS.length) * 100;
-                const col = SEVERITY_META[sev].color;
-                return (
-                  <div key={sev}>
-                    <div className="flex items-center justify-between text-[10px] mb-0.5">
-                      <span className="text-muted-foreground">{SEVERITY_META[sev].label}</span>
-                      <span className="font-mono tnum text-foreground/80">{count}</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-foreground/8 overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: col }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* by type */}
-          <div>
-            <SectionLabel className="mb-2">By Type</SectionLabel>
-            <div className="space-y-1.5">
-              {(Object.keys(OBS_META) as ObservationType[])
-                .map((t) => ({ t, count: OBSERVATIONS.filter((o) => o.type === t).length }))
-                .filter((x) => x.count > 0)
-                .sort((a, b) => b.count - a.count)
-                .map(({ t, count }) => {
-                  const pct = (count / OBSERVATIONS.length) * 100;
-                  const col = obsColor(t);
+              {Object.entries(kindCounts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([k, count]) => {
+                  const pct = changes.length ? (count / changes.length) * 100 : 0;
+                  const col = entityColor(k as EntityKind);
                   return (
-                    <div key={t}>
+                    <div key={k}>
                       <div className="flex items-center justify-between text-[10px] mb-0.5">
-                        <span className="text-muted-foreground truncate">{OBS_META[t].label}</span>
+                        <span className="text-muted-foreground truncate">{kindLabel(k)}</span>
                         <span className="font-mono tnum text-foreground/80">{count}</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-foreground/8 overflow-hidden">
@@ -345,25 +462,33 @@ export function ObservationsView() {
                     </div>
                   );
                 })}
+              {Object.keys(kindCounts).length === 0 && (
+                <div className="text-[10px] text-muted-foreground italic">no data</div>
+              )}
             </div>
           </div>
 
-          {/* by status */}
+          {/* by source */}
           <div>
-            <SectionLabel className="mb-2">By Status</SectionLabel>
-            <div className="grid grid-cols-2 gap-1.5">
-              {(Object.keys(STATUS_META) as ObservationStatus[]).map((s) => {
-                const count = OBSERVATIONS.filter((o) => o.status === s).length;
-                const col = STATUS_META[s].color;
-                const Icon = s === "active" ? AlertOctagon : s === "resolved" ? CheckCircle2 : s === "monitoring" ? Activity : Eye;
+            <SectionLabel className="mb-2">By Source</SectionLabel>
+            <div className="space-y-1.5">
+              {sourceCounts.map(([src, count]) => {
+                const pct = changes.length ? (count / changes.length) * 100 : 0;
                 return (
-                  <div key={s} className="rounded-lg border border-border bg-background/40 p-2">
-                    <Icon className="size-3.5 mb-1" style={{ color: col }} />
-                    <div className="text-lg font-semibold tnum" style={{ color: col }}>{count}</div>
-                    <div className="text-[9px] text-muted-foreground">{STATUS_META[s].label}</div>
+                  <div key={src}>
+                    <div className="flex items-center justify-between text-[10px] mb-0.5">
+                      <span className="text-muted-foreground truncate font-mono">{src}</span>
+                      <span className="font-mono tnum text-foreground/80">{count}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-foreground/8 overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#2dd4bf" }} />
+                    </div>
                   </div>
                 );
               })}
+              {sourceCounts.length === 0 && (
+                <div className="text-[10px] text-muted-foreground italic">no data</div>
+              )}
             </div>
           </div>
 
@@ -371,34 +496,40 @@ export function ObservationsView() {
           <div>
             <SectionLabel className="mb-2">Confidence Distribution</SectionLabel>
             <div className="flex items-end gap-1 h-20">
-              {[0, 0.2, 0.4, 0.6, 0.8].map((lo) => {
-                const count = OBSERVATIONS.filter((o) => o.confidence >= lo && o.confidence < lo + 0.2).length;
-                const max = Math.max(...[0, 0.2, 0.4, 0.6, 0.8].map((l) => OBSERVATIONS.filter((o) => o.confidence >= l && o.confidence < l + 0.2).length)) || 1;
+              {confBins.map((count, i) => {
+                const max = Math.max(...confBins, 1);
                 const h = (count / max) * 100;
+                const lo = i * 20;
                 return (
-                  <div key={lo} className="flex-1 flex flex-col items-center gap-1">
-                    <div className="w-full rounded-t bg-primary/40 hover:bg-primary/60 transition-colors" style={{ height: `${h}%`, minHeight: 2 }} title={`${count} obs`} />
-                    <span className="text-[8px] font-mono text-muted-foreground">{lo.toFixed(1)}</span>
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <div
+                      className="w-full rounded-t bg-primary/40 hover:bg-primary/60 transition-colors"
+                      style={{ height: `${h}%`, minHeight: count > 0 ? 2 : 0 }}
+                      title={`${count} changes`}
+                    />
+                    <span className="text-[8px] font-mono text-muted-foreground">{lo}</span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* by region (top 5) */}
-          <div>
-            <SectionLabel className="mb-2">Top Regions</SectionLabel>
-            <div className="space-y-1.5">
-              {REGIONS
-                .map((r) => ({ r, count: OBSERVATIONS.filter((o) => o.regionId === r.id).length }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 6)
-                .map(({ r, count }) => (
-                  <div key={r.id} className="flex items-center justify-between text-[10px]">
-                    <span className="text-muted-foreground truncate">{r.name}</span>
-                    <span className="font-mono tnum text-foreground/80">{count}</span>
-                  </div>
-                ))}
+          {/* summary card */}
+          <div className="rounded-lg border border-border bg-background/40 p-3 text-[11px] text-muted-foreground leading-relaxed">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-foreground font-medium">Window</span>
+              <span className="font-mono tnum">{since}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Changes</span>
+              <span className="font-mono tnum text-foreground">{changes.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Entities</span>
+              <span className="font-mono tnum text-foreground">{stats.entities}</span>
+            </div>
+            <div className="mt-2 pt-2 border-t border-border text-[10px] italic">
+              Change detection (automated observations) activates in Milestone 3.
             </div>
           </div>
         </div>
