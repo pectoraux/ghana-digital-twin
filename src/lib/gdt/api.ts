@@ -331,6 +331,95 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Continuous Pipeline & Learning API =====
+
+export interface PipelineStatus {
+  grid: { total: number; processed: number; pending: number; stale: number; coveragePct: number };
+  lastRun: {
+    id: string;
+    startedAt: string;
+    finishedAt: string | null;
+    status: string;
+    tilesProcessed: number;
+    tilesTotal: number;
+    observationsCreated: number;
+    hypothesesCreated: number;
+    durationMs: number;
+  } | null;
+  recentRuns: { id: string; startedAt: string; status: string; tilesProcessed: number; observationsCreated: number }[];
+}
+
+export async function fetchPipelineStatus(): Promise<PipelineStatus> {
+  const res = await fetch("/api/pipeline/run-continuous");
+  if (!res.ok) throw new Error(`fetchPipelineStatus: ${res.status}`);
+  return res.json();
+}
+
+export async function triggerContinuousPipeline(opts: { tileLimit?: number } = {}): Promise<any> {
+  const res = await fetch("/api/pipeline/run-continuous", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(opts),
+  });
+  if (!res.ok) throw new Error(`triggerContinuousPipeline: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchGridStatus(): Promise<{ total: number; processed: number; pending: number; stale: number; tiles: any[] }> {
+  const res = await fetch("/api/pipeline/status");
+  if (!res.ok) throw new Error(`fetchGridStatus: ${res.status}`);
+  return res.json();
+}
+
+export interface LearnedPrior {
+  id: string;
+  hypothesisType: string;
+  originalPrior: number;
+  learnedPrior: number;
+  priorDelta: number;
+  priorDeltaPct: number;
+  confirmations: number;
+  rejections: number;
+  accuracy: number;
+  lastUpdated: string;
+}
+
+export async function fetchLearnedPriors(): Promise<{ priors: LearnedPrior[]; count: number }> {
+  const res = await fetch("/api/learning/priors");
+  if (!res.ok) throw new Error(`fetchLearnedPriors: ${res.status}`);
+  return res.json();
+}
+
+export async function triggerLearning(): Promise<any> {
+  const res = await fetch("/api/learning/update", { method: "POST" });
+  if (!res.ok) throw new Error(`triggerLearning: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchLearningHistory(): Promise<{ updates: any[]; count: number }> {
+  const res = await fetch("/api/learning/update");
+  if (!res.ok) throw new Error(`fetchLearningHistory: ${res.status}`);
+  return res.json();
+}
+
+export async function submitFeedback(opts: { observationId?: string; hypothesisId?: string; outcome: string; feedbackType?: string; hypothesisType?: string; notes?: string }): Promise<any> {
+  const res = await fetch("/api/feedback", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(opts),
+  });
+  if (!res.ok) throw new Error(`submitFeedback: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchFeedback(outcome?: string): Promise<{ feedback: any[]; count: number }> {
+  const sp = new URLSearchParams();
+  if (outcome) sp.set("outcome", outcome);
+  const res = await fetch(`/api/feedback?${sp}`);
+  if (!res.ok) throw new Error(`fetchFeedback: ${res.status}`);
+  return res.json();
+}
+
 // ===== Intelligence Engine API =====
 
 export interface HypothesisRecord {

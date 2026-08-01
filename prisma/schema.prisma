@@ -765,3 +765,126 @@ model Scenario {
   @@index([phenomenonId])
   @@index([observationId])
 }
+
+// ===== Milestone 5: Continuous Learning & Active Intelligence =====
+
+// Spatial grid partition of Ghana — each tile is a fixed processing unit
+model ProcessingTile {
+  id              String   @id @default(uuid())
+  tileId          String   @unique // "gh-grid-30NYM" or "gh-cell-001"
+  // spatial extent
+  minLng          Float
+  minLat          Float
+  maxLng          Float
+  maxLat          Float
+  centroidLng     Float
+  centroidLat     Float
+  // grid coordinates
+  gridRow         Int
+  gridCol         Int
+  // coverage
+  mgrsTile        String?  // overlapping MGRS tile
+  regionId        String?  // Ghana region
+  // processing state
+  lastProcessedAt DateTime?
+  lastSceneId     String?  // last scene processed
+  processingCount Int      @default(0)
+  observationCount Int     @default(0)
+  status          String   @default("pending") // pending | processing | processed | stale
+  // last detected change
+  lastChangeAt    DateTime?
+  lastChangeType  String?  // observation type
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([mgrsTile])
+  @@index([gridRow, gridCol])
+}
+
+// Feedback: confirmed/rejected outcomes from humans, government, community, ground truth
+model FeedbackRecord {
+  id              String   @id @default(uuid())
+  observationId   String?
+  hypothesisId    String?
+  phenomenonId    String?
+  // feedback
+  outcome         String   // confirmed | rejected | needs_monitoring | partial
+  feedbackType    String   // human_inspector | government | community | ground_truth | auto_validation
+  // the confirmed/rejected hypothesis type (if applicable)
+  hypothesisType  String?  // "artisanal_mining" etc.
+  // reasoning
+  notes           String?
+  evidence        String   @default("{}") // JSON: supporting photos, reports, etc.
+  // feedback provider
+  providerId      String?  // user/org id
+  providerRole    String?  // "inspector" | "official" | "community_member"
+  credibility     Float    @default(0.8) // provider credibility score
+  createdAt       DateTime @default(now())
+
+  @@index([observationId])
+  @@index([hypothesisId])
+  @@index([outcome])
+  @@index([feedbackType])
+}
+
+// Learning update: logged changes to priors, weights, thresholds from feedback
+model LearningUpdate {
+  id              String   @id @default(uuid())
+  // what was updated
+  updateType      String   // "prior" | "evidence_weight" | "threshold" | "rule_likelihood"
+  targetId        String   // hypothesis type or rule id
+  // old → new values
+  oldValue        Float
+  newValue        Float
+  deltaPct        Float
+  // why (which feedback triggered it)
+  feedbackCount   Int      // number of feedback records used
+  feedbackIds     String   @default("[]") // JSON
+  // learning metrics
+  accuracyBefore  Float?   // accuracy on feedback set before update
+  accuracyAfter   Float?   // accuracy after update
+  createdAt       DateTime @default(now())
+
+  @@index([updateType])
+  @@index([targetId])
+}
+
+// Continuous pipeline run log
+model ProcessingRun {
+  id              String   @id @default(uuid())
+  startedAt       DateTime
+  finishedAt      DateTime?
+  status          String   @default("running") // running | success | partial | failed
+  tilesProcessed  Int      @default(0)
+  tilesTotal      Int      @default(0)
+  scenesProcessed Int      @default(0)
+  observationsCreated Int  @default(0)
+  observationsUpdated Int  @default(0)
+  hypothesesCreated Int    @default(0)
+  phenomenaCreated Int     @default(0)
+  durationMs      Int      @default(0)
+  error           String?
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([startedAt])
+}
+
+// Learned priors (dynamic — updated by the learning engine)
+model LearnedPrior {
+  id              String   @id @default(uuid())
+  hypothesisType  String   @unique
+  originalPrior   Float    // base-rate prior from HYPOTHESIS_DEFS
+  learnedPrior    Float    // current learned prior
+  // accuracy metrics
+  confirmations   Int      @default(0) // times this hypothesis was confirmed
+  rejections      Int      @default(0) // times rejected
+  falsePositives  Int      @default(0)
+  falseNegatives  Int      @default(0)
+  accuracy        Float    @default(0.5) // running accuracy
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([hypothesisType])
+}

@@ -11,6 +11,7 @@ import { AtlasView } from "./views/AtlasView";
 import { ObservationsView } from "./views/ObservationsView";
 import { PhenomenaView } from "./views/PhenomenaView";
 import { IntelligenceView } from "./views/IntelligenceView";
+import { ContinuousView } from "./views/ContinuousView";
 import { EntitiesView } from "./views/EntitiesView";
 import { GraphView } from "./views/GraphView";
 import { KnowledgeGraphView } from "./views/KnowledgeGraphView";
@@ -42,6 +43,7 @@ export function Shell() {
               {view === "observations" && <ObservationsView />}
               {view === "phenomena" && <PhenomenaView />}
               {view === "intelligence" && <IntelligenceView />}
+              {view === "continuous" && <ContinuousView />}
               {view === "entities" && <EntitiesView />}
               {view === "graph" && <GraphView />}
               {view === "knowledge" && <KnowledgeGraphView />}

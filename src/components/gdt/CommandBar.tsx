@@ -31,6 +31,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   observations: { title: "Observations", sub: "Fused evidence from multiple raster products" },
   phenomena: { title: "Phenomena", sub: "Evolving events tracked over time" },
   intelligence: { title: "Intelligence", sub: "Ranked hypotheses, Bayesian reasoning & scenarios" },
+  continuous: { title: "Continuous Pipeline", sub: "Nationwide processing & learning engine" },
   entities: { title: "Entities", sub: "Entity registry & version history" },
   graph: { title: "Entity Graph", sub: "Geospatial relationship graph" },
   knowledge: { title: "Environmental Knowledge", sub: "Domain knowledge graph" },
