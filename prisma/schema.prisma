@@ -1741,3 +1741,128 @@ model ExtensionTrust {
   @@index([extensionId])
   @@index([trustLevel])
 }
+
+// ===== Platform Kernel: Capability System + Dynamic Registries =====
+// The core is domain-agnostic. Extensions register hypothesis types, rules,
+// mission types dynamically. The Capability System enforces permissions
+// before every SDK call — the security boundary for the entire platform.
+
+// Capability — a permission that can be granted to an extension
+model Capability {
+  id              String   @id @default(uuid())
+  capabilityId    String   @unique // "dataset:read:sentinel2" | "observation:emit" | "mission:create"
+  category        String   // "dataset" | "observation" | "mission" | "feature" | "scene" | "learning" | "alert" | "ui" | "filesystem" | "network" | "compute"
+  description     String
+  riskLevel       String   @default("low") // "low" | "medium" | "high" | "critical"
+  requiresApproval Boolean @default(false) // if true, requires manual approval
+  createdAt       DateTime @default(now())
+
+  grants          CapabilityGrant[]
+
+  @@index([category])
+  @@index([riskLevel])
+}
+
+// Capability Grant — what capabilities an extension has been granted
+model CapabilityGrant {
+  id              String   @id @default(uuid())
+  extensionId     String   // FK to Extension.extensionId
+  capabilityId    String   // FK to Capability.capabilityId
+  granted         Boolean  @default(false)
+  grantedAt       DateTime?
+  grantedBy       String?  // who approved
+  // usage tracking
+  invocationCount Int      @default(0)
+  lastInvokedAt   DateTime?
+  // rate limiting
+  rateLimitPerMin Int?     // max invocations per minute
+  createdAt       DateTime @default(now())
+
+  capability      Capability @relation(fields: [capabilityId], references: [capabilityId], onDelete: Cascade)
+
+  @@unique([extensionId, capabilityId])
+  @@index([extensionId])
+  @@index([granted])
+}
+
+// Dynamic Hypothesis Type — registered by extensions, not hardcoded
+model DynamicHypothesisType {
+  id              String   @id @default(uuid())
+  typeId          String   @unique // "artisanal_mining" | "flood_erosion" | "cocoa_stress"
+  extensionId     String   // which extension registered this
+  label           String
+  description     String
+  prior           Float    @default(0.15)
+  recommendedVerification String?
+  // metadata
+  category        String   // from extension category
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([extensionId])
+  @@index([category])
+  @@index([enabled])
+}
+
+// Dynamic Rule — registered by extensions
+model DynamicRule {
+  id              String   @id @default(uuid())
+  ruleId          String   @unique // "mining-001"
+  extensionId     String
+  name            String
+  description     String
+  // declarative rule (YAML-like JSON)
+  conditions      String   @default("[]") // JSON: [{bundle, indication, minSignal, productType}]
+  hypothesisType  String   // which dynamic hypothesis type this supports
+  effect          String   @default("boost") // "boost" | "suppress"
+  likelihoodRatio Float    @default(1.0)
+  priority        Int      @default(0)
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([extensionId])
+  @@index([hypothesisType])
+  @@index([enabled])
+}
+
+// Dynamic Mission Type — registered by extensions
+model DynamicMissionType {
+  id              String   @id @default(uuid())
+  typeId          String   @unique // "sar_tasking" | "river_gauge" | "farmer_survey"
+  extensionId     String
+  label           String
+  description     String
+  baseCost        Float    @default(0)
+  baseInfoGain    Float    @default(0.3)
+  estimatedTime   String   @default("1-2 hours")
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([extensionId])
+  @@index([enabled])
+}
+
+// Extension package metadata — standardized layout
+model ExtensionPackage {
+  id              String   @id @default(uuid())
+  extensionId     String   @unique
+  // package structure validation
+  hasManifest     Boolean  @default(false)
+  hasRules        Boolean  @default(false)
+  hasHypotheses   Boolean  @default(false)
+  hasMissions     Boolean  @default(false)
+  hasUI           Boolean  @default(false)
+  hasAgents       Boolean  @default(false)
+  hasTests        Boolean  @default(false)
+  hasKnowledge    Boolean  @default(false)
+  // file count
+  totalFiles      Int      @default(0)
+  totalSize       Int      @default(0) // bytes
+  // validation
+  structureValid  Boolean  @default(false)
+  validationErrors String  @default("[]")
+  validatedAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([structureValid])
+}
