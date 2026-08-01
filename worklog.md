@@ -728,3 +728,24 @@ Stage Summary:
 - ✅ SDK Freeze: 20 ctx.v1.* methods frozen. Internal implementations free to change.
 - Lint: 0 errors, 0 warnings. APIs verified: kernel 1.0.0 stable, 20 SDK methods frozen, conformance running, levels assigned.
 - THE KERNEL IS FORMALLY SPECIFIED AND FROZEN. The platform specification exists as a canonical reference. Future implementations target the spec. All future functionality arrives as packages. The next milestone is Autonomous Runtime v1 — reasoning/planning/optimization/simulation/human-review/LLM packages executing on this frozen kernel.
+
+---
+Task ID: 35
+Agent: orchestrator
+Task: Kernel v1.0 Formal Freeze + Ecosystem Health + Pipeline Regeneration + Fix
+
+Work Log:
+- FIXED: Digital Twin data disappearing. Root cause: ensureAllSourcesRegistered() was called on every API request to /api/world-model/entities, making 19 sequential DB calls that exhausted Neon's connection pool (connection_limit=1). Fixed by removing the call from 3 API routes (entities, connectors, health) — sources are already registered from ingestion. Also fixed .env to use Neon's pooled connection string with pgbouncer=true. Cleared .next cache.
+- RAN: Full pipeline regeneration on Neon. Processed top 3 MGRS tiles: 31PBN (baseline exists, 2 products, 2 observations), 30PXS (baseline computing), 30PXT (pending). Result: 2 observations, 18 hypotheses, 4 raster products, 1 seasonal baseline on Neon.
+- VERIFIED: Frontend shows 186 entities on map, 2 observations in Observations view, hypotheses in Intelligence view. All API endpoints return 200.
+- DECLARED: Kernel v1.0 Formal Freeze (docs/KERNEL_FREEZE.md). Three frozen artifacts: (1) Platform Specification v1.0 (normative), (2) Kernel API v1.0 (stable, backward-compatible within v1.x), (3) Package ABI (manifest format, capability protocol, event format, artifact format, SDK signatures, execution plan schema). Permitted kernel work: bug fixes, security, performance, documentation only. NOT permitted: new abstractions.
+- BUILT: Ecosystem Health metrics endpoint (/api/ecosystem-health). Tracks: kernel version/status/frozen APIs/SDK interfaces, packages published/portable/profiles/solutions, capability resolution success rate, conformance pass rate, governance approvals, agents/knowledge/contracts/registries. Current health: Kernel 1.0.0 stable, 15 frozen APIs, 20 SDK methods, 16 packages (all portable), 2 profiles, 2 solutions, 16 capabilities, 83% conformance, 10 governance approvals.
+- Pushed to GitHub (commits 0ab56b3, c9879f1, fa05f87).
+
+Stage Summary:
+- ✅ Fixed: Data disappearing — removed ensureAllSourcesRegistered from API routes, fixed Neon connection pool.
+- ✅ Regenerated: 2 observations, 18 hypotheses, 4 products, 1 baseline on Neon. Frontend verified showing data.
+- ✅ Kernel Frozen: Formal declaration. Three frozen artifacts. Compatibility policy. Permitted work = bug fixes only.
+- ✅ Ecosystem Health: Metrics endpoint tracking platform adoption and reliability.
+- ✅ Lint: 0 errors, 0 warnings. Browser-verified: Atlas (186 entities), Observations (2 obs), Intelligence (hypotheses).
+- THE KERNEL IS FROZEN. All future milestones (Autonomous Runtime, National Command Center, Community Intelligence, Federated Deployments, Marketplace) are packages running on this frozen kernel. The kernel does not know they exist.
