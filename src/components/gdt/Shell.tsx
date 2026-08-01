@@ -13,6 +13,7 @@ import { EntitiesView } from "./views/EntitiesView";
 import { GraphView } from "./views/GraphView";
 import { SourcesView } from "./views/SourcesView";
 import { EOView } from "./views/EOView";
+import { RasterIntelligenceView } from "./views/RasterIntelligenceView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -40,6 +41,7 @@ export function Shell() {
               {view === "graph" && <GraphView />}
               {view === "sources" && <SourcesView />}
               {view === "eo" && <EOView />}
+              {view === "raster" && <RasterIntelligenceView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>

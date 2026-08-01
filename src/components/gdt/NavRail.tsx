@@ -10,6 +10,7 @@ import {
   Share2,
   Database,
   Satellite,
+  Grid3x3,
   Terminal,
   Settings,
   HelpCircle,
@@ -22,6 +23,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "entities", label: "Entities", icon: Boxes, hint: "Entity registry" },
   { id: "graph", label: "Knowledge Graph", icon: Share2, hint: "Relationship graph" },
   { id: "eo", label: "Earth Observation", icon: Satellite, hint: "Sentinel-2 imagery & spectral indices" },
+  { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps, baselines & uncertainty" },
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];

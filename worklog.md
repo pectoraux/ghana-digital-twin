@@ -181,3 +181,41 @@ Stage Summary:
 - ✅ Dynamic World registered as dataset (metadata; GEE integration documented).
 - Lint: 0 errors, 0 warnings. Browser-verified: EO view renders 571 scenes, pixel inspector computes real NDVI from real Sentinel-2 COGs, time-series chart displays real values. No console errors.
 - Did NOT begin AI observation generation / change detection / illegal mining detection (deferred per roadmap — Milestone 3+).
+
+---
+Task ID: 18
+Agent: orchestrator
+Task: Milestone 2.75 — Raster Intelligence Platform (seasonal baselines, anomaly maps, uncertainty propagation, change probability, raster products API, frontend visualization)
+
+Work Log:
+- Extended Prisma schema: SeasonalBaseline (per MGRS tile + season + index: gridded mean+std arrays, sampleCount, uncertainty) and RasterProduct (8 product types: gridded value+uncertainty arrays, formula, provenance, confidence, spatial extent). db:push + db:generate succeeded.
+- Built grid utilities (src/lib/eo/grid.ts): RasterGrid type (flattened Float32Array + spatial extent), cell↔lng/lat conversion, stats, combine/map operations, uncertainty propagation helpers (add, divide).
+- Built Baseline Engine (src/lib/eo/baseline.ts): computes seasonal baselines per MGRS tile per index. Reads bands from historical scenes (limited to 8 for performance), computes per-cell index grids (50×50), groups by season, produces mean + std + uncertainty grids. Uncertainty = sqrt(σ²_scene/n + 0.02²) (standard error + atmospheric noise). Reduces false positives by comparing against expected seasonal behavior.
+- Built Raster Intelligence Engine (src/lib/eo/raster-products.ts): 8 product types, each with uncertainty propagation:
+  * vegetation_anomaly: NDVI z-score vs baseline (clamped ±5), σ = sqrt(σ_cur² + σ_baseline²) / std
+  * water_anomaly: NDWI z-score vs baseline
+  * burn_severity: dNBR = NBR_baseline − NBR_current
+  * bare_soil: normalized BSI (0–1)
+  * moisture_anomaly: 0.6·z(NDWI) + 0.4·z(NDVI), combined uncertainty
+  * temporal_variance: per-cell variance over time, σ²_var ≈ 2σ⁴/(n−1)
+  * cloud_free_composite: median index mosaic, MAD-based uncertainty
+  * change_probability: fused sigmoid(0.4·|veg_loss| + 0.4·bare_soil + 0.2·water_gain), 0–1 probability
+- Every product cell carries value ± uncertainty, propagated from sensor noise (cloud-cover dependent: σ_cloud = (cloud/100)·0.1), atmospheric correction (0.01), and baseline standard error (σ/√n).
+- Confidence = validRatio × (1 − normalizedUncertainty), mapped [0,3]→[1,0] for z-score products.
+- Fixed z-score clamping (±5) and near-zero std handling (std < 0.01 → NaN) to prevent extreme values.
+- Built API routes: GET/POST /api/eo/baselines (list + compute), GET/POST /api/eo/raster-products (list + generate), GET /api/eo/raster-products/:id (full grid data).
+- Ran real computation: NDVI baseline for MGRS tile 30PXS (7 scenes, uncertainty ±0.0354), vegetation_anomaly product (z-scores -5 to 5), bare_soil product (mean 0.476, 97% confidence).
+- Built RasterIntelligenceView frontend: left panel (8 product types + product list + baselines with uncertainty), center (Ghana map with colored 50×50 grid overlay — each cell colored by value using diverging/sequential scales per product type, hover tooltips show value ± uncertainty), right panel (product stats, confidence bar, formula, provenance, spatial extent, uncertainty propagation explanation, color bar legend).
+- Added "Raster Intelligence" nav item (Grid3x3 icon) between EO and Sources. Updated Shell, NavRail, CommandBar, CommandPalette.
+- Fixed lint: setState-in-effect errors resolved with Promise.resolve().then() async pattern.
+
+Stage Summary:
+- ✅ Seasonal Baselines: real NDVI baseline computed from 7 Sentinel-2 scenes, per-cell mean+std+uncertainty grids (50×50), uncertainty ±0.0354.
+- ✅ Raster Intelligence Products: 2 real products computed (vegetation_anomaly, bare_soil), each with full gridded data + uncertainty propagation.
+- ✅ Uncertainty Propagation: every product cell carries value ± uncertainty, propagated from sensor noise + atmospheric correction + baseline standard error. Confidence metric combines valid-pixel ratio with normalized uncertainty.
+- ✅ Baseline Engine: compares current conditions against expected seasonal behavior (not just yesterday), reducing false positives. A river being turbid in rainy season matches the baseline → no anomaly.
+- ✅ 8 Product Types: vegetation_anomaly, water_anomaly, burn_severity, bare_soil, moisture_anomaly, temporal_variance, cloud_free_composite, change_probability.
+- ✅ API: 3 endpoints (baselines, raster-products, raster-products/:id) with full grid data.
+- ✅ Frontend: colored grid overlay on Ghana map, product type selector, uncertainty display, color bar legend, provenance panel.
+- Lint: 0 errors, 0 warnings. Browser-verified: grid overlay renders with colored cells, product details (formula, provenance, uncertainty) display correctly. No console errors.
+- Did NOT begin AI observation generation / change detection / illegal mining detection (deferred per roadmap — Milestone 3+).

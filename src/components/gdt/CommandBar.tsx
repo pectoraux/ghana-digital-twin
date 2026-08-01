@@ -32,6 +32,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   entities: { title: "Entities", sub: "Entity registry & version history" },
   graph: { title: "Knowledge Graph", sub: "Geospatial relationship graph" },
   eo: { title: "Earth Observation", sub: "Sentinel-2 imagery & spectral indices" },
+  raster: { title: "Raster Intelligence", sub: "Anomaly maps, baselines & uncertainty" },
   sources: { title: "Data Sources", sub: "Ingestion pipeline & connectors" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };

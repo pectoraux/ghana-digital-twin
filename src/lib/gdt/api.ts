@@ -246,6 +246,95 @@ export async function fetchSceneIndexStats(sceneId: string, index: string): Prom
   return res.json();
 }
 
+// ===== Raster Intelligence API =====
+
+export interface RasterProductMeta {
+  id: string;
+  type: string;
+  indexName: string | null;
+  sceneId: string | null;
+  mgrsTile: string | null;
+  season: string | null;
+  gridSize: number;
+  meanValue: number | null;
+  minValue: number | null;
+  maxValue: number | null;
+  formula: string;
+  sources: string[];
+  confidence: number;
+  extent: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+  computedAt: string;
+}
+
+export interface RasterProductDetail extends RasterProductMeta {
+  valueGrid: number[];
+  uncertaintyGrid: number[];
+  stdValue: number | null;
+  baselineId: string | null;
+}
+
+export interface ProductTypeInfo {
+  type: string;
+  label: string;
+  description: string;
+  color: string;
+}
+
+export async function fetchRasterProducts(type?: string, mgrsTile?: string): Promise<{ products: RasterProductMeta[]; types: ProductTypeInfo[]; count: number }> {
+  const sp = new URLSearchParams();
+  if (type) sp.set("type", type);
+  if (mgrsTile) sp.set("mgrsTile", mgrsTile);
+  const res = await fetch(`/api/eo/raster-products?${sp}`);
+  if (!res.ok) throw new Error(`fetchRasterProducts: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchRasterProduct(id: string): Promise<RasterProductDetail> {
+  const res = await fetch(`/api/eo/raster-products/${id}`);
+  if (!res.ok) throw new Error(`fetchRasterProduct: ${res.status}`);
+  return res.json();
+}
+
+export async function generateRasterProduct(type: string, opts: { sceneId?: string; mgrsTile?: string; indexName?: string } = {}): Promise<any> {
+  const res = await fetch("/api/eo/raster-products", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ type, ...opts }),
+  });
+  if (!res.ok) throw new Error(`generateRasterProduct: ${res.status}`);
+  return res.json();
+}
+
+export interface BaselineInfo {
+  id: string;
+  indexName: string;
+  mgrsTile: string;
+  season: string;
+  sampleCount: number;
+  uncertainty: number;
+  gridSize: number;
+  computedAt: string;
+  extent: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+}
+
+export async function fetchBaselines(mgrsTile?: string): Promise<{ baselines: BaselineInfo[]; count: number }> {
+  const sp = new URLSearchParams();
+  if (mgrsTile) sp.set("mgrsTile", mgrsTile);
+  const res = await fetch(`/api/eo/baselines?${sp}`);
+  if (!res.ok) throw new Error(`fetchBaselines: ${res.status}`);
+  return res.json();
+}
+
+export async function generateBaseline(mgrsTile: string, indexName: string, season?: string): Promise<any> {
+  const res = await fetch("/api/eo/baselines", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mgrsTile, indexName, season }),
+  });
+  if (!res.ok) throw new Error(`generateBaseline: ${res.status}`);
+  return res.json();
+}
+
 // ---- React hooks ----
 
 export function useAsync<T>(fn: () => Promise<T>, deps: any[] = []): { data: T | null; loading: boolean; error: string | null; refresh: () => void } {

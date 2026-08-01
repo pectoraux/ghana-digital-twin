@@ -284,3 +284,66 @@ model EOObservation {
   @@index([afterDate])
   @@index([locationLng, locationLat])
 }
+
+// ===== Milestone 2.75: Raster Intelligence Platform =====
+
+// Seasonal baseline: expected condition (mean + std) per MGRS tile + season + index
+model SeasonalBaseline {
+  id            String   @id @default(uuid())
+  indexName     String   // "NDVI" | "NDWI" | "NBR" | "BSI" | "MNDWI" | "EVI" | "SAVI"
+  mgrsTile      String   // "30NYM"
+  season        String   // "2026-Q3" or month "04"
+  // gridded baseline (flattened gridSize × gridSize arrays)
+  gridSize      Int      // e.g. 50
+  meanGrid      String   // JSON float[] — per-cell expected mean
+  stdGrid       String   // JSON float[] — per-cell expected std
+  sampleCount   Int      // number of scenes used to build baseline
+  uncertainty   Float    // mean per-cell uncertainty (propagated)
+  // spatial extent
+  minLng        Float
+  minLat        Float
+  maxLng        Float
+  maxLat        Float
+  computedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@unique([indexName, mgrsTile, season])
+  @@index([mgrsTile, season])
+  @@index([indexName])
+}
+
+// Raster intelligence product: derived gridded layer with uncertainty
+model RasterProduct {
+  id             String   @id @default(uuid())
+  type           String   // vegetation_anomaly | water_anomaly | burn_severity | bare_soil | moisture_anomaly | temporal_variance | cloud_free_composite | change_probability
+  indexName      String?  // source index (NDVI, NDWI, etc.)
+  sceneId        String?  // scene this product is derived from (if applicable)
+  baselineId     String?  // baseline used for comparison (if applicable)
+  mgrsTile       String?  // MGRS tile this covers
+  season         String?  // season label
+  // gridded data
+  gridSize       Int      // e.g. 50
+  valueGrid      String   // JSON float[] — per-cell product value
+  uncertaintyGrid String  // JSON float[] — per-cell uncertainty (±)
+  // summary stats
+  meanValue      Float?
+  minValue       Float?
+  maxValue       Float?
+  stdValue       Float?
+  // provenance
+  formula        String   // human-readable how it was computed
+  sources        String   @default("[]") // JSON array of source dataset names
+  confidence     Float    @default(1.0)
+  // spatial extent
+  minLng         Float
+  minLat         Float
+  maxLng         Float
+  maxLat         Float
+  computedAt     DateTime @default(now())
+  createdAt      DateTime @default(now())
+
+  @@index([type])
+  @@index([mgrsTile])
+  @@index([sceneId])
+  @@index([indexName])
+}
