@@ -574,3 +574,27 @@ Stage Summary:
 - ✅ Extension Tests: 4 tests per extension (rules, priors, contract, replay). Run before activation, compare results. "Install → Run replay tests → Compare results → Approve → Activate."
 - Lint: 0 errors, 0 warnings. All 4 extensions have advanced features installed. Tests pass. Code on GitHub.
 - The extension system is now a stable platform contract. Future milestones (multi-agent intelligence) can be implemented as extensions.
+
+---
+Task ID: 29
+Agent: orchestrator
+Task: Platform Kernel — Capability System, Dynamic Registries, Extension Package Validation
+
+Work Log:
+- Extended schema with 6 new models: Capability (28 capabilities in catalog), CapabilityGrant (per-extension grants with invocation tracking), DynamicHypothesisType (extension-registered, not hardcoded), DynamicRule (extension-registered with declarative conditions), DynamicMissionType (extension-registered), ExtensionPackage (structure validation). db:push to Neon succeeded.
+- Built Capability System (src/lib/extensions/capabilities.ts): 28 capabilities across 10 categories (dataset, observation, mission, feature, scene, learning, alert, ui, compute, filesystem/network/database). Risk levels: low (auto-grant), medium (auto-grant), high/critical (require manual approval). grantExtensionCapabilities() auto-grants based on manifest permissions. checkCapability() called before EVERY SDK operation — enforces permissions, tracks invocations, supports rate limiting. This is the security boundary.
+- Built Dynamic Registries (src/lib/extensions/dynamic-registry.ts): extensions register hypothesis types, rules, and mission types dynamically. The core has NO hardcoded domain knowledge. getRegisteredHypothesisTypes() returns types from all enabled extensions. getRulesForHypothesis() returns rules for a specific type. registerAllFromManifests() populates from all 4 built-in extensions. The reasoning engine reasons over registered types — it doesn't know what "mining" or "flood" means.
+- Built Extension Package Validation: standardized package structure (manifest, rules/, hypotheses/, missions/, ui/, agents/, tests/, knowledge/). Static validation: duplicate rule IDs, LR bounds (0-100), prior bounds (0.01-0.95), non-empty contributions. All 4 packages validated: 4/4 valid.
+- Built API routes: GET/POST /api/capabilities (catalog, stats, grant, check), GET/POST /api/dynamic-registry (list registered types/rules/missions, register from manifests), GET /api/extension-packages (validate all/one).
+- Granted capabilities to all 4 extensions via POST /api/capabilities {action: "grant_all"}.
+- Registered dynamic types from manifests (hypothesis types, rules, mission types now in dynamic registry).
+- Validated all 4 packages: 4/4 valid.
+
+Stage Summary:
+- ✅ Capability System: 28 capabilities, per-extension grants, invocation tracking, rate limiting, risk-based approval. Security boundary for the entire platform.
+- ✅ Dynamic Registries: hypothesis types, rules, mission types registered by extensions. Core has NO hardcoded domain knowledge. The reasoning engine reasons over registered types.
+- ✅ Extension Package Validation: standardized structure, static validation, 4/4 packages valid.
+- ✅ Architecture: Platform Kernel → Extension Runtime → Capability System → SDK → Extensions. The core only understands universal concepts (Dataset, Scene, Raster, Feature, Evidence, Observation, Phenomenon, Knowledge, Hypothesis, Mission, Feedback, Ground Truth, Workflow, Alert, Notification). Everything else belongs in extensions.
+- Lint: 0 errors, 0 warnings. APIs verified working.
+- Pushed to GitHub (commit f3ecd61).
+- The platform is now an OPERATING SYSTEM. The kernel is stable. Domain expertise evolves through independently developed, permission-gated, sandboxed extensions.
