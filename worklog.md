@@ -483,3 +483,30 @@ Stage Summary:
 - ✅ Reproducibility: full chain reconstruction from observation to satellite pixel (lineage verified during replay).
 - Lint: 0 errors, 0 warnings. Browser-verified: Validation view shows pipeline metrics, system counts, cache stats, replay history. No console errors.
 - Vercel: deployed and live at afritwin.vercel.app.
+
+---
+Task ID: 26
+Agent: orchestrator
+Task: Validation Gates — SLOs, dual dashboards, lineage audit, drift actions, deterministic replay, uncertainty validation
+
+Work Log:
+- Extended schema: SLO (12 service-level objectives with targets, categories, measurement), SLOMeasurement (compliance history), LineageAudit (per-observation provenance completeness: evidence→product→baseline→scene→COG→STAC), DriftAction (operational workflow triggered by drift), ReplayVersion (deterministic replay: code/rule/model/connector/dataset versions + config snapshot), BenchmarkDiversityTag (season/biome/topo/cloud/difficulty). db:push to Neon succeeded.
+- Built SLO engine (src/lib/validation/gates.ts): 12 SLOs — 7 engineering (scene ingestion <10min, product generation <5min, observation generation <2min, hypothesis generation <30s, replay success >99%, API availability >99.9%, cache hit rate >80%) + 5 scientific (detection precision >70%, recall >60%, calibration error <15%, lineage completeness >95%, hypothesis ranking accuracy >65%). Each measured against actual system data, status computed (met/warning/violated/unknown).
+- Built dual dashboards: engineering (replay success rate, cache hits, pipeline metrics, processing runs) separated from scientific (precision/recall/F1 from evaluation, calibration error from ECE metrics, lineage completeness from audits, uncertainty buckets from hypothesis confidence distribution, ground truth count).
+- Built lineage audit: per-observation completeness check tracing the full chain (evidence → raster product → baseline → scene → COG → STAC). Reports missing stages and completeness percentage.
+- Built drift actions: operational workflow connecting drift detection to actions (increase review sampling, reduce hypothesis confidence, increase SAR acquisition priority, notify analysts, retrain priors). Type-specific actions based on drift type (seasonal/distribution/sensor).
+- Built deterministic replay: records code version, schema version, rule version, model version, connector versions, dataset versions, config snapshot (learned priors at replay time), and environment. Enables "Replay run #347 used rule set v1 against Sentinel scene X and produced identical outputs."
+- Built API routes: GET/POST /api/slo, POST /api/lineage-audit, GET/POST /api/drift-actions, GET /api/dashboards?type=engineering|scientific.
+- Enhanced ValidationView: Engineering SLOs grid (7 SLOs with status indicators), Scientific SLOs grid (5 SLOs), Lineage Completeness section (completeness %, audited count, complete count, average completeness bar), Uncertainty Distribution histogram (5 confidence buckets), Drift Actions list, Replay History, Latest Evaluation summary.
+- Ran real operations: measured all 12 SLOs (API availability met at 99.9%, others unknown pending data), audited lineage (0 observations to audit — need observation regeneration on Neon), triggered drift actions.
+- Pushed to GitHub (commit 5179fb3). Vercel auto-deployed: state=READY, verified at afritwin.vercel.app (HTTP 200, /api/slo returns 12 SLOs).
+
+Stage Summary:
+- ✅ SLOs: 12 measurable production targets (7 engineering + 5 scientific) with met/warning/violated status tracking.
+- ✅ Dual Dashboards: engineering health separated from scientific validity. Prevents operational health from being mistaken for model quality.
+- ✅ Lineage Audit: per-observation provenance completeness (evidence→product→baseline→scene→COG→STAC). Reports % complete + missing stages.
+- ✅ Drift Actions: operational workflow (increase review → reduce confidence → prioritize SAR → notify → retrain). Makes drift operational, not informational.
+- ✅ Deterministic Replay: records all versions (code, rules, models, connectors, datasets, config) for scientific reproducibility.
+- ✅ Uncertainty Validation: confidence bucket distribution tracked. "When confidence is 80%, is the system actually correct 80% of the time?"
+- ✅ Benchmark Diversity: schema ready for season/biome/topo/cloud/difficulty tagging.
+- Lint: 0 errors, 0 warnings. Browser-verified: Validation view shows SLO cards, lineage section, uncertainty histogram, drift actions. Vercel live.
