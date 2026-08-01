@@ -246,6 +246,91 @@ export async function fetchSceneIndexStats(sceneId: string, index: string): Prom
   return res.json();
 }
 
+// ===== Observation Engine API =====
+
+export interface ObservationEvidence {
+  productType: string;
+  productId: string | null;
+  indexName: string | null;
+  value: number;
+  normalizedSignal: number;
+  weight: number;
+  confidence: number;
+  uncertainty: number;
+  contribution: number;
+  description: string;
+  direction: "loss" | "gain" | "neutral";
+}
+
+export interface ObservationRecord {
+  id: string;
+  uuid: string;
+  type: string;
+  title: string;
+  summary: string;
+  geometry: GeoJSON.Geometry;
+  centroid: [number, number];
+  bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+  areaHa: number;
+  observedAt: string;
+  firstObserved: string;
+  lastUpdated: string;
+  durationDays: number | null;
+  confidence: number;
+  uncertainty: number;
+  status: string;
+  severity: string;
+  currentVersion: number;
+  sourceProducts: string[];
+  sourceModels: string[];
+  mgrsTile: string | null;
+  sceneId: string | null;
+  evidence: ObservationEvidence[];
+  affectedEntities: { entityId: string; relationship: string; distance: number | null }[];
+  createdAt: string;
+}
+
+export interface ObservationDetail {
+  observation: ObservationRecord;
+  versions: {
+    id: string;
+    version: number;
+    change: string;
+    confidence: number;
+    uncertainty: number;
+    status: string;
+    evidenceCount: number;
+    observedAt: string;
+  }[];
+}
+
+export async function fetchObservations(params: { type?: string; status?: string; severity?: string; limit?: number } = {}): Promise<{ observations: ObservationRecord[]; count: number; types: any[] }> {
+  const sp = new URLSearchParams();
+  if (params.type) sp.set("type", params.type);
+  if (params.status) sp.set("status", params.status);
+  if (params.severity) sp.set("severity", params.severity);
+  if (params.limit) sp.set("limit", String(params.limit));
+  const res = await fetch(`/api/observations?${sp}`);
+  if (!res.ok) throw new Error(`fetchObservations: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchObservation(id: string): Promise<ObservationDetail> {
+  const res = await fetch(`/api/observations/${id}`);
+  if (!res.ok) throw new Error(`fetchObservation: ${res.status}`);
+  return res.json();
+}
+
+export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
+  const res = await fetch("/api/observations/scan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mgrsTile }),
+  });
+  if (!res.ok) throw new Error(`triggerObservationScan: ${res.status}`);
+  return res.json();
+}
+
 // ===== Raster Intelligence API =====
 
 export interface RasterProductMeta {

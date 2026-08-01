@@ -347,3 +347,110 @@ model RasterProduct {
   @@index([sceneId])
   @@index([indexName])
 }
+
+// ===== Milestone 3: Observation Engine =====
+// Observations are first-class, immutable, versioned objects. Each is produced
+// by EVIDENCE FUSION across multiple raster products — never a single source.
+// Observations describe objective physical-world change. No legal conclusions.
+
+model Observation {
+  id              String   @id @default(uuid())
+  uuid            String   @unique
+  type            String   // surface_disturbance | water_body_change | vegetation_loss | burn_event | moisture_stress
+  title           String
+  summary         String   // objective description, no legal conclusions
+  // spatial
+  geometryGeoJson String   // polygon or point
+  centroidLng     Float
+  centroidLat     Float
+  minLng          Float
+  minLat          Float
+  maxLng          Float
+  maxLat          Float
+  areaHa          Float    // affected area in hectares
+  // temporal
+  observedAt      DateTime
+  firstObserved   DateTime
+  lastUpdated     DateTime
+  durationDays    Float?   // how long the change has persisted
+  // assessment (fused)
+  confidence      Float    // 0..1, fused from all evidence
+  uncertainty     Float    // ± propagated uncertainty
+  status          String   @default("active") // candidate | active | monitoring | resolved
+  severity        String   @default("moderate") // low | moderate | high | critical
+  // versioning (immutable — new version on evidence change)
+  currentVersion  Int      @default(1)
+  // provenance
+  sourceProducts  String   @default("[]") // JSON: product IDs that contributed evidence
+  sourceModels    String   @default("[]") // JSON: model versions used
+  mgrsTile        String?
+  sceneId         String?  // primary scene
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  evidence        ObservationEvidence[]
+  versions        ObservationVersion[]
+  affectedEntities ObservationEntityLink[]
+
+  @@index([type])
+  @@index([status])
+  @@index([severity])
+  @@index([centroidLng, centroidLat])
+  @@index([minLng, maxLng, minLat, maxLat])
+  @@index([observedAt])
+  @@index([mgrsTile])
+}
+
+// Per-evidence breakdown — each raster product that contributed to the fused observation
+model ObservationEvidence {
+  id              String   @id @default(uuid())
+  observationId   String
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  productType     String   // vegetation_anomaly | water_anomaly | bare_soil | change_probability | ...
+  productId       String?  // FK to RasterProduct
+  indexName       String?  // source spectral index
+  value           Float    // the product value at this location
+  normalizedSignal Float   // 0..1 normalized contribution
+  weight          Float    // fusion weight
+  confidence      Float    // per-evidence confidence
+  uncertainty     Float    // per-evidence uncertainty
+  contribution    Float    // actual contribution to fused signal (weight × signal)
+  description     String   // human-readable evidence description
+  createdAt       DateTime @default(now())
+
+  @@index([observationId])
+  @@index([productType])
+}
+
+// Immutable version history — nothing is overwritten
+model ObservationVersion {
+  id              String   @id @default(uuid())
+  observationId   String
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  version         Int
+  change          String   // what changed in this version
+  confidence      Float
+  uncertainty     Float
+  status          String
+  evidenceCount   Int
+  observedAt      DateTime
+  createdAt       DateTime @default(now())
+
+  @@unique([observationId, version])
+  @@index([observationId, version])
+}
+
+// Link observations to affected world-model entities (rivers, forests, settlements...)
+model ObservationEntityLink {
+  id              String   @id @default(uuid())
+  observationId   String
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  entityId        String   // FK to Entity
+  relationship    String   // overlaps | adjacent_to | within | upstream | downstream
+  distance        Float?   // distance in km (if not overlapping)
+  createdAt       DateTime @default(now())
+
+  @@unique([observationId, entityId])
+  @@index([observationId])
+  @@index([entityId])
+}

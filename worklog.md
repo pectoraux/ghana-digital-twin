@@ -219,3 +219,61 @@ Stage Summary:
 - ✅ Frontend: colored grid overlay on Ghana map, product type selector, uncertainty display, color bar legend, provenance panel.
 - Lint: 0 errors, 0 warnings. Browser-verified: grid overlay renders with colored cells, product details (formula, provenance, uncertainty) display correctly. No console errors.
 - Did NOT begin AI observation generation / change detection / illegal mining detection (deferred per roadmap — Milestone 3+).
+
+---
+Task ID: 10-obs
+Agent: full-stack-developer
+Task: Rewire ObservationsView to real fused observations from the Observation Engine
+
+Work Log:
+- Read worklog.md (prior tasks 0/11/15/16/17/18 — GDT dark intelligence-platform, Milestones 2/2.5/2.75 complete with real world-model + Earth Observation + Raster Intelligence backends live), api.ts (fetchObservations/triggerObservationScan/useAsync + ObservationRecord/ObservationEvidence types), observation/types.ts (FUSION_RULES, ObservationType, EvidencePiece), atoms.tsx (MetricStat/StatusDot/SectionLabel/ConfidenceBar/ConfidencePill), store.ts (useGDT selectObservation/selectedObservationId), format.ts (fmtArea/timeAgo/fmtDateTime/confidenceColor), and the existing ObservationsView.tsx (which was previously wired to /api/world-model/changes as a "Change Log" placeholder).
+- Verified API route shapes: GET /api/observations returns {observations: ObservationRecord[], count, types: [{type,label,description,threshold,minEvidenceSources}]}; POST /api/observations/scan returns {observationsCreated, observationsUpdated, byType, tilesScanned}. Both backed by the real Observation Engine (lib/observation/engine.ts + fusion.ts + clustering.ts) which fuses raster products into observations with propagated confidence/uncertainty.
+- Rewrote ObservationsView.tsx end-to-end as a Fused Observations feed (665 lines). Two-column layout preserved (main list + 280px right analytics sidebar).
+- Header: "Observations" title (Radar icon) + subtitle "Fused evidence from multiple raster products — objective, no legal conclusions". Right side: filtered/total count badge + "Run Scan" button (triggerObservationScan() → refresh()) with Loader2 spinner while scanning.
+- Stats strip (4 MetricStat): Total Observations, Active count, Avg Confidence %, Avg Evidence Sources per observation (toFixed(1)).
+- Filter bar (3 chip rows + search): Type chips (All + one per type from API types array, colored by TYPE_COLORS surface_disturbance#fb923c / water_body_change#22d3ee / vegetation_loss#f97316 / burn_event#ef4444 / moisture_stress#a78bfa), Severity chips (All + critical/high/moderate/low with SEVERITY_COLORS), Status chips (All + active/monitoring/resolved with STATUS_COLORS), search box (filters by title/summary/uuid). Clear button appears when any filter active.
+- Filter strategy: fetches all observations once (limit=200) via useAsync with [] deps; applies type/severity/status/search filters client-side via useMemo so the analytics sidebar always reflects the full dataset. Only refresh() (Run Scan) triggers re-fetch.
+- List rows (button → selectObservation(o.id) opens inspector with ObservationDetail): left vertical severity color bar; type badge (colored by type with label from types array); UUID mono truncated + MGRS tile + timeAgo(observedAt); title (font-medium); summary (text-[11px] line-clamp-2); evidence chips row (up to 4 chips showing productType + contribution%, +N more overflow); right column ConfidencePill + fmtArea(areaHa) + evidence count. Selected highlight via border-primary/50 + ring-1 ring-primary/20.
+- Analytics sidebar: By Type (horizontal bars colored by type, sorted desc), By Severity (4 bars critical/high/moderate/low colored by severity), Confidence Distribution histogram (5 buckets 0-20/20-40/40-60/60-80/80-100 with hover tooltips), Evidence Fusion explainer card (Layers icon + "Each observation fuses multiple raster products. Confidence and uncertainty are propagated from all evidence sources. No legal conclusions." + live count footer).
+- States: Loading (Loader2 + "Loading observations…"), Error (AlertTriangle rose-400 + message), Empty (Radar icon + "No observations yet" + "Run a scan to fuse raster products into observations." + Run Scan button), Empty-filtered (Eye icon + "No observations match your filters").
+- Accessibility: ARIA labels on search input + Run Scan button; aria-hidden on decorative color bars/dots.
+- Styling: dark semantic tokens only (bg-card/40, border-border, text-muted-foreground, text-foreground, bg-background, bg-foreground/5, bg-foreground/[0.08]); accent palette emerald/gold/teal/rose/orange (+ type-specific #a78bfa violet for moisture_stress per task spec); gdt-scroll on both scroll areas; font-mono tnum on all numbers; hover transitions on all interactive elements.
+- Extracted FilterChip as a separate function component (outside main component) to avoid re-creation on each render.
+- Lint: `bun run lint` → exit 0, zero errors, zero warnings across the project. `npx tsc --noEmit` → zero errors in ObservationsView.tsx.
+- Documented work record in /agent-ctx/10-obs-full-stack-developer.md.
+
+Stage Summary:
+- ObservationsView.tsx fully rewired from /api/world-model/changes (Change Log placeholder) to /api/observations (real fused observations from the Observation Engine) + /api/observations/scan (run scan).
+- All required UI elements present: 4 MetricStat cards, 3 filter chip rows + search, scrollable list with severity bar + type badge + UUID + MGRS + timeAgo + title + summary + evidence chips + ConfidencePill + area + evidence count, right analytics sidebar with By Type / By Severity / Confidence Distribution histogram / Evidence Fusion explainer, full loading/error/empty states, Run Scan button with spinner.
+- TypeScript strict, zero `any` introduced (only consumed existing `any[]` from api.ts via cast to locally-defined TypeInfo interface). No unused imports.
+- Lint PASS, TypeScript PASS.
+- Pre-existing blocker (NOT fixed — outside scope): src/components/gdt/ObservationDetail.tsx:6 imports formatCoord from @/lib/gdt/format but it lives in @/lib/gdt/geo — same class of bug noted in prior Task 10 worklog (then affecting StatusBar.tsx). Causes Turbopack compile cascade → HTTP 500 on all dev-server requests including /api/observations. ObservationDetail.tsx is in the do-not-touch list. One-line fix documented in /agent-ctx/10-obs-full-stack-developer.md for when permitted. ObservationsView.tsx itself is correct and will render the live fused-observations feed the moment the upstream compile blocker is resolved.
+
+---
+Task ID: 19
+Agent: orchestrator
+Task: Milestone 3 — Observation Engine (evidence fusion, spatial clustering, temporal versioning, immutable observations, affected entity linking, API, frontend)
+
+Work Log:
+- Extended Prisma schema: Observation (UUID, type, geometry, bbox, areaHa, confidence, uncertainty, status, severity, version, sourceProducts, sourceModels, mgrsTile), ObservationEvidence (per-evidence breakdown: productType, value, normalizedSignal, weight, confidence, uncertainty, contribution, description), ObservationVersion (immutable version history), ObservationEntityLink (observation → affected world-model entities). db:push + db:generate succeeded.
+- Built observation domain types (src/lib/observation/types.ts): 5 observation types (surface_disturbance, water_body_change, vegetation_loss, burn_event, moisture_stress), each with a FusionRule specifying: evidence sources (which raster products to combine), weights (0..1 per source), signal extraction functions (normalize product value to 0..1 anomaly signal), threshold (minimum fused signal to create observation), minEvidenceSources (fusion REQUIRES multiple sources — never a single product), severity mapping.
+- Built spatial clustering (src/lib/observation/clustering.ts): flood-fill (8-connectivity) on raster product grids to find connected anomaly cells → candidate observation clusters. Each cluster → polygon geometry + area estimate. One physical event = one observation (not five unrelated alerts).
+- Built evidence fusion engine (src/lib/observation/fusion.ts): for each observation type + MGRS tile, loads all available raster products, builds a combined anomaly mask, flood-fills to find clusters, then for each cluster gathers evidence from ALL products (average value over cluster cells), extracts normalized signals, fuses: fusedSignal = Σ(weight × signal) / Σ(weight), fusedConfidence = Σ(confidence × contribution) / Σ(contribution), fusedUncertainty = RMS(evidence uncertainties). Filters by threshold + minEvidenceSources.
+- Built observation engine (src/lib/observation/engine.ts): scans raster products → fuses evidence → creates versioned immutable observations. Links affected world-model entities (finds entities that intersect or are adjacent to the observation geometry). Version history: if evidence changes meaningfully (confidence Δ > 5% or area Δ > 0.5ha), creates a new version rather than overwriting.
+- Built API routes: GET /api/observations (list with type/status/severity filters), GET /api/observations/:id (detail with evidence + versions + affected entities), POST /api/observations/scan (trigger engine scan), GET /api/observations/types (fusion rules).
+- Generated additional raster products for richer evidence: NDWI baseline (7 scenes, ±0.0354 uncertainty), water_anomaly product, change_probability product. Now have 4 products for tile 30PXS: vegetation_anomaly, bare_soil, water_anomaly, change_probability.
+- Ran real observation scan: 5 fused observations created, each with 3 evidence sources (change_probability + bare_soil + vegetation_anomaly), 15 evidence records, 7 entity links (observations linked to overlapping world-model entities). Example: "Surface Disturbance over 286.5 ha with high severity. Fused signal 63% from 3 evidence sources: change probability 76%, bare soil 51%, NDVI anomaly z=-2.65 (vegetation loss signal 88%)."
+- Built ObservationDetail panel: shows evidence fusion breakdown (each evidence source with contribution bar, weight, signal, confidence, uncertainty), fused confidence ± uncertainty, affected entities (clickable → opens entity detail), version history (immutable timeline), provenance, objectivity note ("No legal conclusion asserted").
+- Rewired ObservationsView (via subagent): fused observations feed with type/severity/status filters, Run Scan button, stats strip, evidence chips per observation, analytics sidebar (by type, by severity, confidence distribution, evidence fusion explainer).
+- Fixed formatCoord import bug (lives in geo.ts not format.ts) in ObservationDetail.tsx.
+
+Stage Summary:
+- ✅ Evidence Fusion: observations NEVER depend on a single raster product. Each fuses 3+ evidence sources with weighted contribution. One physical event = one coherent observation.
+- ✅ Immutable + Versioned: observations are never overwritten. Evidence changes create new versions. Version history tracks confidence/uncertainty/evidenceCount evolution.
+- ✅ Uncertainty Propagation: fused confidence and uncertainty propagated from all evidence sources (RMS of per-evidence uncertainties).
+- ✅ Affected Entities: observations linked to world-model entities they overlap or are adjacent to (rivers, forests, settlements) — the Digital Twin knows WHO is affected.
+- ✅ Objective: observations describe physical-world change without asserting intent or legality. "Surface disturbance detected" not "illegal mining."
+- ✅ 5 real fused observations from 3 evidence sources each, 7 entity links.
+- ✅ API: 4 endpoints (observations, observations/:id, observations/scan, observations/types).
+- Lint: 0 errors, 0 warnings. Browser-verified: Observations view shows real fused observations, clicking opens detail with evidence fusion breakdown + contribution bars + affected entities + version history. No console errors.
+- Did NOT implement illegal mining detection / AI intelligence (deferred per roadmap — Milestone 5+).

@@ -28,7 +28,7 @@ import { fmtInt } from "@/lib/gdt/format";
 
 const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   atlas: { title: "Atlas", sub: "National geospatial world view" },
-  observations: { title: "Change Log", sub: "Entity version history" },
+  observations: { title: "Observations", sub: "Fused evidence from multiple raster products" },
   entities: { title: "Entities", sub: "Entity registry & version history" },
   graph: { title: "Knowledge Graph", sub: "Geospatial relationship graph" },
   eo: { title: "Earth Observation", sub: "Sentinel-2 imagery & spectral indices" },

@@ -2,390 +2,420 @@
 
 import { useMemo, useState } from "react";
 import { useGDT } from "@/lib/gdt/store";
-import { fetchChanges, triggerSyncAll, useAsync } from "@/lib/gdt/api";
 import {
-  ENTITY_META,
-  entityColor,
-  timeAgo,
-  fmtInt,
-} from "@/lib/gdt/format";
-import type { EntityKind } from "@/lib/gdt/types";
+  fetchObservations,
+  triggerObservationScan,
+  useAsync,
+  type ObservationRecord,
+} from "@/lib/gdt/api";
+import { fmtArea, timeAgo } from "@/lib/gdt/format";
+import type { ObservationType } from "@/lib/observation/types";
 import { cn } from "@/lib/utils";
 import { SectionLabel, ConfidencePill, MetricStat } from "@/components/gdt/atoms";
 import {
   Search,
-  SlidersHorizontal,
-  ArrowDownUp,
+  Radar,
   Eye,
-  History,
   Loader2,
   AlertTriangle,
   RefreshCw,
+  Layers,
   X,
 } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
 
-type SortKey = "newest" | "confidence" | "version";
-type SincePreset = "7d" | "30d" | "90d";
+// ---- Type / severity / status color maps (NO indigo/blue) ----
 
-interface ChangeRecord {
-  id: string;
-  entityId: string;
-  version: number;
-  change: string;
-  observedAt: string;
-  confidence: number;
-  source: string;
-  entityName: string | null;
-  entityKind: string | null;
+const TYPE_COLORS: Record<ObservationType, string> = {
+  surface_disturbance: "#fb923c",
+  water_body_change: "#22d3ee",
+  vegetation_loss: "#f97316",
+  burn_event: "#ef4444",
+  moisture_stress: "#a78bfa",
+};
+
+const SEVERITY_COLORS: Record<string, string> = {
+  critical: "#f43f5e",
+  high: "#fb923c",
+  moderate: "#fbbf24",
+  low: "#34d399",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  active: "#f43f5e",
+  monitoring: "#fbbf24",
+  resolved: "#34d399",
+  candidate: "#a78bfa",
+};
+
+const SEVERITY_LIST = ["critical", "high", "moderate", "low"] as const;
+const STATUS_LIST = ["active", "monitoring", "resolved"] as const;
+
+interface TypeInfo {
+  type: string;
+  label: string;
+  description: string;
+  threshold: number;
+  minEvidenceSources: number;
 }
 
-const SINCE_DAYS: Record<SincePreset, number> = { "7d": 7, "30d": 30, "90d": 90 };
-
-function sinceIso(preset: SincePreset): string {
-  return new Date(Date.now() - SINCE_DAYS[preset] * 86400000).toISOString();
+function typeColor(t: string): string {
+  return TYPE_COLORS[t as ObservationType] ?? "#a1a1aa";
 }
 
-function kindLabel(kind: string): string {
-  const meta = ENTITY_META[kind as keyof typeof ENTITY_META];
-  if (meta) return meta.label;
-  return kind.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+function severityColor(s: string): string {
+  return SEVERITY_COLORS[s] ?? "#a1a1aa";
+}
+
+function statusColor(s: string): string {
+  return STATUS_COLORS[s] ?? "#a1a1aa";
+}
+
+function titleCase(s: string): string {
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function typeLabel(t: string, types: TypeInfo[]): string {
+  return types.find((x) => x.type === t)?.label ?? titleCase(t);
 }
 
 export function ObservationsView() {
-  const selectEntity = useGDT((s) => s.selectEntity);
-  const selectedEntityId = useGDT((s) => s.selectedEntityId);
+  const selectObservation = useGDT((s) => s.selectObservation);
+  const selectedObservationId = useGDT((s) => s.selectedObservationId);
 
-  const [since, setSince] = useState<SincePreset>("30d");
+  const [typeFilter, setTypeFilter] = useState<string | "all">("all");
+  const [severityFilter, setSeverityFilter] = useState<string | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<string | "all">("all");
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<SortKey>("newest");
-  const [filtersOpen, setFiltersOpen] = useState(true);
-  const [kindFilter, setKindFilter] = useState<string | "all">("all");
-  const [minConfidence, setMinConfidence] = useState(0);
-  const [syncing, setSyncing] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
+  // Fetch all observations (limit 200) once on mount; we filter client-side so the
+  // analytics sidebar always reflects the full dataset regardless of the active
+  // filter selection. `types` is returned regardless of server-side filters.
   const { data, loading, error, refresh } = useAsync(
-    () => fetchChanges(sinceIso(since), 200),
-    [since]
+    () => fetchObservations({ limit: 200 }),
+    []
   );
 
-  const changes: ChangeRecord[] = (data?.changes as ChangeRecord[]) ?? [];
+  const observations: ObservationRecord[] = data?.observations ?? [];
+  const types: TypeInfo[] = (data?.types as TypeInfo[] | undefined) ?? [];
 
-  // kind breakdown (for filter chips + analytics)
-  const kindCounts = useMemo(() => {
-    const m: Record<string, number> = {};
-    changes.forEach((c) => {
-      if (c.entityKind) m[c.entityKind] = (m[c.entityKind] ?? 0) + 1;
-    });
-    return m;
-  }, [changes]);
-
+  // ---- Client-side filtering (type / severity / status / search) ----
   const filtered = useMemo(() => {
-    let list = changes.filter((c) => {
-      if (kindFilter !== "all" && c.entityKind !== kindFilter) return false;
-      if (c.confidence < minConfidence) return false;
-      if (search) {
-        const q = search.toLowerCase();
+    const q = search.trim().toLowerCase();
+    return observations.filter((o) => {
+      if (typeFilter !== "all" && o.type !== typeFilter) return false;
+      if (severityFilter !== "all" && o.severity !== severityFilter) return false;
+      if (statusFilter !== "all" && o.status !== statusFilter) return false;
+      if (q) {
         if (
-          !(c.entityName ?? "").toLowerCase().includes(q) &&
-          !c.entityId.toLowerCase().includes(q) &&
-          !c.change.toLowerCase().includes(q) &&
-          !(c.source ?? "").toLowerCase().includes(q)
-        )
+          !o.title.toLowerCase().includes(q) &&
+          !o.summary.toLowerCase().includes(q) &&
+          !o.uuid.toLowerCase().includes(q)
+        ) {
           return false;
+        }
       }
       return true;
     });
-    list = [...list].sort((a, b) => {
-      switch (sort) {
-        case "confidence":
-          return b.confidence - a.confidence;
-        case "version":
-          return b.version - a.version;
-        default:
-          return new Date(b.observedAt).getTime() - new Date(a.observedAt).getTime();
-      }
-    });
-    return list;
-  }, [changes, kindFilter, minConfidence, search, sort]);
+  }, [observations, typeFilter, severityFilter, statusFilter, search]);
 
+  // ---- Stats strip ----
   const stats = useMemo(() => {
-    if (changes.length === 0) {
-      return { total: 0, entities: 0, avgConf: 0, mostRecent: null as string | null };
+    const total = observations.length;
+    if (total === 0) {
+      return { total: 0, active: 0, avgConf: 0, avgSources: 0 };
     }
-    const entitySet = new Set(changes.map((c) => c.entityId));
-    const avgConf = changes.reduce((a, c) => a + c.confidence, 0) / changes.length;
-    const mostRecent = changes.reduce<string | null>((latest, c) => {
-      if (!latest) return c.observedAt;
-      return new Date(c.observedAt) > new Date(latest) ? c.observedAt : latest;
-    }, null);
-    return {
-      total: changes.length,
-      entities: entitySet.size,
-      avgConf,
-      mostRecent,
-    };
-  }, [changes]);
+    const active = observations.filter((o) => o.status === "active").length;
+    const avgConf = observations.reduce((a, o) => a + o.confidence, 0) / total;
+    const totalSources = observations.reduce((a, o) => a + o.evidence.length, 0);
+    const avgSources = totalSources / total;
+    return { total, active, avgConf, avgSources };
+  }, [observations]);
 
-  // source breakdown for analytics
-  const sourceCounts = useMemo(() => {
+  // ---- Analytics breakdowns ----
+  const typeCounts = useMemo(() => {
     const m: Record<string, number> = {};
-    changes.forEach((c) => {
-      if (c.source) m[c.source] = (m[c.source] ?? 0) + 1;
+    observations.forEach((o) => {
+      m[o.type] = (m[o.type] ?? 0) + 1;
     });
-    return Object.entries(m).sort((a, b) => b[1] - a[1]).slice(0, 6);
-  }, [changes]);
+    return m;
+  }, [observations]);
 
-  // confidence histogram bins
+  const severityCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    observations.forEach((o) => {
+      m[o.severity] = (m[o.severity] ?? 0) + 1;
+    });
+    return m;
+  }, [observations]);
+
+  const statusCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    observations.forEach((o) => {
+      m[o.status] = (m[o.status] ?? 0) + 1;
+    });
+    return m;
+  }, [observations]);
+
   const confBins = useMemo(() => {
-    const bins = [0, 0, 0, 0, 0]; // 0-20, 20-40, 40-60, 60-80, 80-100
-    changes.forEach((c) => {
-      const idx = Math.min(4, Math.floor(c.confidence * 5));
+    // 5 buckets: 0-20%, 20-40%, 40-60%, 60-80%, 80-100%
+    const bins = [0, 0, 0, 0, 0];
+    observations.forEach((o) => {
+      const idx = Math.min(4, Math.floor(o.confidence * 5));
       bins[idx]++;
     });
     return bins;
-  }, [changes]);
+  }, [observations]);
 
-  const onTriggerSync = async () => {
-    setSyncing(true);
+  // ---- Run scan handler ----
+  const onRunScan = async () => {
+    setScanning(true);
     try {
-      await triggerSyncAll();
+      await triggerObservationScan();
       refresh();
     } finally {
-      setSyncing(false);
+      setScanning(false);
     }
   };
 
-  const hasActiveFilters = kindFilter !== "all" || minConfidence > 0 || search.length > 0;
+  const hasActiveFilters =
+    typeFilter !== "all" ||
+    severityFilter !== "all" ||
+    statusFilter !== "all" ||
+    search.length > 0;
+
   const clearFilters = () => {
-    setKindFilter("all");
-    setMinConfidence(0);
+    setTypeFilter("all");
+    setSeverityFilter("all");
+    setStatusFilter("all");
     setSearch("");
   };
 
   return (
     <div className="flex h-full w-full">
-      {/* Main list */}
+      {/* Main list column */}
       <div className="flex min-w-0 flex-1 flex-col">
         {/* header */}
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-3">
             <div className="min-w-0">
               <h2 className="text-base font-semibold flex items-center gap-2">
-                <History className="size-4 text-primary" />
-                Change Log
+                <Radar className="size-4 text-primary" />
+                Observations
               </h2>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                Entity version history — change detection (Observations) activates in Milestone 3
+                Fused evidence from multiple raster products — objective, no legal conclusions
               </p>
             </div>
             <span className="ml-auto rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
-              {loading ? "…" : (
+              {loading ? (
+                "…"
+              ) : (
                 <>
-                  <span className="tnum">{filtered.length}</span> / <span className="tnum">{changes.length}</span>
+                  <span className="tnum">{filtered.length}</span> /{" "}
+                  <span className="tnum">{observations.length}</span>
                 </>
               )}
             </span>
-            <div className="flex items-center gap-2">
-              {/* since selector */}
-              <div className="flex items-center rounded-md border border-border bg-background/40 h-8 p-0.5">
-                {(["7d", "30d", "90d"] as SincePreset[]).map((p) => (
-                  <button
-                    key={p}
-                    onClick={() => setSince(p)}
-                    className={cn(
-                      "px-2 h-7 rounded text-[10px] font-mono tnum transition-colors",
-                      since === p
-                        ? "bg-primary/15 text-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-1.5 rounded-md border border-border bg-background/40 px-2.5 h-8">
-                <Search className="size-3.5 text-muted-foreground" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search changes…"
-                  className="w-36 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
-                />
-              </div>
-              <button
-                onClick={() => setFiltersOpen((v) => !v)}
-                className={cn(
-                  "flex items-center gap-1.5 rounded-md border px-2.5 h-8 text-xs transition-colors",
-                  filtersOpen || hasActiveFilters
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-border bg-background/40 text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <SlidersHorizontal className="size-3.5" /> Filters
-                {hasActiveFilters && (
-                  <span className="rounded bg-primary/20 px-1 text-[9px] font-mono">•</span>
-                )}
-              </button>
-              <div className="flex items-center gap-1 rounded-md border border-border bg-background/40 px-2 h-8">
-                <ArrowDownUp className="size-3 text-muted-foreground" />
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as SortKey)}
-                  className="bg-transparent text-xs outline-none cursor-pointer"
-                >
-                  <option value="newest">Newest</option>
-                  <option value="confidence">Confidence</option>
-                  <option value="version">Version</option>
-                </select>
-              </div>
-            </div>
+            <button
+              onClick={onRunScan}
+              disabled={scanning}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card/60 px-2.5 h-8 text-xs text-foreground/90 hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Run observation scan"
+            >
+              {scanning ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="size-3.5" />
+              )}
+              {scanning ? "Scanning…" : "Run Scan"}
+            </button>
           </div>
 
           {/* stat strip */}
           <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-2">
             <MetricStat
-              label="Total Changes"
-              value={loading ? "…" : fmtInt(stats.total)}
-              sub={`last ${since}`}
+              label="Total Observations"
+              value={loading ? "…" : stats.total}
+              sub="fused detections"
             />
             <MetricStat
-              label="Entities Changed"
-              value={loading ? "…" : fmtInt(stats.entities)}
-              sub="unique entities"
-              accent="#2dd4bf"
+              label="Active"
+              value={loading ? "…" : stats.active}
+              sub="status: active"
+              accent="#f43f5e"
             />
             <MetricStat
               label="Avg Confidence"
               value={loading ? "…" : `${(stats.avgConf * 100).toFixed(0)}%`}
-              sub="across changes"
+              sub="across observations"
               accent="#34d399"
             />
             <MetricStat
-              label="Most Recent"
-              value={loading || !stats.mostRecent ? "…" : timeAgo(stats.mostRecent)}
-              sub="latest version"
-              accent="#fbbf24"
+              label="Avg Evidence Sources"
+              value={loading ? "…" : stats.avgSources.toFixed(1)}
+              sub="per observation"
+              accent="#2dd4bf"
             />
           </div>
         </div>
 
-        {/* filters */}
-        {filtersOpen && (
-          <div className="border-b border-border bg-card/20 px-4 py-2.5 space-y-2">
-            <div className="flex items-start gap-4 flex-wrap">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">Kind</span>
-                {Object.entries(kindCounts)
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 10)
-                  .map(([k, count]) => {
-                    const on = kindFilter === k;
-                    const col = entityColor(k as EntityKind);
-                    return (
-                      <button
-                        key={k}
-                        onClick={() => setKindFilter(on ? "all" : k)}
-                        className={cn(
-                          "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition-all",
-                          on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-                        )}
-                        style={{
-                          borderColor: on ? col : "var(--border)",
-                          background: on ? `${col}1a` : "transparent",
-                        }}
-                      >
-                        <span className="size-1.5 rounded-full" style={{ background: col }} />
-                        {kindLabel(k)}
-                        <span className="font-mono tnum opacity-70">{count}</span>
-                      </button>
-                    );
-                  })}
-                {Object.keys(kindCounts).length === 0 && (
-                  <span className="text-[10px] text-muted-foreground italic">no kinds in current window</span>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2 min-w-[220px]">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                  Min conf {(minConfidence * 100).toFixed(0)}%
-                </span>
-                <Slider
-                  value={[minConfidence * 100]}
-                  onValueChange={(v) => setMinConfidence(v[0] / 100)}
-                  max={100}
-                  step={5}
-                  className="flex-1"
-                />
-              </div>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearFilters}
-                  className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X className="size-3" /> Clear
-                </button>
-              )}
-            </div>
+        {/* filter bar */}
+        <div className="border-b border-border bg-card/20 px-4 py-2.5 space-y-2">
+          {/* type chips */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">
+              Type
+            </span>
+            <FilterChip
+              on={typeFilter === "all"}
+              onClick={() => setTypeFilter("all")}
+              label="All"
+              color="#a1a1aa"
+              count={observations.length}
+            />
+            {types.map((t) => (
+              <FilterChip
+                key={t.type}
+                on={typeFilter === t.type}
+                onClick={() => setTypeFilter(typeFilter === t.type ? "all" : t.type)}
+                label={t.label}
+                color={typeColor(t.type)}
+                count={typeCounts[t.type] ?? 0}
+              />
+            ))}
+            {types.length === 0 && !loading && (
+              <span className="text-[10px] text-muted-foreground italic">no types registered</span>
+            )}
           </div>
-        )}
+
+          {/* severity chips */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">
+              Severity
+            </span>
+            <FilterChip
+              on={severityFilter === "all"}
+              onClick={() => setSeverityFilter("all")}
+              label="All"
+              color="#a1a1aa"
+              count={observations.length}
+            />
+            {SEVERITY_LIST.map((sev) => (
+              <FilterChip
+                key={sev}
+                on={severityFilter === sev}
+                onClick={() =>
+                  setSeverityFilter(severityFilter === sev ? "all" : sev)
+                }
+                label={titleCase(sev)}
+                color={severityColor(sev)}
+                count={severityCounts[sev] ?? 0}
+              />
+            ))}
+          </div>
+
+          {/* status chips + search */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">
+              Status
+            </span>
+            <FilterChip
+              on={statusFilter === "all"}
+              onClick={() => setStatusFilter("all")}
+              label="All"
+              color="#a1a1aa"
+              count={observations.length}
+            />
+            {STATUS_LIST.map((st) => (
+              <FilterChip
+                key={st}
+                on={statusFilter === st}
+                onClick={() =>
+                  setStatusFilter(statusFilter === st ? "all" : st)
+                }
+                label={titleCase(st)}
+                color={statusColor(st)}
+                count={statusCounts[st] ?? 0}
+              />
+            ))}
+            <div className="ml-auto flex items-center gap-1.5 rounded-md border border-border bg-background/40 px-2.5 h-8">
+              <Search className="size-3.5 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search title / summary / uuid…"
+                className="w-48 bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+                aria-label="Search observations"
+              />
+            </div>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="size-3" /> Clear
+              </button>
+            )}
+          </div>
+        </div>
 
         {/* list / states */}
         <div className="min-h-0 flex-1 gdt-scroll overflow-y-auto p-3 space-y-1.5">
           {loading && (
             <div className="flex h-40 flex-col items-center justify-center gap-2 text-muted-foreground">
               <Loader2 className="size-6 animate-spin text-primary" />
-              <span className="text-xs">Loading change log…</span>
+              <span className="text-xs">Loading observations…</span>
             </div>
           )}
           {error && !loading && (
             <div className="flex h-40 flex-col items-center justify-center gap-2 text-muted-foreground">
               <AlertTriangle className="size-6 text-rose-400" />
-              <span className="text-xs">Failed to load changes: {error}</span>
+              <span className="text-xs">Failed to load observations: {error}</span>
             </div>
           )}
-          {!loading && !error && changes.length === 0 && (
+          {!loading && !error && observations.length === 0 && (
             <div className="flex h-56 flex-col items-center justify-center gap-3 text-muted-foreground">
-              <History className="size-9 opacity-30" />
+              <Radar className="size-9 opacity-30" />
               <div className="text-center">
-                <div className="text-sm font-medium text-foreground/80">No entity changes yet</div>
+                <div className="text-sm font-medium text-foreground/80">
+                  No observations yet
+                </div>
                 <div className="text-[11px] mt-1 max-w-xs">
-                  Run a connector sync to populate the world model. Entity versions will appear here as
-                  relationships and attributes are updated.
+                  Run a scan to fuse raster products into observations.
                 </div>
               </div>
               <button
-                onClick={onTriggerSync}
-                disabled={syncing}
+                onClick={onRunScan}
+                disabled={scanning}
                 className="flex items-center gap-1.5 rounded-md border border-border bg-card/60 px-3 h-8 text-xs text-foreground/90 hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {syncing ? (
+                {scanning ? (
                   <Loader2 className="size-3.5 animate-spin" />
                 ) : (
                   <RefreshCw className="size-3.5" />
                 )}
-                {syncing ? "Syncing…" : "Trigger sync"}
+                {scanning ? "Scanning…" : "Run Scan"}
               </button>
             </div>
           )}
-          {!loading && !error && changes.length > 0 && filtered.length === 0 && (
+          {!loading && !error && observations.length > 0 && filtered.length === 0 && (
             <div className="flex h-40 flex-col items-center justify-center gap-2 text-muted-foreground">
               <Eye className="size-8 opacity-30" />
-              <span className="text-sm">No changes match your filters</span>
+              <span className="text-sm">No observations match your filters</span>
             </div>
           )}
           {!loading &&
             !error &&
-            filtered.map((c) => {
-              const kind = c.entityKind ?? "unknown";
-              const col = entityColor(kind as EntityKind);
-              const kLabel = kindLabel(kind);
-              const selected = selectedEntityId === c.entityId;
+            filtered.map((o) => {
+              const tCol = typeColor(o.type);
+              const sCol = severityColor(o.severity);
+              const tLabel = typeLabel(o.type, types);
+              const selected = selectedObservationId === o.id;
               return (
                 <button
-                  key={c.id}
-                  onClick={() => selectEntity(c.entityId)}
+                  key={o.id}
+                  onClick={() => selectObservation(o.id)}
                   className={cn(
                     "group flex w-full items-stretch gap-3 rounded-lg border bg-card/40 px-3 py-2.5 text-left transition-all",
                     selected
@@ -393,38 +423,74 @@ export function ObservationsView() {
                       : "border-border hover:border-primary/30 hover:bg-card/60"
                   )}
                 >
-                  {/* kind accent bar */}
-                  <div className="w-0.5 shrink-0 rounded-full" style={{ background: col }} />
+                  {/* severity color bar */}
+                  <div
+                    className="w-0.5 shrink-0 rounded-full"
+                    style={{ background: sCol }}
+                    aria-hidden
+                  />
                   <div className="min-w-0 flex-1">
+                    {/* meta row */}
                     <div className="flex items-center gap-2 mb-0.5">
                       <span
                         className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-semibold"
-                        style={{ color: col, background: `${col}1a` }}
+                        style={{ color: tCol, background: `${tCol}1a` }}
                       >
-                        <span className="size-1.5 rounded-full" style={{ background: col }} />
-                        {kLabel}
+                        <span
+                          className="size-1.5 rounded-full"
+                          style={{ background: tCol }}
+                        />
+                        {tLabel}
                       </span>
                       <span className="font-mono text-[10px] text-muted-foreground">
-                        v{c.version}
+                        {o.uuid.slice(0, 8)}…
                       </span>
-                      <span className="text-[10px] text-muted-foreground truncate">
-                        · {c.source || "unknown"}
-                      </span>
+                      {o.mgrsTile && (
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          · {o.mgrsTile}
+                        </span>
+                      )}
                       <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum">
-                        {timeAgo(c.observedAt)}
+                        {timeAgo(o.observedAt)}
                       </span>
                     </div>
                     <div className="text-[13px] font-medium leading-snug truncate">
-                      {c.entityName || c.entityId}
+                      {o.title}
                     </div>
                     <div className="mt-1 text-[11px] text-foreground/70 leading-snug line-clamp-2">
-                      {c.change}
+                      {o.summary}
                     </div>
+                    {/* evidence chips row */}
+                    {o.evidence.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                        {o.evidence.slice(0, 4).map((e, i) => (
+                          <span
+                            key={`${o.id}-ev-${i}`}
+                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-[9px] font-mono tnum bg-foreground/5 text-muted-foreground border border-border"
+                            title={e.description}
+                          >
+                            {e.productType}
+                            <span className="text-foreground/60">
+                              {(e.contribution * 100).toFixed(0)}%
+                            </span>
+                          </span>
+                        ))}
+                        {o.evidence.length > 4 && (
+                          <span className="text-[9px] text-muted-foreground font-mono tnum">
+                            +{o.evidence.length - 4} more
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
+                  {/* right side */}
                   <div className="flex shrink-0 flex-col items-end justify-center gap-1.5 w-[110px]">
-                    <ConfidencePill value={c.confidence} />
-                    <span className="text-[9px] text-muted-foreground font-mono truncate max-w-full">
-                      {c.entityId.slice(0, 13)}…
+                    <ConfidencePill value={o.confidence} />
+                    <span className="text-[9px] text-muted-foreground font-mono tnum">
+                      {fmtArea(o.areaHa)}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground font-mono tnum">
+                      {o.evidence.length} evidence
                     </span>
                   </div>
                 </button>
@@ -433,66 +499,79 @@ export function ObservationsView() {
         </div>
       </div>
 
-      {/* Analytics sidebar */}
+      {/* Analytics sidebar (hidden on mobile) */}
       <div className="hidden w-[280px] shrink-0 flex-col border-l border-border bg-card/20 lg:flex">
         <div className="border-b border-border px-4 py-3">
           <h3 className="flex items-center gap-2 text-xs font-semibold">
-            <History className="size-3.5 text-primary" /> Analytics
+            <Radar className="size-3.5 text-primary" /> Analytics
           </h3>
         </div>
         <div className="min-h-0 flex-1 gdt-scroll overflow-y-auto p-4 space-y-5">
-          {/* by kind */}
+          {/* By Type */}
           <div>
-            <SectionLabel className="mb-2">By Kind</SectionLabel>
+            <SectionLabel className="mb-2">By Type</SectionLabel>
             <div className="space-y-1.5">
-              {Object.entries(kindCounts)
+              {Object.entries(typeCounts)
                 .sort((a, b) => b[1] - a[1])
-                .map(([k, count]) => {
-                  const pct = changes.length ? (count / changes.length) * 100 : 0;
-                  const col = entityColor(k as EntityKind);
+                .map(([t, count]) => {
+                  const pct = observations.length
+                    ? (count / observations.length) * 100
+                    : 0;
+                  const col = typeColor(t);
                   return (
-                    <div key={k}>
+                    <div key={t}>
                       <div className="flex items-center justify-between text-[10px] mb-0.5">
-                        <span className="text-muted-foreground truncate">{kindLabel(k)}</span>
-                        <span className="font-mono tnum text-foreground/80">{count}</span>
+                        <span className="text-muted-foreground truncate">
+                          {typeLabel(t, types)}
+                        </span>
+                        <span className="font-mono tnum text-foreground/80">
+                          {count}
+                        </span>
                       </div>
-                      <div className="h-1.5 rounded-full bg-foreground/8 overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: col }} />
+                      <div className="h-1.5 rounded-full bg-foreground/[0.08] overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${pct}%`, background: col }}
+                        />
                       </div>
                     </div>
                   );
                 })}
-              {Object.keys(kindCounts).length === 0 && (
+              {Object.keys(typeCounts).length === 0 && (
                 <div className="text-[10px] text-muted-foreground italic">no data</div>
               )}
             </div>
           </div>
 
-          {/* by source */}
+          {/* By Severity */}
           <div>
-            <SectionLabel className="mb-2">By Source</SectionLabel>
+            <SectionLabel className="mb-2">By Severity</SectionLabel>
             <div className="space-y-1.5">
-              {sourceCounts.map(([src, count]) => {
-                const pct = changes.length ? (count / changes.length) * 100 : 0;
+              {SEVERITY_LIST.map((sev) => {
+                const count = severityCounts[sev] ?? 0;
+                const pct = observations.length
+                  ? (count / observations.length) * 100
+                  : 0;
+                const col = severityColor(sev);
                 return (
-                  <div key={src}>
+                  <div key={sev}>
                     <div className="flex items-center justify-between text-[10px] mb-0.5">
-                      <span className="text-muted-foreground truncate font-mono">{src}</span>
+                      <span className="text-muted-foreground capitalize">{sev}</span>
                       <span className="font-mono tnum text-foreground/80">{count}</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-foreground/8 overflow-hidden">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#2dd4bf" }} />
+                    <div className="h-1.5 rounded-full bg-foreground/[0.08] overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, background: col }}
+                      />
                     </div>
                   </div>
                 );
               })}
-              {sourceCounts.length === 0 && (
-                <div className="text-[10px] text-muted-foreground italic">no data</div>
-              )}
             </div>
           </div>
 
-          {/* confidence histogram */}
+          {/* Confidence Distribution histogram */}
           <div>
             <SectionLabel className="mb-2">Confidence Distribution</SectionLabel>
             <div className="flex items-end gap-1 h-20">
@@ -501,39 +580,86 @@ export function ObservationsView() {
                 const h = (count / max) * 100;
                 const lo = i * 20;
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                  <div
+                    key={i}
+                    className="flex-1 flex flex-col items-center gap-1"
+                  >
                     <div
                       className="w-full rounded-t bg-primary/40 hover:bg-primary/60 transition-colors"
                       style={{ height: `${h}%`, minHeight: count > 0 ? 2 : 0 }}
-                      title={`${count} changes`}
+                      title={`${count} observations · ${lo}–${lo + 20}%`}
                     />
-                    <span className="text-[8px] font-mono text-muted-foreground">{lo}</span>
+                    <span className="text-[8px] font-mono text-muted-foreground">
+                      {lo}
+                    </span>
                   </div>
                 );
               })}
             </div>
+            <div className="mt-1 text-right text-[8px] font-mono text-muted-foreground">
+              % confidence
+            </div>
           </div>
 
-          {/* summary card */}
+          {/* Evidence Fusion explainer */}
           <div className="rounded-lg border border-border bg-background/40 p-3 text-[11px] text-muted-foreground leading-relaxed">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-foreground font-medium">Window</span>
-              <span className="font-mono tnum">{since}</span>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Layers className="size-3.5 text-primary" />
+              <span className="text-foreground font-medium">Evidence Fusion</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span>Changes</span>
-              <span className="font-mono tnum text-foreground">{changes.length}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Entities</span>
-              <span className="font-mono tnum text-foreground">{stats.entities}</span>
-            </div>
+            <p>
+              Each observation fuses multiple raster products. Confidence and
+              uncertainty are propagated from all evidence sources. No legal
+              conclusions.
+            </p>
             <div className="mt-2 pt-2 border-t border-border text-[10px] italic">
-              Change detection (automated observations) activates in Milestone 3.
+              {loading
+                ? "loading types…"
+                : `${types.length} observation types · ${observations.length} active`}
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// ---- FilterChip helper ----
+
+function FilterChip({
+  on,
+  onClick,
+  label,
+  color,
+  count,
+}: {
+  on: boolean;
+  onClick: () => void;
+  label: string;
+  color: string;
+  count?: number;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition-all",
+        on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+      )}
+      style={{
+        borderColor: on ? color : "var(--border)",
+        background: on ? `${color}1a` : "transparent",
+      }}
+    >
+      <span
+        className="size-1.5 rounded-full"
+        style={{ background: color }}
+        aria-hidden
+      />
+      {label}
+      {count != null && (
+        <span className="font-mono tnum opacity-70">{count}</span>
+      )}
+    </button>
   );
 }
