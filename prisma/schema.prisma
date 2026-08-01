@@ -2315,3 +2315,138 @@ model PackageManifest {
 
   @@index([portable])
 }
+
+// ===== Kernel v1.0: Final Refinements =====
+// Typed capability contracts, semantic matching, immutable artifacts,
+// provider provenance, execution plans. After this, the kernel is FROZEN.
+
+// Typed Capability Contract — capabilities are API contracts, not just strings
+model TypedCapabilityContract {
+  id              String   @id @default(uuid())
+  capabilityId    String   @unique // "weather.precipitation.daily"
+  version         String   @default("1.0.0") // semver
+  // input/output schema (JSON Schema-like)
+  inputSchema     String   @default("{}") // JSON: {geometry: Polygon, start: Date, end: Date}
+  outputSchema    String   @default("{}") // JSON: {rainfall_mm: float, confidence: float, provenance: DatasetReference}
+  // quality of service
+  qosLatency      String?  // "<5s"
+  qosFreshness    String?  // "<24h"
+  qosAvailability Float?   // 0..1
+  // backward compatibility
+  compatibleWith  String   @default("[]") // JSON: ["v1", "v2"]
+  // semantic metadata (for ontology matching)
+  semanticCategory String? // "precipitation" | "optical_imagery" | "elevation" | "reasoning"
+  semanticTags    String   @default("[]") // JSON: ["rainfall", "daily", "gridded"]
+  description     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([semanticCategory])
+}
+
+// Immutable Artifact — Git-like DAG. Artifacts never change. New version = new artifact with parent.
+model ImmutableArtifact {
+  id              String   @id @default(uuid())
+  artifactHash    String   @unique // content hash (like Git SHA)
+  kind            String   // "observation" | "evidence" | "hypothesis" | "mission" | "scenario" | "report"
+  // content (immutable)
+  content         String   @default("{}") // JSON: the actual artifact data
+  contentHash     String   // hash of content
+  // lineage (DAG — parent artifacts this was derived from)
+  parentHashes    String   @default("[]") // JSON: [hash1, hash2] — like Git parents
+  // provenance
+  createdBy       String   // "system" | "package:illegal-mining" | "user:inspector"
+  createdVia      String   // "pipeline" | "negotiation" | "human_review" | "learning"
+  // capability provenance (which provider was used)
+  providerUsed    String?  // which package provided the data for this artifact
+  providerReason  String?  // why this provider was selected
+  // temporal
+  createdAt       DateTime @default(now())
+
+  @@index([kind])
+  @@index([createdBy])
+  @@index([createdAt])
+}
+
+// Provider Provenance — records WHY a specific provider was selected during negotiation
+model ProviderProvenance {
+  id              String   @id @default(uuid())
+  capability      String   // "weather.precipitation.daily"
+  // candidates considered
+  candidates      String   @default("[]") // JSON: [{packageId, quality, cost, latency, freshness}]
+  // decision
+  selectedPackage String   // "chirps-connector"
+  selectionReason String   // "highest quality (0.95), freshness <24h, cost $0"
+  // selection criteria
+  criteria        String   @default("{}") // JSON: {preferredQuality, maxCost, requiredFreshness}
+  // scoring
+  scores          String   @default("{}") // JSON: {chirps: {quality: 0.95, cost: 0, total: 0.95}, era5: {...}}
+  // temporal
+  resolvedAt      DateTime @default(now())
+
+  @@index([capability])
+  @@index([selectedPackage])
+}
+
+// Execution Plan — compiled solution ready for execution
+model ExecutionPlan {
+  id              String   @id @default(uuid())
+  planId          String   @unique
+  solutionId      String?  // which solution this plan was compiled from
+  // compiled DAG
+  nodes           String   @default("[]") // JSON: [{packageId, capability, depth, inputs, outputs}]
+  edges           String   @default("[]") // JSON: [{from, to, type}]
+  executionOrder  String   @default("[]") // JSON: topological sort
+  parallelGroups  String   @default("[]") // JSON: [[group1], [group2]]
+  // provider assignments
+  providerAssignments String @default("{}") // JSON: {capability: selectedPackage}
+  // policy validation
+  policyValidated Boolean  @default(false)
+  policyResults   String   @default("{}") // JSON: {target: {allowed, reasons}}
+  // cost estimation
+  estimatedCost   Float    @default(0)
+  estimatedDuration String? // "5m" | "30s"
+  // status
+  status          String   @default("compiled") // compiled | validated | executing | completed | failed
+  startedAt       DateTime?
+  completedAt     DateTime?
+  // provenance
+  provenance      String   @default("[]") // JSON: provider provenance records
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([solutionId])
+}
+
+// Semantic Ontology — maps capability categories to semantic concepts
+model SemanticOntology {
+  id              String   @id @default(uuid())
+  conceptId       String   @unique // "precipitation" | "optical_imagery" | "elevation"
+  label           String
+  category        String   // "atmospheric" | "surface" | "subsurface" | "reasoning" | "infrastructure"
+  // synonyms (for matching)
+  aliases         String   @default("[]") // JSON: ["rainfall", "rain", "precip"]
+  // related concepts
+  broader         String?  // "atmospheric_water"
+  narrower        String   @default("[]") // JSON: ["daily_precipitation", "hourly_precipitation"]
+  related         String   @default("[]") // JSON: ["humidity", "soil_moisture"]
+  description     String
+  createdAt       DateTime @default(now())
+
+  @@index([category])
+}
+
+// Kernel Version — tracks kernel API version for compatibility
+model KernelVersion {
+  id              String   @id @default(uuid())
+  version         String   @unique // "1.0.0"
+  // what's frozen
+  frozenApis      String   @default("[]") // JSON: ["PackageManifest", "CapabilityContract", "Artifact", "EventBus", "SDK", "PolicyEngine", "Governance", "ContributionRegistry", "FeatureContracts"]
+  // release notes
+  releaseNotes    String
+  // status
+  status          String   @default("stable") // stable | beta | deprecated
+  releasedAt      DateTime @default(now())
+
+  @@index([status])
+}
