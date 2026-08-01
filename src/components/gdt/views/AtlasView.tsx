@@ -53,8 +53,8 @@ const LAYER_GROUPS: { group: string; items: { key: LayerKey; label: string; colo
   },
 ];
 
-const NOW = Date.UTC(2025, 0, 18, 8, 42, 0);
-const START = Date.UTC(2023, 0, 1);
+const NOW = Date.now();
+const START = Date.UTC(2024, 0, 1);
 
 export function AtlasView() {
   const layers = useGDT((s) => s.layers);
@@ -65,6 +65,14 @@ export function AtlasView() {
   const setTemporalMode = useGDT((s) => s.setTemporalMode);
   const [panelOpen, setPanelOpen] = useState(true);
   const [playing, setPlaying] = useState(false);
+  const [liveTime, setLiveTime] = useState(() => new Date());
+
+  // live clock — updates every second when in live mode
+  useEffect(() => {
+    if (temporalMode !== "live") return;
+    const t = setInterval(() => setLiveTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, [temporalMode]);
 
   // temporal play loop
   useEffect(() => {
@@ -234,7 +242,7 @@ export function AtlasView() {
 
             <div className="text-[11px] font-mono text-foreground/90 tnum w-[150px] shrink-0">
               {temporalMode === "live"
-                ? fmtDateTime(new Date(NOW).toISOString())
+                ? fmtDateTime(liveTime.toISOString())
                 : fmtDateTime(temporalDate)}
             </div>
 
@@ -250,9 +258,9 @@ export function AtlasView() {
                 style={{ "--pct": `${pct}%` } as React.CSSProperties}
               />
               <div className="flex justify-between text-[9px] text-muted-foreground font-mono mt-1">
-                <span>Jan 2023</span>
-                <span>Jul 2024</span>
+                <span>Jan 2024</span>
                 <span>Jan 2025</span>
+                <span>Now</span>
               </div>
             </div>
 

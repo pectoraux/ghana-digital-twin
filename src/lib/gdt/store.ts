@@ -106,7 +106,7 @@ export const useGDT = create<GDTState>((set) => ({
   toggleInspector: (open) =>
     set((s) => ({ inspectorOpen: open ?? !s.inspectorOpen })),
 
-  temporalDate: new Date(Date.UTC(2025, 0, 18, 8, 42, 0)).toISOString(),
+  temporalDate: new Date().toISOString(),
   temporalMode: "live",
   setTemporalDate: (temporalDate) => set({ temporalDate, temporalMode: "historical" }),
   setTemporalMode: (temporalMode) => set({ temporalMode }),
