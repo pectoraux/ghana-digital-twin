@@ -510,3 +510,34 @@ Stage Summary:
 - ✅ Uncertainty Validation: confidence bucket distribution tracked. "When confidence is 80%, is the system actually correct 80% of the time?"
 - ✅ Benchmark Diversity: schema ready for season/biome/topo/cloud/difficulty tagging.
 - Lint: 0 errors, 0 warnings. Browser-verified: Validation view shows SLO cards, lineage section, uncertainty histogram, drift actions. Vercel live.
+
+---
+Task ID: 27
+Agent: orchestrator
+Task: Milestone 6.75 — Extension Platform (domain expertise as installable extensions with manifests, permissions, sandboxed SDK)
+
+Work Log:
+- Extended schema: Extension (manifest, permissions, status, trust), ExtensionRule (per-extension rules with conditions/LR), ExtensionConfig (key-value config per extension). db:push to Neon succeeded.
+- Built 4 built-in extension manifests (src/lib/extensions/manifests.ts):
+  * Illegal Mining Detection v2.1.0: 5 rules, 2 hypothesis types (artisanal_mining, quarrying), 4 mission types (SAR, drone, IoT, community), 4 observation types, 3 config params. Datasets: sentinel2, sentinel1, rivers, roads, weather, dem, nightlights, population.
+  * Flood Monitoring v1.7.3: 3 rules, 1 hypothesis type (flood_erosion), 3 mission types (IoT, community, inspector), 5 observation types. Datasets: sentinel2, sentinel1, weather, dem, rivers, roads, population.
+  * Cocoa Agriculture Monitor v3.0.0: 2 rules, 1 hypothesis type (moisture_stress), 2 mission types (community, drone), 3 observation types. Datasets: sentinel2, weather, dem.
+  * Forest Monitoring v1.4.2: 2 rules, 1 hypothesis type (deforestation), 2 mission types (drone, inspector), 3 observation types. Datasets: sentinel2, dem, rivers.
+- Built Extension SDK (src/lib/extensions/registry.ts): sandboxed ctx API with world.query, observations.list, features.read, scene.read, learning.feedback, missions.create, emit. Extensions NEVER get raw DB access — only the limited SDK context. createContext() builds the ctx with lazy imports.
+- Built Extension Registry: ensureExtensionsInstalled (idempotent install of all built-in extensions), enable/disable, getExtensions (with manifests + rules), getExtensionStats, getExtensionConfig, updateExtensionConfig.
+- Built API routes: GET/PATCH /api/extensions (list + enable/disable), GET/PATCH /api/extensions/:id (config), GET /api/extensions/marketplace (browse), POST /api/extensions/install.
+- Built ExtensionsView frontend: marketplace with 4 extensions (color-coded by category), enable/disable buttons, permissions display (datasets, compute, UI, missions, alerts, learning), rules breakdown (boost/suppress with LR), hypothesis types, mission types with cost/gain, trust scoring (signed, verified, trust score), architecture explanation.
+- Added "Extensions" nav item (Puzzle icon). Updated Shell, NavRail, CommandBar.
+- Ran real installation: all 4 extensions installed on Neon with 12 total rules. Enabled illegal-mining extension via API.
+- Pushed to GitHub (commit d7fddba). Vercel auto-deployed: state=READY, verified at afritwin.vercel.app (HTTP 200, /api/extensions returns 4 extensions).
+
+Stage Summary:
+- ✅ Extension Platform: core platform is now domain-agnostic. Mining, floods, agriculture, forestry are all installable extensions.
+- ✅ Extension Manifests: each extension declares permissions (datasets, compute, UI, missions, alerts, learning) and contributes (rules, hypothesis types, mission types, observation types, UI views, config schema).
+- ✅ Extension SDK: sandboxed ctx API — extensions receive world.query, observations.list, features.read, scene.read, learning.feedback, missions.create, emit. No raw DB access.
+- ✅ 4 Built-in Extensions: Illegal Mining (5 rules), Flood Monitoring (3 rules), Cocoa Agriculture (2 rules), Forest Monitoring (2 rules). 12 total rules across 4 domains.
+- ✅ Trust & Security: extensions are signed, verified, permission-reviewed. Trust score tracked.
+- ✅ Enable/Disable: extensions can be toggled on/off without affecting the core or other extensions.
+- ✅ Independent Versioning: each extension has its own semver version.
+- Lint: 0 errors, 0 warnings. Browser-verified: Extensions view shows 4 extensions with permissions, rules, hypotheses, missions. Vercel live.
+- The platform is now an OPERATING SYSTEM for environmental intelligence. Illegal mining is one extension. Floods is another. Agriculture another. The core evolves slowly, domain expertise evolves independently.
