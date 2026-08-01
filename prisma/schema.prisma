@@ -2083,3 +2083,163 @@ model EventSubscription {
   @@index([eventType])
   @@index([enabled])
 }
+
+// ===== Developer Platform: Unified Packages, Solutions, Governance, Contracts, Knowledge =====
+
+// Solution Definition — immutable, versioned deployment specs
+model SolutionDefinition {
+  id              String   @id @default(uuid())
+  solutionId      String   @unique // "ghana-illegal-mining"
+  version         String   @default("1.0.0") // semver — immutable per version
+  name            String
+  description     String
+  // packages with pinned versions
+  packages        String   @default("[]") // JSON: [{packageId, version, required}]
+  // configuration (immutable per version)
+  configuration   String   @default("{}") // JSON: {country, alertThreshold, missionBudget, ...}
+  // reproducibility
+  contentHash     String?  // hash of packages+config for integrity verification
+  createdBy       String
+  createdAt       DateTime @default(now())
+  // status
+  status          String   @default("draft") // draft | published | archived
+
+  @@index([solutionId])
+  @@index([status])
+}
+
+// Governance Approval — who approved this package/solution (separate from policy)
+model GovernanceApproval {
+  id              String   @id @default(uuid())
+  targetType      String   // "package" | "solution" | "policy"
+  targetId        String   // packageId or solutionId
+  // approver
+  approverOrg     String   // "Ghana EPA" | "NADMO" | "Forestry Commission"
+  approverRole    String   // "regulator" | "domain_expert" | "security_reviewer"
+  approverId      String?
+  // decision
+  decision        String   // "approved" | "rejected" | "conditional" | "pending"
+  conditions      String   @default("[]") // JSON: conditions for conditional approval
+  notes           String?
+  // validity
+  validFrom       DateTime?
+  validUntil      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([targetType, targetId])
+  @@index([approverOrg])
+  @@index([decision])
+}
+
+// Feature Contract — typed feature declarations for loose coupling
+model FeatureContract {
+  id              String   @id @default(uuid())
+  featureId       String   @unique // "ndvi" | "sar_backscatter" | "rainfall_7d"
+  providerPackage String   // which package provides this feature
+  // type definition
+  dataType        String   // "float" | "int" | "boolean" | "string" | "geometry" | "image"
+  units           String?  // "ratio" | "dB" | "mm" | "degrees"
+  range           String?  // JSON: [min, max]
+  // versioning
+  version         String   @default("1.0.0")
+  // consumers
+  consumers       String   @default("[]") // JSON: package IDs that require this feature
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([providerPackage])
+  @@index([dataType])
+}
+
+// Knowledge Package — domain knowledge without executable code
+model KnowledgePackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique // "ghana-mining-knowledge"
+  name            String
+  version         String
+  description     String
+  author          String
+  // knowledge contents (JSON blobs)
+  ontology        String   @default("{}") // JSON: concepts, relationships
+  causalGraph     String   @default("{}") // JSON: cause→effect edges
+  taxonomies      String   @default("{}") // JSON: classification hierarchies
+  confidencePriors String  @default("{}") // JSON: base-rate priors
+  scientificRefs  String   @default("[]") // JSON: [{title, authors, url, doi}]
+  terminology     String   @default("{}") // JSON: term→definition
+  mappings        String   @default("{}") // JSON: cross-domain concept mappings
+  // no executable code — pure knowledge
+  hasCode         Boolean  @default(false)
+  // status
+  status          String   @default("available")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+// Agent Package — standardized agent definition
+model AgentPackage {
+  id              String   @id @default(uuid())
+  agentId         String   @unique // "mining-analyst" | "flood-coordinator"
+  packageId       String   // parent package
+  name            String
+  description     String
+  // agent behavior
+  role            String   // "reasoning" | "planning" | "verification" | "learning" | "reporting" | "monitoring"
+  // subscriptions (what events trigger this agent)
+  subscribes      String   @default("[]") // JSON: ["ObservationCreated", "GroundTruthReceived"]
+  // jobs (what this agent runs)
+  jobs            String   @default("[]") // JSON: ["reasoning", "planning"]
+  // permissions (capabilities needed)
+  permissions     String   @default("[]") // JSON: ["hypothesis:create", "mission:create"]
+  // model preferences
+  preferredAI     String?  // "openai" | "gemini" | "claude" | null (platform default)
+  // status
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([packageId])
+  @@index([role])
+  @@index([enabled])
+}
+
+// Package Lifecycle State — formal trust pipeline
+// Draft → Built → Validated → Signed → Verified → Official → (Deprecated → Archived)
+model PackageLifecycle {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  currentState    String   @default("draft") // draft | built | validated | signed | verified | official | deprecated | archived
+  // transition history
+  history         String   @default("[]") // JSON: [{from, to, by, at, notes}]
+  // checks
+  buildVerified   Boolean  @default(false)
+  testsPassed     Boolean  @default(false)
+  contractsValid  Boolean  @default(false)
+  signatureHash   String?
+  signatureVerified Boolean @default(false)
+  reviewedBy      String?  // org that reviewed
+  reviewDate      DateTime?
+  // timestamps
+  lastTransitionAt DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([currentState])
+}
+
+// Developer CLI command log — tracks package development operations
+model DevCommand {
+  id              String   @id @default(uuid())
+  command         String   // "create" | "build" | "test" | "sign" | "publish" | "install" | "upgrade"
+  packageId       String?
+  // result
+  status          String   // "success" | "failed"
+  output          String   @default("{}") // JSON: command output
+  durationMs      Int?
+  executedBy      String?
+  createdAt       DateTime @default(now())
+
+  @@index([command])
+  @@index([packageId])
+  @@index([status])
+}
