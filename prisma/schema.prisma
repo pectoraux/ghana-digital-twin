@@ -1866,3 +1866,220 @@ model ExtensionPackage {
 
   @@index([structureValid])
 }
+
+// ===== Platform Orchestration: Composable Packages, Artifacts, Events, DAGs, Policies =====
+
+// Typed Contribution — unified registry replacing separate Dynamic* tables
+model TypedContribution {
+  id              String   @id @default(uuid())
+  contributionId  String   @unique // "illegal-mining:rule:mining-001"
+  packageId       String   // which package contributed this
+  kind            String   // "rule" | "hypothesis_type" | "mission_type" | "observation_type" | "ui_view" | "widget" | "dashboard" | "command" | "workflow" | "ontology" | "agent" | "model" | "pipeline_stage" | "alert_type" | "report" | "scheduler" | "validator" | "exporter" | "prompt" | "tool" | "policy"
+  // versioned
+  version         String   @default("1.0.0")
+  apiVersion      String   @default("v1")
+  // payload (JSON — type-specific)
+  payload         String   @default("{}")
+  // composition
+  composesFrom    String   @default("[]") // JSON: contribution IDs this composes from
+  // trust
+  signature       String?
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([packageId])
+  @@index([kind])
+  @@index([enabled])
+}
+
+// Artifact — unified provenance store for everything the platform produces
+model Artifact {
+  id              String   @id @default(uuid())
+  artifactId      String   @unique
+  kind            String   // "observation" | "evidence" | "hypothesis" | "mission" | "scenario" | "report" | "benchmark" | "replay" | "phenomenon" | "ground_truth" | "alert" | "feature_vector" | "raster_product"
+  // ownership
+  ownerPackage    String?  // which package created this
+  createdBy       String?  // system | extension:illegal-mining | user:inspector
+  // lineage
+  parentIds       String   @default("[]") // JSON: artifact IDs this was derived from
+  lineageHash     String?  // hash of full lineage chain
+  // versioning
+  version         Int      @default(1)
+  currentVersion  Boolean  @default(true)
+  // metadata
+  metadata        String   @default("{}") // JSON: type-specific metadata
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([kind])
+  @@index([ownerPackage])
+  @@index([currentVersion])
+  @@index([createdAt])
+}
+
+// Platform Package — replaces "extension" with composable packages
+model PlatformPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique // "sentinel-2-connector" | "bayesian-reasoner" | "illegal-mining"
+  name            String
+  version         String   // semver
+  description     String
+  author          String
+  kind            String   @default("extension") // "dataset" | "connector" | "feature_extractor" | "rule_library" | "reasoning" | "mission_library" | "ui" | "dashboard" | "ontology" | "workflow" | "agent" | "model" | "domain" | "extension" | "theme" | "profile"
+  // composition
+  composes        String   @default("[]") // JSON: package IDs this composes from
+  dependsOn       String   @default("[]") // JSON: {packageId, versionRange, required}
+  // status
+  status          String   @default("available") // available | installed | enabled | disabled
+  installedAt     DateTime?
+  enabledAt       DateTime?
+  // trust
+  trustLevel      String   @default("community")
+  trustScore      Float    @default(0.5)
+  publisherVerified Boolean @default(false)
+  // metadata
+  icon            String   @default("package")
+  color           String   @default("#a78bfa")
+  tags            String   @default("[]")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([kind])
+  @@index([status])
+  @@index([trustLevel])
+}
+
+// Package Profile — bundles compatible packages into installable solutions
+model PackageProfile {
+  id              String   @id @default(uuid())
+  profileId       String   @unique // "ghana-illegal-mining" | "national-flood-monitoring"
+  name            String
+  description     String
+  // packages included
+  packages        String   @default("[]") // JSON: [{packageId, versionRange}]
+  // profile metadata
+  author          String
+  version         String   @default("1.0.0")
+  icon            String   @default("layers")
+  color           String   @default("#34d399")
+  tags            String   @default("[]")
+  // status
+  status          String   @default("available") // available | installed
+  installedAt     DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+}
+
+// Workflow — reusable processing workflows
+model Workflow {
+  id              String   @id @default(uuid())
+  workflowId      String   @unique // "review" | "mission-planning" | "verification"
+  name            String
+  description     String
+  ownerPackage    String?  // which package owns this (null = built-in)
+  // DAG definition (JSON: nodes + edges)
+  nodes           String   @default("[]") // JSON: [{id, type, packageId, config}]
+  edges           String   @default("[]") // JSON: [{from, to, condition}]
+  // execution
+  cacheable       Boolean  @default(true)
+  parallelizable  Boolean  @default(true)
+  // reusable
+  reusable        Boolean  @default(true) // can be used by multiple packages
+  usageCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([ownerPackage])
+  @@index([reusable])
+}
+
+// Policy Rule — "should it?" (separate from capability "can it?")
+model PolicyRule {
+  id              String   @id @default(uuid())
+  policyId        String   @unique // "require-human-review-before-alert" | "budget-limit"
+  name            String
+  description     String
+  ownerPackage    String?  // null = platform-level policy
+  // declarative policy
+  action          String   // "allow" | "deny" | "require"
+  target          String   // "mission:create" | "alert:publish" | "observation:emit"
+  condition       String   @default("{}") // JSON: {confidence: ">0.8", budget: ">100", season: "!=rainy"}
+  // scope
+  scope           String   @default("global") // "global" | "package:illegal-mining" | "region:ashanti"
+  enabled         Boolean  @default(true)
+  priority        Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([target])
+  @@index([scope])
+  @@index([enabled])
+}
+
+// AI Provider — abstraction for LLM/AI model access
+model AIProvider {
+  id              String   @id @default(uuid())
+  providerId      String   @unique // "openai" | "gemini" | "claude" | "local"
+  name            String
+  // capabilities
+  supportsReason Boolean  @default(true)
+  supportsExtract Boolean  @default(true)
+  supportsClassify Boolean @default(true)
+  supportsEmbed   Boolean  @default(true)
+  supportsChat    Boolean  @default(true)
+  // status
+  status          String   @default("available") // available | active | degraded | unavailable
+  apiEndpoint     String?
+  model           String?
+  // config
+  config          String   @default("{}") // JSON: apiKey ref, maxTokens, temperature
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+}
+
+// Scheduled Job — agents become schedulable jobs
+model ScheduledJob {
+  id              String   @id @default(uuid())
+  jobId           String   @unique
+  jobType         String   // "reasoning" | "planning" | "verification" | "learning" | "reporting" | "monitoring"
+  ownerPackage    String?
+  // schedule
+  schedule        String   @default("on-demand") // cron expression or "on-demand" | "event-triggered"
+  triggerEvent    String?  // which event triggers this job
+  // execution
+  status          String   @default("pending") // pending | running | completed | failed | cancelled
+  priority        Int      @default(0)
+  // input/output
+  inputArtifact   String?  // artifact ID to process
+  outputArtifact  String?  // artifact ID produced
+  // timing
+  startedAt       DateTime?
+  completedAt     DateTime?
+  durationMs      Int?
+  // result
+  result          String?  // "success" | "partial" | "failure"
+  error           String?
+  createdAt       DateTime @default(now())
+
+  @@index([jobType])
+  @@index([status])
+  @@index([ownerPackage])
+}
+
+// Event Subscription — declarative event subscriptions by packages
+model EventSubscription {
+  id              String   @id @default(uuid())
+  packageId       String   // which package subscribes
+  eventType       String   // "ObservationCreated" | "EvidenceAdded" | "GroundTruthReceived" | etc.
+  handler         String   // what to do: "run_workflow:review" | "emit_alert" | "create_mission"
+  filter          String   @default("{}") // JSON: filter conditions
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([packageId])
+  @@index([eventType])
+  @@index([enabled])
+}
