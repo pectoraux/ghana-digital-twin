@@ -4451,3 +4451,313 @@ model FederationPackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 11 — INTELLIGENCE OS MARKETPLACE & DEVELOPER ECONOMY (Package Layer)
+// The capstone: anyone can build, publish, monetize, govern, and deploy
+// intelligence capabilities. Package registry, developer economy, solution
+// marketplace, intelligence graph, global exchange. The kernel is FROZEN.
+// ===========================================================================
+
+// DeveloperProfile — a new economic actor. Universities, NGOs, startups,
+// governments publish intelligence packages. Each gets trust, revenue, impact.
+model DeveloperProfile {
+  id              String   @id @default(uuid())
+  developerId     String   @unique // "dev-uog-ghana" | "dev-startup-mining"
+  name            String   // "University of Ghana"
+  developerType   String   // university | ngo | startup | government | independent | corporation
+  countryCode     String?  // "GH"
+  bio             String?
+  // trust + reputation
+  trustScore      Float    @default(50) // 0..100
+  certificationLevel String @default("none") // none | verified | certified | official
+  // package stats
+  packagesPublished Int    @default(0)
+  totalDownloads    Int    @default(0)
+  totalDeployments  Int    @default(0)
+  // economy
+  totalRevenue     Float    @default(0) // IC earned
+  monthlyRevenue   Float    @default(0)
+  // quality
+  avgPackageAccuracy Float  @default(0)
+  avgRating        Float    @default(0)
+  ratingCount      Int      @default(0)
+  // impact
+  impactScore      Float    @default(0) // computed from value created
+  marketplaceRank  Int      @default(0)
+  // temporal
+  joinedAt         DateTime @default(now())
+  lastActiveAt     DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([developerType])
+  @@index([trustScore])
+  @@index([marketplaceRank])
+}
+
+// OSIntelligencePackage — a published intelligence capability in the marketplace.
+// Agents, connectors, models, knowledge, policies, workflows.
+model OSIntelligencePackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique // "illegal-mining-detector"
+  name            String
+  displayName     String
+  description     String
+  // publisher
+  developerId     String   // DeveloperProfile.developerId
+  developerName   String
+  // classification
+  packageType     String   // agent | connector | model | knowledge | policy | workflow
+  category        String   // environmental | flood | mining | agriculture | climate | ...
+  // capabilities
+  capabilities    String   @default("[]") // JSON: [sar.analysis, optical.imagery, ...]
+  requirements    String   @default("[]") // JSON: [sentinel-2, osm, ...]
+  // version
+  version         String   @default("1.0.0")
+  latestVersionId String?  // PackageVersion.versionId
+  // quality metrics
+  accuracy        Float    @default(0.5)
+  iqs             Float    @default(0.5) // Intelligence Quality Score
+  trustScore      Float    @default(0.5)
+  // economics
+  pricingModel    String   @default("free") // free | usage | subscription | one_time
+  pricePerUse     Float    @default(0) // IC per execution
+  subscriptionPrice Float  @default(0) // IC per month
+  // marketplace rank (computed)
+  marketplaceRank Float    @default(0) // 0..100
+  // adoption
+  downloads       Int      @default(0)
+  deployments     Int      @default(0)
+  activeInstalls  Int      @default(0)
+  // governance
+  lifecycleStage  String   @default("experimental") // draft | experimental | verified | certified | official | deprecated | archived
+  securityReviewed Boolean @default(false)
+  conformancePassed Boolean @default(false)
+  // ratings
+  ratingAvg       Float    @default(0)
+  ratingCount     Int      @default(0)
+  // federation
+  federationReady Boolean  @default(true)
+  // temporal
+  publishedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([packageType])
+  @@index([category])
+  @@index([lifecycleStage])
+  @@index([marketplaceRank])
+  @@index([developerId])
+}
+
+// PackageVersion — versioned releases of a package.
+model PackageVersion {
+  id              String   @id @default(uuid())
+  versionId       String   @unique
+  packageId       String   // OSIntelligencePackage.packageId
+  version         String   // "2.1.0"
+  // changelog
+  releaseNotes    String
+  // changes
+  checksum        String   // content hash for integrity
+  signature       String?  // cryptographic signature
+  // quality at release time
+  accuracySnapshot Float   @default(0.5)
+  iqsSnapshot     Float    @default(0.5)
+  // status
+  status          String   @default("active") // active | yanked | deprecated
+  // temporal
+  releasedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([packageId])
+  @@index([version])
+}
+
+// PackageDownload — download/install tracking.
+model PackageDownload {
+  id              String   @id @default(uuid())
+  packageId       String
+  version         String
+  downloaderId    String   // org/node/citizen that downloaded
+  downloaderName  String
+  downloaderType  String   // organization | node | citizen
+  // deployment
+  deploymentId    String?  // unique deployment instance
+  status          String   @default("installed") // installed | active | uninstalled
+  // temporal
+  downloadedAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([packageId])
+  @@index([downloaderId])
+}
+
+// PackageUsageEvent — usage tracking for royalties + analytics.
+model PackageUsageEvent {
+  id              String   @id @default(uuid())
+  eventId         String   @unique
+  packageId       String
+  version         String
+  // consumer
+  consumerId      String
+  consumerName    String
+  consumerType    String   // organization | node | citizen
+  // usage
+  usageType       String   // execution | query | deployment | api_call
+  // cost
+  costCharged     Float    @default(0) // IC charged
+  // result
+  success         Boolean  @default(true)
+  // temporal
+  usedAt          DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([packageId])
+  @@index([consumerId])
+  @@index([usedAt])
+}
+
+// SolutionPackage — complete intelligence systems. Not capabilities — outcomes.
+// "Illegal Mining Monitoring OS" = satellite + agent + citizen + trust + workflow.
+model SolutionPackage {
+  id              String   @id @default(uuid())
+  solutionId      String   @unique // "illegal-mining-monitoring-os"
+  name            String
+  displayName     String
+  description     String
+  // publisher
+  developerId     String
+  developerName   String
+  // composition — what packages are included
+  componentPackageIds String @default("[]") // JSON: [packageId, ...]
+  componentCount  Int      @default(0)
+  // what it solves
+  problemCategory String   // environmental_enforcement | flood_defense | forest_protection | ...
+  targetOutcome   String   // "reduce illegal mining incidents"
+  // economics
+  pricingModel    String   @default("subscription") // subscription | one_time | custom
+  price           Float    @default(0) // IC
+  // adoption
+  deployments     Int      @default(0)
+  activeInstalls  Int      @default(0)
+  // ratings
+  ratingAvg       Float    @default(0)
+  ratingCount     Int      @default(0)
+  // status
+  lifecycleStage  String   @default("verified")
+  // temporal
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([problemCategory])
+  @@index([lifecycleStage])
+  @@index([developerId])
+}
+
+// DeveloperRevenue — revenue tracking per developer (from packages + solutions).
+model DeveloperRevenue {
+  id              String   @id @default(uuid())
+  developerId     String   @unique
+  developerName   String
+  // totals
+  totalRevenue    Float    @default(0)
+  monthlyRevenue  Float    @default(0)
+  pendingPayout   Float    @default(0)
+  // allocation split
+  developerShare  Float    @default(0.70)
+  contributorShare Float   @default(0.20)
+  platformShare   Float    @default(0.10)
+  // allocated
+  developerPaid   Float    @default(0)
+  contributorPaid Float    @default(0)
+  platformPaid    Float    @default(0)
+  // by package type
+  agentRevenue    Float    @default(0)
+  connectorRevenue Float   @default(0)
+  modelRevenue    Float    @default(0)
+  knowledgeRevenue Float   @default(0)
+  solutionRevenue Float    @default(0)
+  // stats
+  topEarningPackage String?
+  // temporal
+  lastEarnedAt    DateTime?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+// PackageReview — ratings + reviews for packages.
+model PackageReview {
+  id              String   @id @default(uuid())
+  reviewId        String   @unique
+  packageId       String   // OSIntelligencePackage.packageId (or solutionId)
+  reviewerId      String
+  reviewerName    String
+  reviewerType    String   // organization | node | citizen | developer
+  // review
+  rating          Int      // 1..5
+  reviewText      String?
+  // quality assessment
+  accuracyRating  Int?     // 1..5
+  reliabilityRating Int?   // 1..5
+  valueForMoney   Int?     // 1..5
+  // temporal
+  reviewedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([packageId])
+  @@index([reviewerId])
+}
+
+// IntelligenceGraphNode — the global intelligence graph. Every package knows
+// who uses it, what problems it solves, what it consumes/produces.
+model IntelligenceGraphNode {
+  id              String   @id @default(uuid())
+  nodeId          String   @unique
+  nodeType        String   // package | solution | developer | consumer | problem | capability
+  label           String
+  // graph metrics
+  centrality      Float    @default(0)
+  impactScore     Float    @default(0)
+  // metadata
+  metadata        String   @default("{}") // JSON
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([nodeType])
+  @@index([impactScore])
+}
+
+// IntelligenceGraphEdge — relationships in the intelligence graph.
+// package→capability (provides), package→package (depends_on),
+// consumer→package (uses), package→problem (solves), package→package (composes)
+model IntelligenceGraphEdge {
+  id              String   @id @default(uuid())
+  sourceNodeId    String
+  targetNodeId    String
+  edgeType        String   // provides | depends_on | uses | solves | composes | produces | consumes
+  weight          Float    @default(1.0)
+  createdAt       DateTime @default(now())
+
+  @@unique([sourceNodeId, targetNodeId, edgeType])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+  @@index([edgeType])
+}
+
+// OSPackage — the package manifest for the OS marketplace itself.
+model OSPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

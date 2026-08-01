@@ -54,6 +54,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "marketplace", label: "Marketplace", icon: Store, hint: "Intelligence marketplace: requests, assets, bounties, value attribution" },
   { id: "finance", label: "Finance", icon: Coins, hint: "Intelligence finance: credits, licensing, royalties, agent economy, insurance" },
   { id: "federation", label: "Federation", icon: Globe, hint: "Federated intelligence network: nodes, trust proofs, cross-border markets, treaties" },
+  { id: "os", label: "OS Marketplace", icon: Boxes, hint: "Intelligence OS: package registry, developers, solutions, intelligence graph" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 
