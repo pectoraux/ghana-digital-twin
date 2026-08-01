@@ -3657,3 +3657,286 @@ model CivicTrustPackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 9 — INTELLIGENCE MARKETPLACE & VALUE ECONOMY (Package Layer)
+// Turns the platform into a marketplace where intelligence producers (citizens,
+// agents, sensors, organizations) publish tradable intelligence assets, consumers
+// (gov, corps, NGOs) post requests/bounties, and value is exchanged with
+// automated multi-source attribution. The kernel is FROZEN. All package-layer.
+// ===========================================================================
+
+// IntelligenceRequest — demand layer. Organizations post what intelligence they need.
+model IntelligenceRequest {
+  id              String   @id @default(uuid())
+  requestId       String   @unique // "REQ-2026-0001"
+  // requester
+  requesterId     String   // organization or citizen ID
+  requesterName   String   // "EPA Ghana"
+  requesterType   String   // government | corporate | ngo | platform | citizen
+  // what they need
+  title           String
+  description     String
+  category        String   // environmental_violation | flood_risk | deforestation | crop_damage | ...
+  geography       String   // "western_region" | "nationwide" | bbox
+  timeframe       String   // "last_30_days" | "ongoing" | "2026-Q1"
+  minConfidence   Float    @default(0.7)
+  evidenceRequired String  @default("[]") // JSON: ["satellite", "witness", "field"]
+  // budget
+  budget          Float    @default(0)
+  currency        String   @default("USD")
+  pricePerAsset   Float    @default(0) // max they'll pay per matching asset
+  // matching
+  matchCount      Int      @default(0)
+  fulfilledCount  Int      @default(0)
+  // status
+  status          String   @default("open") // open | matched | fulfilled | closed | expired
+  deadline        DateTime?
+  closedAt        DateTime?
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([requesterType])
+}
+
+// IntelligenceAsset — supply layer. Producers publish tradable intelligence.
+model IntelligenceAsset {
+  id              String   @id @default(uuid())
+  assetId         String   @unique // "IA-2026-0001"
+  // producer
+  producerId      String   // citizenId | agentId | sensorId | orgId
+  producerType    String   // citizen | agent | sensor | organization
+  producerName    String
+  // the intelligence
+  title           String
+  description     String
+  category        String   // environmental_violation | flood_risk | ...
+  geography       String
+  // quality (Intelligence Quality Score — the marketplace ranking metric)
+  confidence      Float    @default(0.5)
+  trustScore      Float    @default(0.5) // from TrustGraph
+  evidenceQuality Float    @default(0.5)
+  freshnessHours  Float    @default(24) // how old is the intelligence
+  iqs             Float    @default(0.5) // Intelligence Quality Score (computed)
+  // pricing
+  price           Float    @default(0) // 0 = free
+  currency        String   @default("USD")
+  pricingModel    String   @default("one_time") // one_time | subscription | per_use
+  // links to source intelligence
+  sourceType      String   // citizen_event | agent_output | observation | satellite_scene | sensor_reading
+  sourceRef       String   // ID of the source
+  // marketplace stats
+  viewCount       Int      @default(0)
+  purchaseCount   Int      @default(0)
+  ratingAvg       Float    @default(0)
+  ratingCount     Int      @default(0)
+  // status
+  status          String   @default("listed") // listed | sold | delisted | expired
+  // temporal
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([iqs])
+  @@index([producerType])
+}
+
+// IntelligenceMatch — exchange: a request matched to an asset.
+model IntelligenceMatch {
+  id              String   @id @default(uuid())
+  matchId         String   @unique
+  requestId       String   // IntelligenceRequest.requestId
+  assetId         String   // IntelligenceAsset.assetId
+  // match quality
+  matchScore      Float    @default(0) // 0..1 how well asset fits request
+  matchReasons    String   @default("[]") // JSON: ["category_match", "geo_match", "confidence_ok"]
+  // status
+  status          String   @default("proposed") // proposed | accepted | rejected | purchased
+  proposedAt      DateTime @default(now())
+  resolvedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@unique([requestId, assetId])
+  @@index([requestId])
+  @@index([assetId])
+  @@index([status])
+}
+
+// IntelligenceTransaction — a purchase/fulfillment in the marketplace.
+model IntelligenceTransaction {
+  id              String   @id @default(uuid())
+  transactionId   String   @unique // "TX-2026-0001"
+  // parties
+  requestId       String?  // if fulfilling a request
+  assetId         String?  // if purchasing an asset
+  buyerId         String   // consumer
+  buyerName       String
+  sellerId        String   // producer
+  sellerName      String
+  // value
+  amount          Float
+  currency        String   @default("USD")
+  // attribution (links to ValueAttribution)
+  attributionId   String?  // ValueAttribution.attributionId
+  // status
+  status          String   @default("pending") // pending | escrow | completed | refunded | disputed
+  paidAt          DateTime?
+  completedAt     DateTime?
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+// ValueAttribution — multi-source contribution splitting.
+// When intelligence is verified, the reward is split across all contributors
+// based on their contribution percentage (satellite 30%, citizen 25%, etc.)
+model ValueAttribution {
+  id              String   @id @default(uuid())
+  attributionId   String   @unique // "VAT-2026-0001"
+  // context
+  transactionId   String?  // IntelligenceTransaction.transactionId
+  bountyId        String?  // IntelligenceBounty.bountyId (if from a bounty)
+  incidentId      String?  // IncidentArtifact.incidentId (if from command center)
+  citizenEventId  String?  // CitizenEvent.eventId (if from community)
+  // total reward
+  totalAmount     Float
+  currency        String   @default("USD")
+  // contribution channels (each 0..1, should sum to ~1.0)
+  satelliteShare  Float    @default(0.30)
+  citizenShare    Float    @default(0.25)
+  witnessShare    Float    @default(0.20)
+  agentShare      Float    @default(0.15)
+  fieldShare      Float    @default(0.10)
+  // per-recipient breakdown
+  recipients      String   @default("{}") // JSON: {recipientId: {amount, role, share}}
+  // provenance — what intelligence this attribution is based on
+  sourceArtifacts String   @default("[]") // JSON: [artifactHash, ...]
+  // temporal
+  attributedAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([transactionId])
+  @@index([bountyId])
+  @@index([incidentId])
+}
+
+// IntelligenceBounty — active production. Org posts a problem, system decomposes
+// into missions, producers submit intelligence, rewards distributed.
+model IntelligenceBounty {
+  id              String   @id @default(uuid())
+  bountyId        String   @unique // "BNT-2026-0001"
+  // sponsor
+  sponsorId       String
+  sponsorName     String
+  sponsorType     String   // government | corporate | ngo | platform
+  // the problem
+  title           String
+  description     String
+  category        String
+  geography       String
+  // reward
+  totalBudget     Float
+  currency        String   @default("USD")
+  rewardPerSubmission Float @default(0)
+  maxSubmissions  Int      @default(10)
+  // decomposition — system breaks the bounty into missions
+  missionIds      String   @default("[]") // JSON: [missionId, ...] (links to Mission model)
+  // submissions
+  submissionCount Int      @default(0)
+  acceptedCount   Int      @default(0)
+  rejectedCount   Int      @default(0)
+  // distributed
+  distributedTotal Float   @default(0)
+  // status
+  status          String   @default("open") // open | decomposing | accepting | reviewing | completed | closed
+  deadline        DateTime?
+  closedAt        DateTime?
+  // temporal
+  postedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([category])
+  @@index([sponsorType])
+}
+
+// BountySubmission — a producer's intelligence submitted toward a bounty.
+model BountySubmission {
+  id              String   @id @default(uuid())
+  submissionId    String   @unique // "SUB-2026-0001"
+  bountyId        String   // IntelligenceBounty.bountyId
+  // submitter
+  producerId      String
+  producerType    String   // citizen | agent | organization
+  producerName    String
+  // the intelligence submitted
+  assetId         String?  // IntelligenceAsset.assetId if published as asset
+  citizenEventId  String?  // CitizenEvent.eventId if from community
+  observationId   String?  // Observation.id if from EO
+  // quality
+  confidence      Float    @default(0.5)
+  trustScore      Float    @default(0.5)
+  iqs             Float    @default(0.5)
+  // review
+  status          String   @default("pending") // pending | under_review | accepted | rejected | rewarded
+  reviewNote      String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  // reward
+  rewardAmount    Float    @default(0)
+  attributionId   String?  // ValueAttribution.attributionId
+  // temporal
+  submittedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bountyId])
+  @@index([producerId])
+  @@index([status])
+}
+
+// MarketplaceReview — ratings and reviews for assets and producers.
+model MarketplaceReview {
+  id              String   @id @default(uuid())
+  reviewId        String   @unique
+  // what's being reviewed
+  assetId         String?
+  producerId      String
+  // reviewer
+  reviewerId      String
+  reviewerName    String
+  // review
+  rating          Int      // 1..5
+  reviewText      String?
+  // temporal
+  reviewedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([assetId])
+  @@index([producerId])
+}
+
+// MarketplacePackage — the package manifest for the intelligence marketplace.
+model MarketplacePackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

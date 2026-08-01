@@ -22,6 +22,7 @@ import {
   RadioTower,
   Users,
   Network,
+  Store,
   Terminal,
   Settings,
   HelpCircle,
@@ -48,6 +49,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "command", label: "Command Center", icon: RadioTower, hint: "National intelligence command: incidents, workflows, decisions, evidence rooms" },
   { id: "community", label: "Community", icon: Users, hint: "Citizen intelligence network: events, witnesses, civic scores, rewards" },
   { id: "civic-trust", label: "Civic Trust", icon: Network, hint: "Trust graph, propagation, Sybil resistance, identity vouching" },
+  { id: "marketplace", label: "Marketplace", icon: Store, hint: "Intelligence marketplace: requests, assets, bounties, value attribution" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 
