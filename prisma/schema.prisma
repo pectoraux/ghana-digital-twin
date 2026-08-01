@@ -2243,3 +2243,75 @@ model DevCommand {
   @@index([packageId])
   @@index([status])
 }
+
+// ===== Capability Negotiation & Unified Package Model =====
+// Everything is a Package. Packages provide/require capabilities.
+// The runtime negotiates: "I require any provider of weather.precipitation"
+// not "I require weather-connector". This makes packages portable across deployments.
+
+// Provider Capability — what a package provides (declared, not hardcoded)
+model ProviderCapability {
+  id              String   @id @default(uuid())
+  packageId       String   // which package provides this
+  capability      String   // "weather.precipitation.daily" | "optical.imagery.sentinel2" | "reasoning.bayesian"
+  capabilityType  String   // "dataset" | "feature" | "reasoning" | "mission" | "knowledge" | "ui" | "workflow" | "agent" | "ai_provider"
+  // versioning
+  version         String   @default("1.0.0")
+  // quality/cost metadata
+  quality         Float    @default(0.8) // 0..1
+  cost            Float    @default(0) // relative cost
+  latency         String?  // "real-time" | "near-real-time" | "batch"
+  // contract (what format/type this capability produces)
+  outputType      String?  // "Observation" | "Feature" | "Hypothesis" | "RasterProduct"
+  outputSchema    String   @default("{}") // JSON schema of output
+  createdAt       DateTime @default(now())
+
+  @@unique([packageId, capability])
+  @@index([capability])
+  @@index([capabilityType])
+}
+
+// Package Dependency — DAG-based dependency graph with capability negotiation
+model PackageDependency {
+  id              String   @id @default(uuid())
+  packageId       String   // the dependent (consumer)
+  // what it needs (either specific package OR any provider of a capability)
+  dependencyType  String   // "package" | "capability" // specific package or any provider
+  targetId        String   // packageId (if type=package) OR capability string (if type=capability)
+  versionRange    String   @default("*") // semver range
+  required        Boolean  @default(true) // hard vs optional dependency
+  // negotiation preferences
+  preferredQuality Float   @default(0.8) // minimum quality threshold
+  maxCost         Float?   // maximum acceptable cost
+  // resolution status
+  resolved        Boolean  @default(false)
+  resolvedPackage String?  // which package was selected to satisfy this dependency
+  resolvedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([packageId])
+  @@index([dependencyType, targetId])
+  @@index([resolved])
+}
+
+// Unified Package Manifest — extends PlatformPackage with provides/requires/exports
+model PackageManifest {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  // provides (capabilities this package exposes)
+  provides        String   @default("[]") // JSON: [{capability, type, version, quality, cost, outputType}]
+  // requires (dependencies — either specific packages or capability negotiations)
+  requires        String   @default("[]") // JSON: [{type: "package"|"capability", target, versionRange, required, preferredQuality, maxCost}]
+  // exports (what this package produces for other packages to consume)
+  exports         String   @default("{}") // JSON: {observations: [...], hypotheses: [...], missions: [...], features: [...], alerts: [...]}
+  // permissions (capabilities needed from the kernel)
+  permissions     String   @default("[]") // JSON: ["raster.read", "mission.create", "alert.publish"]
+  // composition
+  composes        String   @default("[]") // JSON: package IDs this composes from
+  // negotiation preferences
+  portable        Boolean  @default(true) // can this package be deployed with alternative providers?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([portable])
+}
