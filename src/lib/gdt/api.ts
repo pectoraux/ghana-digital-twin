@@ -331,6 +331,56 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Validation & Observability API =====
+
+export async function fetchObservability(): Promise<any> {
+  const res = await fetch("/api/observability");
+  if (!res.ok) throw new Error(`fetchObservability: ${res.status}`);
+  return res.json();
+}
+
+export async function recordSystemMetrics(): Promise<any> {
+  const res = await fetch("/api/observability", { method: "POST" });
+  if (!res.ok) throw new Error(`recordSystemMetrics: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchReplayHistory(): Promise<any> {
+  const res = await fetch("/api/replay");
+  if (!res.ok) throw new Error(`fetchReplayHistory: ${res.status}`);
+  return res.json();
+}
+
+export async function replayScene(sceneId: string): Promise<any> {
+  const res = await fetch("/api/replay", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sceneId }) });
+  if (!res.ok) throw new Error(`replayScene: ${res.status}`);
+  return res.json();
+}
+
+export async function seedBenchmarkDataset(): Promise<any> {
+  const res = await fetch("/api/replay", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "seed_benchmark" }) });
+  if (!res.ok) throw new Error(`seedBenchmarkDataset: ${res.status}`);
+  return res.json();
+}
+
+export async function runEvaluation(datasetName?: string): Promise<any> {
+  const res = await fetch("/api/replay", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "evaluate", datasetName }) });
+  if (!res.ok) throw new Error(`runEvaluation: ${res.status}`);
+  return res.json();
+}
+
+export async function generateAudit(hypothesisId: string): Promise<any> {
+  const res = await fetch("/api/audit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hypothesisId }) });
+  if (!res.ok) throw new Error(`generateAudit: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchCacheStats(): Promise<any> {
+  const res = await fetch("/api/cache");
+  if (!res.ok) throw new Error(`fetchCacheStats: ${res.status}`);
+  return res.json();
+}
+
 // ===== Mission Planning API =====
 
 export async function fetchMissions(status?: string, type?: string): Promise<any> {

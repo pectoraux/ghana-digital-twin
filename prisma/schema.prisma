@@ -1289,3 +1289,121 @@ model ObservationSchedule {
   @@index([tier])
   @@index([priorityScore])
 }
+
+// ===== Milestone 6.5: Production Validation & Scientific Evaluation =====
+
+// Replay run — end-to-end pipeline replay for regression testing
+model ReplayRun {
+  id              String   @id @default(uuid())
+  sceneId         String?  // scene replayed (if applicable)
+  tileId          String?  // tile replayed (if applicable)
+  // what was replayed
+  scope           String   // "scene" | "tile" | "full_pipeline"
+  // stages executed
+  stagesCompleted String   @default("[]") // JSON: ["ingest", "indices", "products", "evidence", "observations", "hypotheses"]
+  stagesFailed    String   @default("[]") // JSON
+  // timing
+  startedAt       DateTime
+  finishedAt      DateTime?
+  durationMs      Int      @default(0)
+  // results
+  status          String   @default("running") // running | success | partial | failed
+  observationsCreated Int   @default(0)
+  hypothesesCreated Int    @default(0)
+  error           String?
+  // comparison (if replaying against known outcomes)
+  comparisonResult String  @default("{}") // JSON: { matched, mismatched, new }
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+  @@index([scope])
+  @@index([startedAt])
+}
+
+// Benchmark dataset — labeled ground truth for scientific evaluation
+model BenchmarkSample {
+  id              String   @id @default(uuid())
+  datasetName     String   // "ghana_mining_2024" | "seasonal_agriculture" | "floods"
+  // location
+  centroidLng     Float
+  centroidLat     Float
+  mgrsTile        String?
+  regionId        String?
+  // label (ground truth)
+  labelType       String   // "mining" | "agriculture" | "flood" | "logging" | "construction" | "bare_rock" | "reservoir" | "natural"
+  isConfirmed     Boolean  @default(true) // verified ground truth
+  // temporal
+  eventDate       DateTime?
+  // biome context
+  biome           String?  // "forest" | "savanna" | "coastal" | "wetland" | "urban"
+  // expected properties
+  expectedAreaHa  Float?
+  // notes
+  notes           String?
+  source          String?  // "government" | "inspector" | "research" | "community"
+  createdAt       DateTime @default(now())
+
+  @@index([datasetName])
+  @@index([labelType])
+  @@index([biome])
+}
+
+// Evaluation result — scientific metrics per evaluation run
+model EvaluationResult {
+  id              String   @id @default(uuid())
+  datasetName     String
+  // metrics
+  precision       Float
+  recall          Float
+  f1Score         Float
+  auroc           Float?
+  brierScore      Float?
+  ece             Float?   // Expected Calibration Error
+  // per-class breakdown
+  perClassMetrics String   @default("{}") // JSON: { mining: {precision, recall, f1}, agriculture: {...} }
+  // per-biome breakdown
+  perBiomeMetrics String   @default("{}") // JSON: { forest: {fp, fn, tp, tn}, savanna: {...} }
+  // counts
+  truePositives   Int
+  falsePositives  Int
+  trueNegatives   Int
+  falseNegatives  Int
+  sampleCount     Int
+  // timing
+  evaluatedAt     DateTime @default(now())
+
+  @@index([datasetName])
+  @@index([evaluatedAt])
+}
+
+// Pipeline metric — observability for every stage
+model PipelineMetric {
+  id              String   @id @default(uuid())
+  stage           String   // "ingest" | "raster_read" | "index_compute" | "product_compute" | "evidence_extract" | "observation_scan" | "hypothesis_gen" | "mission_plan" | "learning"
+  metricName      String   // "count" | "duration_ms" | "latency_p95" | "error_rate" | "throughput"
+  value           Float
+  unit            String   @default("") // "items" | "ms" | "items/hr" | "%"
+  // context
+  context         String   @default("{}") // JSON: { tileId, sceneId, type }
+  recordedAt      DateTime @default(now())
+
+  @@index([stage])
+  @@index([metricName])
+  @@index([recordedAt])
+}
+
+// Cache entry — for performance engineering
+model CacheEntry {
+  id              String   @id @default(uuid())
+  cacheKey        String   @unique
+  cacheType       String   // "raster_read" | "stac_query" | "feature_vector" | "product_stats" | "bandit" | "scene_index"
+  value           String   // JSON serialized cached value
+  ttlSeconds      Int      @default(300)
+  hitCount        Int      @default(0)
+  sizeBytes       Int      @default(0)
+  createdAt       DateTime @default(now())
+  lastAccessedAt  DateTime @default(now())
+
+  @@index([cacheKey])
+  @@index([cacheType])
+}

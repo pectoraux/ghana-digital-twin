@@ -12,6 +12,7 @@ import { ObservationsView } from "./views/ObservationsView";
 import { PhenomenaView } from "./views/PhenomenaView";
 import { IntelligenceView } from "./views/IntelligenceView";
 import { MissionsView } from "./views/MissionsView";
+import { ValidationView } from "./views/ValidationView";
 import { ContinuousView } from "./views/ContinuousView";
 import { GroundTruthView } from "./views/GroundTruthView";
 import { MultiModalView } from "./views/MultiModalView";
@@ -47,6 +48,7 @@ export function Shell() {
               {view === "phenomena" && <PhenomenaView />}
               {view === "intelligence" && <IntelligenceView />}
               {view === "missions" && <MissionsView />}
+              {view === "validation" && <ValidationView />}
               {view === "continuous" && <ContinuousView />}
               {view === "groundtruth" && <GroundTruthView />}
               {view === "multimodal" && <MultiModalView />}
