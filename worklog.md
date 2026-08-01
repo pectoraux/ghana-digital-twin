@@ -348,3 +348,33 @@ Stage Summary:
 - ✅ Temporal Reasoning: observations merged across time. Growth/movement/persistence tracked. Status lifecycle (emerging → growing → stabilizing → resolved).
 - Lint: 0 errors, 0 warnings. Browser-verified: Phenomena view shows 5 tracked phenomena with growth metrics + observation timeline, Knowledge Graph view shows 16 nodes + 21 edges with interactive graph, Observation Lineage renders full provenance tree. No console errors.
 - Did NOT implement AI intelligence / illegal mining detection (deferred per roadmap — Milestone 5+).
+
+---
+Task ID: 21
+Agent: orchestrator
+Task: Milestone 4 — Intelligence Engine (Evidence Bundles, ranked competing hypotheses, Bayesian reasoning, supporting+contradicting evidence, deterministic rules, decision traces, scenario forecasting)
+
+Work Log:
+- Extended Prisma schema: EvidenceBundle (groups evidence by category per observation), Hypothesis (ranked competing: UUID, type, prior, posterior, confidence, rank, isPrimary, supportingCount, contradictingCount, missingCount, reasoning, recommendedVerification, rulesFired), HypothesisEvidence (per-evidence: relationship=supports/contradicts/neutral, likelihoodRatio, posteriorContribution), Rule (deterministic: conditions, hypothesisType, effect=boost/suppress, likelihoodRatio), Scenario (predictive: forecastDays, predictedAreaHa, predictedGrowthPct, affectedRiversCount, affectedCommunitiesCount, expectedSedimentIncrease). db:push succeeded.
+- Built Intelligence domain types (src/lib/intelligence/types.ts): 9 hypothesis types (artisanal_mining, road_construction, flood_erosion, agricultural_expansion, quarrying, deforestation, natural_clearing, settlement_expansion, infrastructure_development), each with base-rate prior + recommended verification. 15 deterministic rules mapping evidence patterns → hypothesis boosts/suppresses with Bayesian likelihood ratios.
+- Built Evidence Bundle builder (src/lib/intelligence/bundles.ts): groups standalone evidence by category (vegetation, hydrology, infrastructure, terrain, atmospheric) per observation. Each bundle aggregates signal, confidence, uncertainty, and indication. Observations explain WHICH CATEGORY of evidence supports them.
+- Built Bayesian Hypothesis Engine (src/lib/intelligence/engine.ts): for each observation, generates ranked competing hypotheses. Steps: (1) build evidence bundles, (2) for each hypothesis type start with prior, (3) apply each matching rule: posterior_odds = prior_odds × likelihood_ratio, (4) normalize across competing hypotheses, (5) rank and persist. Explicitly tracks supporting + contradicting + missing evidence. Identifies missing evidence (e.g. "Water body change analysis" for mining hypothesis). Builds human-readable reasoning chain.
+- Built Scenario Engine (src/lib/intelligence/scenarios.ts): predictive forecasting. Extrapolates current trends to forecast future extent (predictedAreaHa, predictedGrowthPct). Estimates affected entities (rivers, communities) and expected downstream sediment increase. Confidence based on whether growth-rate data is available.
+- Built Decision Trace builder (src/lib/intelligence/decision-trace.ts): traces full reasoning chain: Hypothesis → Evidence → Observation → Evidence Bundles → Phenomenon. Every hypothesis answers "why?" with an auditable chain.
+- Built API routes: GET /api/hypotheses, GET /api/hypotheses/:id, POST /api/hypotheses/generate, GET /api/bundles, GET /api/rules, GET /api/scenarios, POST /api/scenarios, GET /api/scenarios/:id, GET /api/decision-trace/:id.
+- Ran real hypothesis generation: 45 hypotheses across 5 observations (9 per observation). Top hypothesis: "Possible agricultural expansion" (23% confidence) — reasonable since observations are in northern tile without river proximity. Each hypothesis has supporting/contradicting/missing evidence counts, Bayesian prior→posterior, rules fired, reasoning chain, recommended verification.
+- Generated 30-day scenario forecast: predicted area growth, affected rivers/communities, expected sediment increase.
+- Built IntelligenceView frontend: ranked hypothesis list grouped by observation (with confidence bars, support/contradict/missing counts, rules fired), hypothesis detail panel (Bayesian confidence with prior→posterior, evidence breakdown with supports/contradicts + likelihood ratios, missing evidence, decision trace tree, reasoning text, recommended verification, scenario generation with predicted area/growth/affected entities/sediment).
+- Added "Intelligence" nav item (Brain icon). Updated Shell, NavRail, CommandBar.
+- Fixed missing `fetchHypothesis` import (singular vs plural), missing `observationId`/`rulesFired` in list endpoint response, null-safe access patterns.
+
+Stage Summary:
+- ✅ Evidence Bundles: 9 bundles grouping 5,220 evidence objects by category (vegetation, hydrology, terrain). Observations explain WHICH CATEGORY supports them.
+- ✅ Ranked Competing Hypotheses: 45 hypotheses across 5 observations. Multiple explanations preserved per observation — uncertainty not prematurely collapsed.
+- ✅ Bayesian Reasoning: prior → evidence (likelihood ratios) → posterior → normalized confidence. Principled confidence updates, not simple weighted averages.
+- ✅ Supporting + Contradicting Evidence: each hypothesis explicitly lists what supports it AND what contradicts it. Missing evidence identified.
+- ✅ Deterministic Rules: 15 auditable rules (e.g. "Vegetation loss + bare soil + river proximity → mining boost LR=3.2"). No LLM inventing reasoning.
+- ✅ Decision Traces: hypothesis → evidence → observation → bundles → phenomenon. Full auditable chain.
+- ✅ Scenario Forecasting: 30-day trend continuation with predicted area, growth %, affected rivers/communities, expected sediment increase. Descriptive → predictive.
+- ✅ No Legal Conclusions: hypotheses are ranked explanations, not determinations. "Possible artisanal mining" not "illegal mining."
+- Lint: 0 errors, 0 warnings. Browser-verified: Intelligence view shows ranked hypotheses with Bayesian confidence, evidence breakdown, decision trace, scenario generation. No console errors.

@@ -10,6 +10,7 @@ import { LiveEngine } from "./LiveEngine";
 import { AtlasView } from "./views/AtlasView";
 import { ObservationsView } from "./views/ObservationsView";
 import { PhenomenaView } from "./views/PhenomenaView";
+import { IntelligenceView } from "./views/IntelligenceView";
 import { EntitiesView } from "./views/EntitiesView";
 import { GraphView } from "./views/GraphView";
 import { KnowledgeGraphView } from "./views/KnowledgeGraphView";
@@ -40,6 +41,7 @@ export function Shell() {
               {view === "atlas" && <AtlasView />}
               {view === "observations" && <ObservationsView />}
               {view === "phenomena" && <PhenomenaView />}
+              {view === "intelligence" && <IntelligenceView />}
               {view === "entities" && <EntitiesView />}
               {view === "graph" && <GraphView />}
               {view === "knowledge" && <KnowledgeGraphView />}

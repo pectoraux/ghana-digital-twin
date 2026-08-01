@@ -393,6 +393,9 @@ model Observation {
   affectedEntities ObservationEntityLink[]
   evidenceLinks   ObservationEvidenceLink[]
   phenomena       PhenomenonObservation[]
+  bundles         EvidenceBundle[]
+  hypotheses      Hypothesis[]
+  scenarios       Scenario[]
 
   @@index([type])
   @@index([status])
@@ -617,4 +620,148 @@ model KnowledgeEdge {
   @@index([fromNodeId])
   @@index([toNodeId])
   @@index([relation])
+}
+
+// ===== Milestone 4: Intelligence Engine =====
+// Ranked competing hypotheses with Bayesian confidence, supporting +
+// contradicting evidence, deterministic rules, decision traces, and
+// scenario forecasting. NOT "AI deciding legality" — principled reasoning.
+
+// ---- Evidence Bundle: groups evidence by category per observation ----
+model EvidenceBundle {
+  id              String   @id @default(uuid())
+  observationId   String
+  category        String   // vegetation | hydrology | infrastructure | terrain | atmospheric
+  label           String   // "Vegetation Evidence" etc.
+  evidenceCount   Int      @default(0)
+  // aggregate metrics
+  meanSignal      Float    @default(0)
+  meanConfidence  Float    @default(0)
+  fusedUncertainty Float   @default(0)
+  // summary of what this bundle indicates
+  indication      String   // "vegetation loss" | "bare soil increase" | "water change"
+  // the evidence IDs in this bundle (JSON array)
+  evidenceIds     String   @default("[]")
+  createdAt       DateTime @default(now())
+
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@unique([observationId, category])
+  @@index([observationId])
+  @@index([category])
+}
+
+// ---- Hypothesis: ranked competing explanation for an observation ----
+model Hypothesis {
+  id              String   @id @default(uuid())
+  uuid            String   @unique
+  observationId   String
+  // the hypothesis
+  type            String   // "artisanal_mining" | "road_construction" | "flood_erosion" | "agricultural_expansion" | "quarrying" | "deforestation" | "natural_clearing"
+  label           String   // "Possible artisanal mining activity"
+  description     String   // human-readable explanation
+  // Bayesian confidence
+  prior           Float    // prior probability (from base rates / rules)
+  posterior       Float    // posterior probability after evidence (0..1)
+  confidence      Float    // final confidence = posterior normalized across competing hypotheses
+  // ranking
+  rank            Int      // 1 = most likely
+  isPrimary       Boolean  @default(false) // top hypothesis
+  // evidence counts
+  supportingCount Int      @default(0)
+  contradictingCount Int   @default(0)
+  missingCount    Int      @default(0)
+  // reasoning
+  reasoning       String   // human-readable chain of reasoning
+  recommendedVerification String // "Verify with high-resolution imagery" etc.
+  status          String   @default("candidate") // candidate | confirmed | rejected | superseded
+  // provenance
+  rulesFired      String   @default("[]") // JSON: rule IDs that contributed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  evidence        HypothesisEvidence[]
+
+  @@index([observationId])
+  @@index([type])
+  @@index([rank])
+}
+
+// Per-evidence contribution to a hypothesis: supports / contradicts / neutral
+model HypothesisEvidence {
+  id              String   @id @default(uuid())
+  hypothesisId    String
+  evidenceId      String?  // FK to Evidence (if standalone evidence)
+  bundleId        String?  // FK to EvidenceBundle (if bundle-level)
+  // relationship to the hypothesis
+  relationship    String   // supports | contradicts | neutral
+  // Bayesian contribution
+  likelihoodRatio Float    // P(evidence|hypothesis) / P(evidence|¬hypothesis)
+  posteriorContribution Float // log-odds contribution
+  // explanation
+  description     String   // why this evidence supports/contradicts
+  weight          Float    // importance weight
+  createdAt       DateTime @default(now())
+
+  hypothesis      Hypothesis @relation(fields: [hypothesisId], references: [id], onDelete: Cascade)
+
+  @@index([hypothesisId])
+  @@index([relationship])
+}
+
+// ---- Rules Engine: deterministic rules ----
+model Rule {
+  id              String   @id @default(uuid())
+  ruleId          String   @unique // "rule-mining-01"
+  name            String
+  description     String
+  // condition (JSON: evidence pattern to match)
+  conditions      String   // JSON: [{bundle, indication, minSignal}]
+  // effect: which hypothesis to boost/suppress
+  hypothesisType  String   // "artisanal_mining"
+  effect          String   // "boost" | "suppress"
+  // Bayesian parameters
+  likelihoodRatio Float    // how much to update
+  priorAdjustment Float    @default(0) // adjustment to prior
+  // metadata
+  category        String   // "mining" | "infrastructure" | "natural" | "agriculture"
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([hypothesisType])
+  @@index([category])
+}
+
+// ---- Scenario: predictive forecast ----
+model Scenario {
+  id              String   @id @default(uuid())
+  uuid            String   @unique
+  phenomenonId    String?  // linked phenomenon (if applicable)
+  observationId   String?  // or linked observation
+  hypothesisId    String?  // linked hypothesis
+  // forecast
+  type            String   // "trend_continuation" | "seasonal" | "intervention"
+  label           String
+  description     String
+  // temporal
+  forecastDays    Int      // 30, 60, 90
+  // predicted state
+  predictedAreaHa Float
+  predictedGrowthPct Float
+  // predicted impact
+  affectedRiversCount Int   @default(0)
+  affectedCommunitiesCount Int @default(0)
+  expectedSedimentIncrease Float? // % expected sediment increase downstream
+  // confidence
+  confidence      Float    @default(0.5)
+  uncertainty     Float    @default(0.2)
+  // assumptions
+  assumptions     String   @default("[]") // JSON array of assumption strings
+  createdAt       DateTime @default(now())
+
+  observation     Observation? @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@index([phenomenonId])
+  @@index([observationId])
 }

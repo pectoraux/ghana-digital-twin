@@ -2,7 +2,7 @@
 
 import type { LngLat } from "./geo";
 
-export type ViewId = "atlas" | "observations" | "phenomena" | "entities" | "graph" | "knowledge" | "eo" | "raster" | "sources" | "api";
+export type ViewId = "atlas" | "observations" | "phenomena" | "intelligence" | "entities" | "graph" | "knowledge" | "eo" | "raster" | "sources" | "api";
 
 export type EntityKind =
   | "river"

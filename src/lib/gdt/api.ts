@@ -331,6 +331,131 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Intelligence Engine API =====
+
+export interface HypothesisRecord {
+  id: string;
+  uuid: string;
+  observationId: string;
+  type: string;
+  label: string;
+  description: string;
+  prior: number;
+  posterior: number;
+  confidence: number;
+  rank: number;
+  isPrimary: boolean;
+  supportingCount: number;
+  contradictingCount: number;
+  missingCount: number;
+  reasoning: string;
+  recommendedVerification: string;
+  status: string;
+  rulesFired: string[];
+  evidence: {
+    id: string;
+    relationship: string;
+    likelihoodRatio: number;
+    posteriorContribution: number;
+    description: string;
+    weight: number;
+  }[];
+  createdAt: string;
+}
+
+export async function fetchHypotheses(params: { type?: string; observationId?: string; limit?: number } = {}): Promise<{ hypotheses: HypothesisRecord[]; count: number; types?: any[] }> {
+  const sp = new URLSearchParams();
+  if (params.type) sp.set("type", params.type);
+  if (params.observationId) sp.set("observationId", params.observationId);
+  if (params.limit) sp.set("limit", String(params.limit));
+  const res = await fetch(`/api/hypotheses?${sp}`);
+  if (!res.ok) throw new Error(`fetchHypotheses: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchHypothesis(id: string): Promise<any> {
+  const res = await fetch(`/api/hypotheses/${id}`);
+  if (!res.ok) throw new Error(`fetchHypothesis: ${res.status}`);
+  return res.json();
+}
+
+export async function generateHypotheses(observationId: string): Promise<any> {
+  const res = await fetch("/api/hypotheses/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ observationId }),
+  });
+  if (!res.ok) throw new Error(`generateHypotheses: ${res.status}`);
+  return res.json();
+}
+
+export interface EvidenceBundleRecord {
+  id: string;
+  observationId: string;
+  category: string;
+  label: string;
+  evidenceCount: number;
+  meanSignal: number;
+  meanConfidence: number;
+  fusedUncertainty: number;
+  indication: string;
+  evidenceIds: string[];
+}
+
+export async function fetchBundles(observationId: string): Promise<{ bundles: EvidenceBundleRecord[]; count: number }> {
+  const res = await fetch(`/api/bundles?observationId=${observationId}`);
+  if (!res.ok) throw new Error(`fetchBundles: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchRules(): Promise<any> {
+  const res = await fetch("/api/rules");
+  if (!res.ok) throw new Error(`fetchRules: ${res.status}`);
+  return res.json();
+}
+
+export interface ScenarioRecord {
+  id: string;
+  uuid: string;
+  type: string;
+  label: string;
+  description: string;
+  forecastDays: number;
+  predictedAreaHa: number;
+  predictedGrowthPct: number;
+  affectedRiversCount: number;
+  affectedCommunitiesCount: number;
+  expectedSedimentIncrease: number | null;
+  confidence: number;
+  observationId: string | null;
+  phenomenonId: string | null;
+  createdAt: string;
+}
+
+export async function fetchScenarios(observationId?: string): Promise<{ scenarios: ScenarioRecord[]; count: number }> {
+  const sp = new URLSearchParams();
+  if (observationId) sp.set("observationId", observationId);
+  const res = await fetch(`/api/scenarios?${sp}`);
+  if (!res.ok) throw new Error(`fetchScenarios: ${res.status}`);
+  return res.json();
+}
+
+export async function generateScenario(opts: { observationId?: string; phenomenonId?: string; forecastDays?: number }): Promise<any> {
+  const res = await fetch("/api/scenarios", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(opts),
+  });
+  if (!res.ok) throw new Error(`generateScenario: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchDecisionTrace(hypothesisId: string): Promise<any> {
+  const res = await fetch(`/api/decision-trace/${hypothesisId}`);
+  if (!res.ok) throw new Error(`fetchDecisionTrace: ${res.status}`);
+  return res.json();
+}
+
 // ===== Temporal Intelligence API =====
 
 export interface EvidenceRecord {
