@@ -2583,3 +2583,131 @@ model SDKInterfaceFreeze {
 
   @@index([apiVersion])
 }
+
+// ===== Milestone 7: Autonomous Runtime (Package-level, NOT kernel) =====
+// Agents are packages. They execute on the frozen kernel via events,
+// SDK, artifacts, and execution plans. No kernel modifications.
+
+// Agent Run — execution instance of an agent
+model AgentRun {
+  id              String   @id @default(uuid())
+  runId           String   @unique
+  agentId         String   // which agent package executed
+  // trigger
+  triggerEvent    String?  // "ObservationCreated" | "GroundTruthReceived" | etc.
+  triggerArtifact String?  // artifact hash that triggered this run
+  // context assembled
+  contextArtifacts String  @default("[]") // JSON: artifact hashes the agent read
+  // reasoning
+  reasoningSummary String? // human-readable reasoning chain
+  reasoningSteps  String   @default("[]") // JSON: [{step, input, output, confidence}]
+  // proposed actions
+  proposedActions String   @default("[]") // JSON: [{type, target, params, cost, infoGain}]
+  // policy check
+  policyChecked   Boolean  @default(false)
+  policyAllowed   Boolean  @default(false)
+  policyReasons   String   @default("[]") // JSON: reasons from policy evaluation
+  // execution
+  executionPlanId String?  // FK to ExecutionPlan if actions were compiled
+  executedActions String   @default("[]") // JSON: actions actually executed
+  // output
+  outputArtifacts String   @default("[]") // JSON: artifact hashes produced
+  eventsEmitted   String   @default("[]") // JSON: events emitted
+  // status
+  status          String   @default("pending") // pending | reasoning | planning | executing | completed | failed
+  // evaluation
+  accuracyScore   Float?
+  costEfficiency  Float?
+  humanAccepted   Boolean?
+  // timing
+  startedAt       DateTime?
+  completedAt     DateTime?
+  durationMs      Int?
+  // cost
+  actualCost      Float    @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([agentId])
+  @@index([status])
+  @@index([triggerEvent])
+  @@index([createdAt])
+}
+
+// Agent Memory Artifact — memory stored as immutable artifacts (not separate DB)
+model AgentMemoryArtifact {
+  id              String   @id @default(uuid())
+  artifactHash    String   @unique // FK to ImmutableArtifact.hash
+  agentId         String   // which agent owns this memory
+  // memory type
+  memoryType      String   // "observation_learned" | "decision" | "mistake" | "success_pattern" | "context"
+  // content reference
+  contentHash     String   // hash of the memory content
+  // links
+  relatedArtifacts String  @default("[]") // JSON: artifact hashes this memory relates to
+  // temporal
+  validFrom       DateTime @default(now())
+  validUntil      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([agentId])
+  @@index([memoryType])
+  @@index([artifactHash])
+}
+
+// Agent Evaluation — performance scores per agent
+model AgentEvaluation {
+  id              String   @id @default(uuid())
+  agentId         String   @unique
+  // accuracy metrics
+  accuracyScore   Float    @default(0.5) // 0..1
+  falsePositiveRate Float  @default(0)
+  falseNegativeRate Float  @default(0)
+  // calibration
+  calibrationScore Float   @default(0.5) // 0..1 (1 = perfectly calibrated)
+  brierScore      Float    @default(0.25)
+  // cost
+  avgCostPerRun   Float    @default(0)
+  avgVerificationCost Float @default(0)
+  totalRuns       Int      @default(0)
+  totalCost       Float    @default(0)
+  // human acceptance
+  humanAcceptanceRate Float @default(0) // 0..1
+  confirmedCount  Int      @default(0)
+  rejectedCount   Int      @default(0)
+  // trust
+  trustLevel      String   @default("experimental") // experimental | verified | certified | official
+  trustScore      Float    @default(0.5)
+  // temporal
+  lastEvaluatedAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([trustLevel])
+}
+
+// Agent Action — individual action proposed/executed by an agent
+model AgentAction {
+  id              String   @id @default(uuid())
+  runId           String   // FK to AgentRun
+  // action
+  actionType      String   // "query_world" | "read_features" | "ai_reason" | "create_mission" | "publish_alert" | "emit_observation"
+  target          String?  // what the action targets (entity ID, tile ID, etc.)
+  params          String   @default("{}") // JSON
+  // status
+  status          String   @default("proposed") // proposed | approved | executed | rejected | failed
+  // result
+  resultArtifact  String?  // artifact hash produced
+  resultSummary   String?
+  // cost
+  estimatedCost   Float    @default(0)
+  actualCost      Float    @default(0)
+  // policy
+  policyChecked   Boolean  @default(false)
+  policyAllowed   Boolean  @default(false)
+  executedAt      DateTime?
+  createdAt       DateTime @default(now())
+
+  @@index([runId])
+  @@index([actionType])
+  @@index([status])
+}
