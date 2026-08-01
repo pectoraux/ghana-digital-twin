@@ -1604,3 +1604,140 @@ model ExtensionConfig {
   @@unique([extensionId, key])
   @@index([extensionId])
 }
+
+// ===== Milestone 6.75+: Advanced Extension Platform =====
+// Lifecycle hooks, declarative pipelines, dependency management, versioned APIs,
+// resource limits, trust model, data contracts, replay testing.
+
+// Extension dependency — semver resolution between extensions
+model ExtensionDependency {
+  id              String   @id @default(uuid())
+  extensionId     String   // the extension that depends on something
+  dependsOnId     String   // the extension it depends on
+  versionRange    String   // ">=2.0" | "^1.5" | "*"
+  required        Boolean  @default(true) // hard vs optional dependency
+  createdAt       DateTime @default(now())
+
+  @@unique([extensionId, dependsOnId])
+  @@index([extensionId])
+  @@index([dependsOnId])
+}
+
+// Extension lifecycle hook — formal extension points
+model ExtensionHook {
+  id              String   @id @default(uuid())
+  extensionId     String   // FK to Extension.extensionId
+  hookName        String   // "datasets" | "features" | "evidence" | "observations" | "hypotheses" | "missions" | "learning" | "views" | "commands"
+  hookType        String   // "pipeline_stage" | "ui_contribution" | "command"
+  // execution metadata
+  priority        Int      @default(0) // lower = runs first
+  enabled         Boolean  @default(true)
+  // the hook's contribution (JSON — varies by hookType)
+  contribution    String   @default("{}") // JSON: what this hook contributes
+  createdAt       DateTime @default(now())
+
+  @@unique([extensionId, hookName])
+  @@index([extensionId])
+  @@index([hookName])
+}
+
+// Extension pipeline — declarative processing stages
+model ExtensionPipeline {
+  id              String   @id @default(uuid())
+  extensionId     String
+  name            String   // pipeline name
+  // declarative stages (JSON array of stage definitions)
+  stages          String   @default("[]") // JSON: [{stage, input, output, config}]
+  stageCount      Int      @default(0)
+  // execution metadata
+  cacheable       Boolean  @default(true)
+  parallelizable  Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([extensionId])
+}
+
+// Extension data contract — what it consumes and produces
+model ExtensionContract {
+  id              String   @id @default(uuid())
+  extensionId     String   @unique
+  // consumes (JSON arrays of type names)
+  consumes        String   @default("[]") // JSON: ["Observation", "RasterProduct", "Weather"]
+  produces        String   @default("[]") // JSON: ["MiningObservation", "Mission", "Alert"]
+  // validation status
+  validated       Boolean  @default(false)
+  validationErrors String  @default("[]") // JSON: missing inputs, type mismatches
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([extensionId])
+}
+
+// Extension resource limit — quotas per extension
+model ExtensionResourceLimit {
+  id              String   @id @default(uuid())
+  extensionId     String   @unique
+  // quotas
+  cpuMs           Int      @default(500) // max CPU time per invocation
+  memoryMB        Int      @default(512)
+  networkEnabled  Boolean  @default(false)
+  maxRasterReads  Int      @default(1000) // per pipeline run
+  maxFeatureWrites Int     @default(100)
+  maxApiCalls     Int      @default(500) // SDK calls per invocation
+  // tracking
+  currentRasterReads Int   @default(0)
+  currentApiCalls  Int     @default(0)
+  lastResetAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([extensionId])
+}
+
+// Extension test — replay tests shipped with the extension
+model ExtensionTest {
+  id              String   @id @default(uuid())
+  extensionId     String
+  testName        String   // "evidence.test" | "rules.test" | "replay.test"
+  testType        String   // "unit" | "integration" | "replay"
+  description     String
+  // test definition (JSON: input, expected output, comparison)
+  definition      String   @default("{}")
+  // last run result
+  lastRunAt       DateTime?
+  lastResult      String?  // "passed" | "failed" | "skipped"
+  lastDuration    Int?     // ms
+  lastDiff        String?  // JSON: differences from expected output
+  createdAt       DateTime @default(now())
+
+  @@index([extensionId])
+  @@index([testType])
+}
+
+// Extension trust metadata — extended trust model
+model ExtensionTrust {
+  id              String   @id @default(uuid())
+  extensionId     String   @unique
+  // publisher
+  publisher       String?
+  publisherVerified Boolean @default(false)
+  // signature
+  signatureHash   String?
+  signatureVerified Boolean @default(false)
+  // review
+  reviewedBy      String?  // "Ghana EPA" | "University of Ghana"
+  reviewDate      DateTime?
+  reviewStatus    String?  // "approved" | "pending" | "rejected"
+  // scientific
+  reproducibilityScore Float? // 0..1
+  scientificValidation String? // "peer-reviewed" | "preprint" | "internal" | "none"
+  peerReviewUrl   String?
+  // trust level
+  trustLevel      String   @default("community") // "official" | "verified" | "community" | "experimental"
+  trustScore      Float    @default(0.5) // composite 0..1
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([extensionId])
+  @@index([trustLevel])
+}

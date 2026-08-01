@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchExtensions, toggleExtension } from "@/lib/gdt/api";
+import { fetchExtensions, toggleExtension, fetchExtensionLifecycle, runExtensionTests, installAdvancedFeatures } from "@/lib/gdt/api";
 import { cn } from "@/lib/utils";
 import { SectionLabel, MetricStat, StatusDot } from "@/components/gdt/atoms";
 import {
@@ -18,6 +18,12 @@ import {
   Brain,
   Settings2,
   ChevronRight,
+  GitBranch,
+  Workflow,
+  Gauge,
+  FlaskConical,
+  FileCheck,
+  Zap,
 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, React.ElementType> = {
@@ -36,6 +42,10 @@ export function ExtensionsView() {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [lifecycle, setLifecycle] = useState<any>(null);
+  const [lifecycleLoading, setLifecycleLoading] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [testResults, setTestResults] = useState<any>(null);
 
   const load = () => {
     setLoading(true);
@@ -51,12 +61,37 @@ export function ExtensionsView() {
 
   useEffect(() => { load(); }, []);
 
+  // fetch lifecycle info when selection changes
+  useEffect(() => {
+    if (!selectedId) { setLifecycle(null); return; }
+    let active = true;
+    Promise.resolve().then(() => { if (active) setLifecycleLoading(true); });
+    fetchExtensionLifecycle(selectedId)
+      .then((d) => { if (active) { setLifecycle(d); setLifecycleLoading(false); } })
+      .catch(() => { if (active) setLifecycleLoading(false); });
+    return () => { active = false; };
+  }, [selectedId]);
+
   const handleToggle = async (extensionId: string, currentStatus: string) => {
     setToggling(extensionId);
     try {
       const action = currentStatus === "enabled" ? "disable" : "enable";
       await toggleExtension(extensionId, action);
     } finally { setToggling(null); load(); }
+  };
+
+  const handleRunTests = async () => {
+    if (!selectedId) return;
+    setTesting(true);
+    try {
+      const result = await runExtensionTests(selectedId);
+      setTestResults(result);
+    } finally { setTesting(false); }
+  };
+
+  const handleInstallAdvanced = async () => {
+    setTesting(true);
+    try { await installAdvancedFeatures(); } finally { setTesting(false); load(); }
   };
 
   const selected = extensions.find((e) => e.extensionId === selectedId);
@@ -254,6 +289,191 @@ export function ExtensionsView() {
                   <span className="font-mono">{(selected.trustScore * 100).toFixed(0)}%</span>
                 </div>
               </div>
+
+              {/* lifecycle hooks + pipeline */}
+              {lifecycle && !lifecycleLoading && (
+                <>
+                  {/* hooks */}
+                  {lifecycle.hooks?.length > 0 && (
+                    <div>
+                      <SectionLabel className="mb-2 flex items-center gap-1.5">
+                        <Workflow className="size-3" /> Lifecycle Hooks ({lifecycle.hooks.length})
+                      </SectionLabel>
+                      <div className="space-y-0.5">
+                        {lifecycle.hooks.map((h: any, i: number) => (
+                          <div key={i} className="flex items-center gap-2 rounded-md border border-border bg-card/30 px-2 py-1 text-[10px]">
+                            <span className="font-mono text-primary/70 w-20">{h.hookName}</span>
+                            <span className="text-muted-foreground">{h.hookType}</span>
+                            <span className="ml-auto font-mono text-muted-foreground">p{h.priority}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* pipeline */}
+                  {lifecycle.pipelines?.length > 0 && (
+                    <div>
+                      <SectionLabel className="mb-2 flex items-center gap-1.5">
+                        <GitBranch className="size-3" /> Declarative Pipeline ({lifecycle.pipelines[0].stageCount} stages)
+                      </SectionLabel>
+                      <div className="rounded-lg border border-border bg-background/60 p-2 space-y-0.5">
+                        {lifecycle.pipelines[0].stages.map((s: any, i: number) => (
+                          <div key={i} className="flex items-center gap-2 text-[10px] font-mono py-0.5">
+                            <span className="text-muted-foreground w-4">{i + 1}</span>
+                            <span className="text-foreground/80">{s.stage}</span>
+                            {s.output && <span className="text-muted-foreground ml-auto">→ {s.output}</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* dependencies */}
+                  {lifecycle.dependencies?.length > 0 && (
+                    <div>
+                      <SectionLabel className="mb-2 flex items-center gap-1.5">
+                        <GitBranch className="size-3" /> Dependencies ({lifecycle.dependencies.length})
+                      </SectionLabel>
+                      <div className="space-y-0.5">
+                        {lifecycle.dependencies.map((d: any, i: number) => (
+                          <div key={i} className="flex items-center gap-2 text-[10px] px-1">
+                            <span className="font-mono text-muted-foreground truncate flex-1">{d.dependsOn}</span>
+                            <span className="text-muted-foreground">{d.versionRange}</span>
+                            <span className={cn("rounded px-1 py-0.5 text-[8px]", d.required ? "bg-rose-500/10 text-rose-400" : "bg-foreground/5 text-muted-foreground")}>
+                              {d.required ? "required" : "optional"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* data contract */}
+                  {lifecycle.contract && (
+                    <div>
+                      <SectionLabel className="mb-2 flex items-center gap-1.5">
+                        <FileCheck className="size-3" /> Data Contract
+                      </SectionLabel>
+                      <div className="rounded-lg border border-border bg-card/40 p-2.5 space-y-1.5">
+                        <div>
+                          <div className="text-[9px] text-muted-foreground mb-0.5">Consumes</div>
+                          <div className="flex flex-wrap gap-0.5">
+                            {lifecycle.contract.consumes.map((c: string, i: number) => (
+                              <span key={i} className="rounded border border-border bg-foreground/5 px-1 py-0.5 text-[8px] font-mono text-muted-foreground">{c}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-[9px] text-muted-foreground mb-0.5">Produces</div>
+                          <div className="flex flex-wrap gap-0.5">
+                            {lifecycle.contract.produces.map((p: string, i: number) => (
+                              <span key={i} className="rounded border border-emerald-500/20 bg-emerald-500/5 px-1 py-0.5 text-[8px] font-mono text-emerald-400">{p}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 pt-1 border-t border-border">
+                          {lifecycle.contract.validated ? (
+                            <><CheckCircle2 className="size-3 text-emerald-400" /><span className="text-[9px] text-emerald-400">Contract validated</span></>
+                          ) : (
+                            <><XCircle className="size-3 text-rose-400" /><span className="text-[9px] text-rose-400">Validation errors</span></>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* resource limits */}
+                  {lifecycle.limits && (
+                    <div>
+                      <SectionLabel className="mb-2 flex items-center gap-1.5">
+                        <Gauge className="size-3" /> Resource Limits
+                      </SectionLabel>
+                      <div className="grid grid-cols-2 gap-1 text-[10px]">
+                        <div className="rounded border border-border bg-card/40 px-2 py-1">
+                          <div className="text-muted-foreground">CPU</div>
+                          <div className="font-mono">{lifecycle.limits.cpuMs}ms</div>
+                        </div>
+                        <div className="rounded border border-border bg-card/40 px-2 py-1">
+                          <div className="text-muted-foreground">Memory</div>
+                          <div className="font-mono">{lifecycle.limits.memoryMB}MB</div>
+                        </div>
+                        <div className="rounded border border-border bg-card/40 px-2 py-1">
+                          <div className="text-muted-foreground">Raster reads</div>
+                          <div className="font-mono">{lifecycle.limits.currentRasterReads}/{lifecycle.limits.maxRasterReads}</div>
+                        </div>
+                        <div className="rounded border border-border bg-card/40 px-2 py-1">
+                          <div className="text-muted-foreground">API calls</div>
+                          <div className="font-mono">{lifecycle.limits.currentApiCalls}/{lifecycle.limits.maxApiCalls}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* extended trust */}
+                  {lifecycle.trust && (
+                    <div>
+                      <SectionLabel className="mb-2 flex items-center gap-1.5">
+                        <Shield className="size-3" /> Trust Model
+                      </SectionLabel>
+                      <div className="rounded-lg border border-border bg-card/40 p-2.5 space-y-0.5 text-[10px]">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Publisher</span><span>{lifecycle.trust.publisher}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Reviewed by</span><span>{lifecycle.trust.reviewedBy ?? "—"}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Review status</span><span className={lifecycle.trust.reviewStatus === "approved" ? "text-emerald-400" : "text-amber-400"}>{lifecycle.trust.reviewStatus ?? "—"}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Reproducibility</span><span className="font-mono">{lifecycle.trust.reproducibilityScore != null ? (lifecycle.trust.reproducibilityScore * 100).toFixed(0) + "%" : "—"}</span></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Scientific validation</span><span>{lifecycle.trust.scientificValidation ?? "—"}</span></div>
+                        <div className="flex justify-between pt-1 border-t border-border"><span className="text-muted-foreground">Trust level</span><span className="font-semibold" style={{ color: lifecycle.trust.trustLevel === "official" ? "#34d399" : lifecycle.trust.trustLevel === "verified" ? "#fbbf24" : "#a1a1aa" }}>{lifecycle.trust.trustLevel}</span></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* tests */}
+                  {lifecycle.tests?.length > 0 && (
+                    <div>
+                      <SectionLabel className="mb-2 flex items-center gap-1.5">
+                        <FlaskConical className="size-3" /> Extension Tests ({lifecycle.tests.length})
+                      </SectionLabel>
+                      <button
+                        onClick={handleRunTests}
+                        disabled={testing}
+                        className="mb-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-primary/30 bg-primary/10 px-2.5 py-1.5 text-xs text-primary hover:bg-primary/15 disabled:opacity-50"
+                      >
+                        {testing ? <Loader2 className="size-3.5 animate-spin" /> : <Zap className="size-3.5" />}
+                        Run Tests
+                      </button>
+                      <div className="space-y-0.5">
+                        {(testResults?.results || lifecycle.tests).map((t: any, i: number) => {
+                          const result = testResults?.results?.[i]?.result || t.lastResult || "pending";
+                          const color = result === "passed" ? "#34d399" : result === "failed" ? "#f43f5e" : "#71717a";
+                          return (
+                            <div key={i} className="flex items-center gap-2 rounded-md border border-border bg-card/30 px-2 py-1 text-[10px]">
+                              <StatusDot color={color} />
+                              <span className="font-mono text-muted-foreground flex-1 truncate">{t.testName}</span>
+                              <span className="text-muted-foreground">{t.testType}</span>
+                              <span style={{ color }}>{result}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {testResults && (
+                        <div className="mt-2 rounded-md border border-border bg-card/40 p-2 text-center text-[10px]">
+                          <span className="text-emerald-400 font-mono">{testResults.passed} passed</span>
+                          <span className="text-muted-foreground mx-1">·</span>
+                          <span className="text-rose-400 font-mono">{testResults.failed} failed</span>
+                          <span className="text-muted-foreground mx-1">·</span>
+                          <span className="font-mono">{testResults.total} total</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {lifecycleLoading && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="size-4 animate-spin text-primary" />
+                </div>
+              )}
 
               {/* architecture explanation */}
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5">

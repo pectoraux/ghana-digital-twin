@@ -357,6 +357,38 @@ export async function fetchMarketplace(): Promise<any> {
   return res.json();
 }
 
+export async function fetchExtensionLifecycle(extensionId?: string): Promise<any> {
+  const sp = new URLSearchParams();
+  if (extensionId) sp.set("extensionId", extensionId);
+  const res = await fetch(`/api/extensions/lifecycle?${sp}`);
+  if (!res.ok) throw new Error(`fetchExtensionLifecycle: ${res.status}`);
+  return res.json();
+}
+
+export async function installAdvancedFeatures(): Promise<any> {
+  const res = await fetch("/api/extensions/lifecycle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "install_all" }) });
+  if (!res.ok) throw new Error(`installAdvancedFeatures: ${res.status}`);
+  return res.json();
+}
+
+export async function runExtensionTests(extensionId: string): Promise<any> {
+  const res = await fetch("/api/extensions/tests", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ extensionId }) });
+  if (!res.ok) throw new Error(`runExtensionTests: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchExtensionContracts(extensionId: string): Promise<any> {
+  const res = await fetch(`/api/extensions/contracts?extensionId=${extensionId}`);
+  if (!res.ok) throw new Error(`fetchExtensionContracts: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchExtensionDependencies(extensionId: string): Promise<any> {
+  const res = await fetch(`/api/extensions/dependencies?extensionId=${extensionId}`);
+  if (!res.ok) throw new Error(`fetchExtensionDependencies: ${res.status}`);
+  return res.json();
+}
+
 // ===== Validation Gates API =====
 
 export async function fetchSLOs(): Promise<any> {
