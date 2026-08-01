@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { queryEntities, countEntities } from "@/lib/worldmodel/store";
-import { ensureAllSourcesRegistered } from "@/lib/connectors/registry";
 import type { EntityKind } from "@/lib/worldmodel/types";
 import type { BBox } from "@/lib/worldmodel/geometry";
 
@@ -8,7 +7,6 @@ export const dynamic = "force-dynamic";
 
 // GET /api/world-model/entities?kind=river&regionId=wst&bbox=minLng,minLat,maxLng,maxLat&limit=500
 export async function GET(req: NextRequest) {
-  await ensureAllSourcesRegistered();
   const sp = req.nextUrl.searchParams;
   const kindParam = sp.get("kind");
   const kinds = kindParam ? (kindParam.split(",") as EntityKind[]) : undefined;

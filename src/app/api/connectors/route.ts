@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { ensureAllSourcesRegistered } from "@/lib/connectors/registry";
 import { listConnectors, getConnector } from "@/lib/worldmodel/connector-framework";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/connectors — list all dataset sources with status + last runs
 export async function GET() {
-  await ensureAllSourcesRegistered();
   const sources = await db.datasetSource.findMany({
     orderBy: { category: "asc" },
     include: {
@@ -56,7 +54,6 @@ function isLive(sourceId: string): boolean {
 
 // POST /api/connectors — trigger sync (body: { sourceId } or { all: true })
 export async function POST(req: NextRequest) {
-  await ensureAllSourcesRegistered();
   const body = await req.json().catch(() => ({}));
 
   if (body.all === true) {

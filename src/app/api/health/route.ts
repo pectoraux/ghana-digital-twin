@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { ensureAllSourcesRegistered } from "@/lib/connectors/registry";
 
 export const dynamic = "force-dynamic";
 
 // GET /api/health — platform observability dashboard
 export async function GET() {
-  await ensureAllSourcesRegistered();
-
   const [
     totalEntities,
     totalRelationships,
