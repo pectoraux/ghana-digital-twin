@@ -403,3 +403,30 @@ Stage Summary:
 - ✅ Complete audit trail: LearningUpdate records log every prior change with the feedback that triggered it, old/new values, and accuracy metrics.
 - Lint: 0 errors, 0 warnings. Browser-verified: Continuous view shows pipeline status (945 tiles), learning engine with learned priors (accuracy tracking), feedback buttons, Run Pipeline + Run Learning triggers. No console errors.
 - The platform is now a LIVING Digital Twin — continuously processing new imagery, generating observations automatically, and learning from feedback to improve future reasoning.
+
+---
+Task ID: 23
+Agent: orchestrator
+Task: Milestone 5.25 — Ground Truth & Active Learning (confidence-driven verification, active learning, calibration metrics, drift detection, benchmark reports, explainability reports)
+
+Work Log:
+- Extended Prisma schema: ReviewQueue (structured verification workflow: needs_review→assigned→reviewed→ground_truth, priority, uncertaintyScore, informationGain), GroundTruth (verified outcomes with method, evidence, verifier credibility), CalibrationMetric (Brier/ECE/precision/recall/F1 tracked over time), EvidenceQualityScore (sensor reliability + cloud + age + resolution + cross-source agreement → composite quality), DriftAlert (distribution/sensor/seasonal drift with baseline→current values), BenchmarkReport (periodic performance: accuracy, FP/FN, calibration, workload, coverage), ModelVersion (reproducibility snapshots). db:push succeeded.
+- Built Active Learning selector (src/lib/groundtruth/review-queue.ts): selects observations that will teach the system the most. Uses uncertainty sampling (confidence near 0.5 = max uncertainty) + diversity (limits per type/tile) + information gain (balance of supporting/contradicting evidence). Creates ReviewQueue tasks with priority scoring. Supports assignment workflow and review submission (creates GroundTruth + FeedbackRecord for learning engine).
+- Built Confidence Calibration engine (src/lib/groundtruth/calibration.ts): computes Brier score (mean squared error of confidence vs actual), Expected Calibration Error (ECE — weighted average of |confidence - accuracy| per bin), reliability diagrams (5 bins), precision/recall/F1 (confidence > 0.5 = positive prediction). Per-hypothesis breakdown. Persists all metrics. Generates periodic BenchmarkReports with detection accuracy, FP/FN rates, time-to-confirmation, human workload, learning improvement, coverage.
+- Built Drift Detection engine (src/lib/groundtruth/drift.ts): monitors distribution shifts across 4 dimensions: (1) observation type distribution (recent vs historical), (2) average confidence drift, (3) cloud cover drift (sensor conditions), (4) seasonal context (rainy vs dry season — adjusts mining hypothesis expectations). Creates DriftAlerts for active drifts.
+- Built Explainability Report generator (src/lib/groundtruth/report.ts): generates exportable audit documents per observation. Includes: observation details, evidence bundles, all hypotheses with Bayesian reasoning + rules fired + recommended verification, full lineage chain (observation→evidence→product→baseline→scene→COG→STAC), decision trace, ground truth (if verified), confidence evolution, version history, affected entities, phenomena, and human-readable audit trail.
+- Built API routes: GET/POST /api/review-queue, PATCH /api/review-queue/:id, GET /api/review-queue/active-learning, GET/POST /api/calibration, GET/POST /api/drift, POST /api/reports.
+- Ran real active learning: selected 3 observations for review (uncertainty-driven). Populated review queue. Ran drift detection: detected 2 alerts (distribution shift + seasonal context — rainy season active). Generated benchmark report: F1=0%, ECE=0%, coverage tracked. Generated explainability report: 9 hypotheses, 2 evidence bundles, 1 version, full audit trail.
+- Built GroundTruthView frontend (via subagent): review queue with priority badges + Confirm/Reject buttons, calibration metrics (Brier/ECE/precision/recall/F1) with reliability diagram, drift alerts list, benchmark reports, active learning + calibration explanation cards, Populate Queue + Run Drift Check + Generate Benchmark buttons.
+- Added "Ground Truth" nav item (CheckCircle2 icon). Updated Shell, NavRail, CommandBar.
+
+Stage Summary:
+- ✅ Active Learning: the AI knows when it doesn't know. Selects observations with maximum information gain (uncertainty sampling + diversity) for human verification. Inspectors spend time where it matters.
+- ✅ Confidence Calibration: Brier score, ECE, reliability diagrams. Tracks whether "83%" actually behaves like 83%. Per-hypothesis precision/recall.
+- ✅ Human Review Queue: structured workflow (needs_review → assigned → reviewed → ground_truth) with priority scoring, assignment, evidence, audit trail.
+- ✅ Drift Detection: monitors distribution shifts (observation types, confidence, cloud cover, seasonal context). Alerts when system enters unfamiliar territory.
+- ✅ Benchmark Reports: periodic performance summaries (accuracy, FP/FN, calibration, workload, coverage, learning improvement) for government customers.
+- ✅ Explainability Reports: exportable audit documents — full reasoning chain from observation to satellite COG, with Bayesian reasoning, rules fired, ground truth, and confidence evolution.
+- ✅ Evidence Quality Scoring: schema ready for per-evidence quality assessment (sensor reliability, cloud, age, resolution, cross-source agreement).
+- Lint: 0 errors, 0 warnings. Browser-verified: Ground Truth view shows review queue with priority badges, calibration metrics, drift alerts, benchmark reports. No console errors.
+- ReviewQueue: 3 items | DriftAlerts: 2 | Benchmarks: 2 | GroundTruth: 0 (ready for inspector verification)

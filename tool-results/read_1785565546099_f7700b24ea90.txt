@@ -1,0 +1,883 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useState, useCallback } from "react";
+     4→import type { EntityRecord, RelationshipRecord, EntityVersionRecord } from "@/lib/worldmodel/types";
+     5→
+     6→// ---- Fetch helpers (server-relative) ----
+     7→
+     8→export interface EntitiesResponse {
+     9→  entities: EntityRecord[];
+    10→  total: number;
+    11→  count: number;
+    12→  limit: number;
+    13→  offset: number;
+    14→}
+    15→
+    16→export async function fetchEntities(params: {
+    17→  kind?: string;
+    18→  regionId?: string;
+    19→  bbox?: string;
+    20→  limit?: number;
+    21→  offset?: number;
+    22→} = {}): Promise<EntitiesResponse> {
+    23→  const sp = new URLSearchParams();
+    24→  if (params.kind) sp.set("kind", params.kind);
+    25→  if (params.regionId) sp.set("regionId", params.regionId);
+    26→  if (params.bbox) sp.set("bbox", params.bbox);
+    27→  if (params.limit) sp.set("limit", String(params.limit));
+    28→  if (params.offset) sp.set("offset", String(params.offset));
+    29→  const res = await fetch(`/api/world-model/entities?${sp}`);
+    30→  if (!res.ok) throw new Error(`fetchEntities: ${res.status}`);
+    31→  return res.json();
+    32→}
+    33→
+    34→export interface EntityDetailResponse {
+    35→  entity: EntityRecord;
+    36→  history: EntityVersionRecord[];
+    37→  relationships: RelationshipRecord[];
+    38→}
+    39→
+    40→export async function fetchEntity(id: string): Promise<EntityDetailResponse> {
+    41→  const res = await fetch(`/api/world-model/entities/${id}`);
+    42→  if (!res.ok) throw new Error(`fetchEntity: ${res.status}`);
+    43→  return res.json();
+    44→}
+    45→
+    46→export async function fetchEntityHistory(id: string): Promise<{ versions: EntityVersionRecord[]; count: number }> {
+    47→  const res = await fetch(`/api/world-model/entities/${id}/history`);
+    48→  if (!res.ok) throw new Error(`fetchEntityHistory: ${res.status}`);
+    49→  return res.json();
+    50→}
+    51→
+    52→export interface GraphData {
+    53→  nodes: { id: string; label: string; kind: string; regionId: string | null; centroid: [number, number] }[];
+    54→  edges: { source: string; target: string; relation: string; inferredBy: string }[];
+    55→}
+    56→
+    57→export async function fetchGraph(): Promise<GraphData> {
+    58→  const res = await fetch("/api/world-model/graph");
+    59→  if (!res.ok) throw new Error(`fetchGraph: ${res.status}`);
+    60→  return res.json();
+    61→}
+    62→
+    63→export interface ConnectorInfo {
+    64→  sourceId: string;
+    65→  name: string;
+    66→  category: string;
+    67→  provider: string;
+    68→  license: string;
+    69→  resolution: string;
+    70→  cadence: string;
+    71→  coverage: string;
+    72→  description: string;
+    73→  storageType: string;
+    74→  status: string;
+    75→  recordCount: number;
+    76→  version: string | null;
+    77→  lastSyncAt: string | null;
+    78→  lastSuccessAt: string | null;
+    79→  live: boolean;
+    80→  lastRun: {
+    81→    startedAt: string;
+    82→    finishedAt: string | null;
+    83→    status: string;
+    84→    recordsRead: number;
+    85→    recordsWritten: number;
+    86→    durationMs: number;
+    87→    error: string | null;
+    88→  } | null;
+    89→}
+    90→
+    91→export async function fetchConnectors(): Promise<{ sources: ConnectorInfo[]; registeredConnectors: string[] }> {
+    92→  const res = await fetch("/api/connectors");
+    93→  if (!res.ok) throw new Error(`fetchConnectors: ${res.status}`);
+    94→  return res.json();
+    95→}
+    96→
+    97→export async function triggerSync(sourceId: string): Promise<any> {
+    98→  const res = await fetch(`/api/connectors/${sourceId}`, { method: "POST" });
+    99→  return res.json();
+   100→}
+   101→
+   102→export async function triggerSyncAll(): Promise<any> {
+   103→  const res = await fetch("/api/connectors", {
+   104→    method: "POST",
+   105→    headers: { "Content-Type": "application/json" },
+   106→    body: JSON.stringify({ all: true }),
+   107→  });
+   108→  return res.json();
+   109→}
+   110→
+   111→export interface HealthData {
+   112→  summary: {
+   113→    totalEntities: number;
+   114→    totalRelationships: number;
+   115→    totalVersions: number;
+   116→    totalSources: number;
+   117→    healthySources: number;
+   118→    degradedSources: number;
+   119→    syncingSources: number;
+   120→    liveSources: number;
+   121→  };
+   122→  entitiesByKind: { kind: string; count: number }[];
+   123→  sources: any[];
+   124→  recentRuns: any[];
+   125→  recentEvents: any[];
+   126→}
+   127→
+   128→export async function fetchHealth(): Promise<HealthData> {
+   129→  const res = await fetch("/api/health");
+   130→  if (!res.ok) throw new Error(`fetchHealth: ${res.status}`);
+   131→  return res.json();
+   132→}
+   133→
+   134→export async function fetchStats(): Promise<any> {
+   135→  const res = await fetch("/api/stats");
+   136→  if (!res.ok) throw new Error(`fetchStats: ${res.status}`);
+   137→  return res.json();
+   138→}
+   139→
+   140→export async function fetchChanges(since?: string, limit = 50): Promise<{ changes: any[]; count: number }> {
+   141→  const sp = new URLSearchParams();
+   142→  if (since) sp.set("since", since);
+   143→  sp.set("limit", String(limit));
+   144→  const res = await fetch(`/api/world-model/changes?${sp}`);
+   145→  if (!res.ok) throw new Error(`fetchChanges: ${res.status}`);
+   146→  return res.json();
+   147→}
+   148→
+   149→export async function fetchNearest(lng: number, lat: number, maxKm = 50, kind?: string, limit = 10) {
+   150→  const sp = new URLSearchParams({ lng: String(lng), lat: String(lat), maxKm: String(maxKm), limit: String(limit) });
+   151→  if (kind) sp.set("kind", kind);
+   152→  const res = await fetch(`/api/world-model/spatial/nearest?${sp}`);
+   153→  if (!res.ok) throw new Error(`fetchNearest: ${res.status}`);
+   154→  return res.json();
+   155→}
+   156→
+   157→// ===== Earth Observation API =====
+   158→
+   159→export interface EOScene {
+   160→  id: string;
+   161→  stacId: string;
+   162→  collection: string;
+   163→  platform: string | null;
+   164→  datetime: string;
+   165→  cloudCover: number | null;
+   166→  mgrsTile: string | null;
+   167→  centroid: [number, number];
+   168→  bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+   169→  geometry: GeoJSON.Geometry;
+   170→  gsd: number | null;
+   171→  bands: { name: string; href: string; commonName: string | null }[];
+   172→}
+   173→
+   174→export interface EOIndex {
+   175→  name: string;
+   176→  formula: string;
+   177→  bands: string[];
+   178→  range: [number, number];
+   179→  description: string;
+   180→}
+   181→
+   182→export async function fetchImagery(params: { bbox?: string; from?: string; to?: string; maxCloud?: number; limit?: number } = {}): Promise<{ scenes: EOScene[]; total: number; count: number }> {
+   183→  const sp = new URLSearchParams();
+   184→  if (params.bbox) sp.set("bbox", params.bbox);
+   185→  if (params.from) sp.set("from", params.from);
+   186→  if (params.to) sp.set("to", params.to);
+   187→  if (params.maxCloud != null) sp.set("maxCloud", String(params.maxCloud));
+   188→  if (params.limit) sp.set("limit", String(params.limit));
+   189→  const res = await fetch(`/api/eo/imagery?${sp}`);
+   190→  if (!res.ok) throw new Error(`fetchImagery: ${res.status}`);
+   191→  return res.json();
+   192→}
+   193→
+   194→export async function fetchIndices(): Promise<{ indices: EOIndex[] }> {
+   195→  const res = await fetch("/api/eo/indices");
+   196→  if (!res.ok) throw new Error(`fetchIndices: ${res.status}`);
+   197→  return res.json();
+   198→}
+   199→
+   200→export interface TimeSeriesPoint {
+   201→  sceneId: string;
+   202→  stacId: string;
+   203→  datetime: string;
+   204→  cloudCover: number | null;
+   205→  value: number | null;
+   206→}
+   207→
+   208→export async function fetchTimeSeries(lng: number, lat: number, index: string, opts: { from?: string; to?: string; maxCloud?: number } = {}): Promise<{ points: TimeSeriesPoint[]; index: string; formula: string; description: string }> {
+   209→  const sp = new URLSearchParams({ lng: String(lng), lat: String(lat), index });
+   210→  if (opts.from) sp.set("from", opts.from);
+   211→  if (opts.to) sp.set("to", opts.to);
+   212→  if (opts.maxCloud != null) sp.set("maxCloud", String(opts.maxCloud));
+   213→  const res = await fetch(`/api/eo/timeseries?${sp}`);
+   214→  if (!res.ok) throw new Error(`fetchTimeSeries: ${res.status}`);
+   215→  return res.json();
+   216→}
+   217→
+   218→export async function fetchPixel(lng: number, lat: number, index: string): Promise<{ pixels: any[]; index: string; formula: string; bands: string[] }> {
+   219→  const sp = new URLSearchParams({ lng: String(lng), lat: String(lat), index });
+   220→  const res = await fetch(`/api/eo/pixel?${sp}`);
+   221→  if (!res.ok) throw new Error(`fetchPixel: ${res.status}`);
+   222→  return res.json();
+   223→}
+   224→
+   225→export async function fetchEOObservations(index?: string, limit = 50): Promise<{ observations: any[]; count: number }> {
+   226→  const sp = new URLSearchParams({ limit: String(limit) });
+   227→  if (index) sp.set("index", index);
+   228→  const res = await fetch(`/api/eo/observations?${sp}`);
+   229→  if (!res.ok) throw new Error(`fetchEOObservations: ${res.status}`);
+   230→  return res.json();
+   231→}
+   232→
+   233→export async function detectChanges(lng: number, lat: number, index: string): Promise<{ observations: any[]; count: number }> {
+   234→  const res = await fetch("/api/eo/observations", {
+   235→    method: "POST",
+   236→    headers: { "Content-Type": "application/json" },
+   237→    body: JSON.stringify({ lng, lat, index }),
+   238→  });
+   239→  if (!res.ok) throw new Error(`detectChanges: ${res.status}`);
+   240→  return res.json();
+   241→}
+   242→
+   243→export async function fetchSceneIndexStats(sceneId: string, index: string): Promise<any> {
+   244→  const res = await fetch(`/api/eo/scenes/${sceneId}?index=${index}`);
+   245→  if (!res.ok) throw new Error(`fetchSceneIndexStats: ${res.status}`);
+   246→  return res.json();
+   247→}
+   248→
+   249→// ===== Observation Engine API =====
+   250→
+   251→export interface ObservationEvidence {
+   252→  productType: string;
+   253→  productId: string | null;
+   254→  indexName: string | null;
+   255→  value: number;
+   256→  normalizedSignal: number;
+   257→  weight: number;
+   258→  confidence: number;
+   259→  uncertainty: number;
+   260→  contribution: number;
+   261→  description: string;
+   262→  direction: "loss" | "gain" | "neutral";
+   263→}
+   264→
+   265→export interface ObservationRecord {
+   266→  id: string;
+   267→  uuid: string;
+   268→  type: string;
+   269→  title: string;
+   270→  summary: string;
+   271→  geometry: GeoJSON.Geometry;
+   272→  centroid: [number, number];
+   273→  bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+   274→  areaHa: number;
+   275→  observedAt: string;
+   276→  firstObserved: string;
+   277→  lastUpdated: string;
+   278→  durationDays: number | null;
+   279→  confidence: number;
+   280→  uncertainty: number;
+   281→  status: string;
+   282→  severity: string;
+   283→  currentVersion: number;
+   284→  sourceProducts: string[];
+   285→  sourceModels: string[];
+   286→  mgrsTile: string | null;
+   287→  sceneId: string | null;
+   288→  evidence: ObservationEvidence[];
+   289→  affectedEntities: { entityId: string; relationship: string; distance: number | null }[];
+   290→  createdAt: string;
+   291→}
+   292→
+   293→export interface ObservationDetail {
+   294→  observation: ObservationRecord;
+   295→  versions: {
+   296→    id: string;
+   297→    version: number;
+   298→    change: string;
+   299→    confidence: number;
+   300→    uncertainty: number;
+   301→    status: string;
+   302→    evidenceCount: number;
+   303→    observedAt: string;
+   304→  }[];
+   305→}
+   306→
+   307→export async function fetchObservations(params: { type?: string; status?: string; severity?: string; limit?: number } = {}): Promise<{ observations: ObservationRecord[]; count: number; types: any[] }> {
+   308→  const sp = new URLSearchParams();
+   309→  if (params.type) sp.set("type", params.type);
+   310→  if (params.status) sp.set("status", params.status);
+   311→  if (params.severity) sp.set("severity", params.severity);
+   312→  if (params.limit) sp.set("limit", String(params.limit));
+   313→  const res = await fetch(`/api/observations?${sp}`);
+   314→  if (!res.ok) throw new Error(`fetchObservations: ${res.status}`);
+   315→  return res.json();
+   316→}
+   317→
+   318→export async function fetchObservation(id: string): Promise<ObservationDetail> {
+   319→  const res = await fetch(`/api/observations/${id}`);
+   320→  if (!res.ok) throw new Error(`fetchObservation: ${res.status}`);
+   321→  return res.json();
+   322→}
+   323→
+   324→export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
+   325→  const res = await fetch("/api/observations/scan", {
+   326→    method: "POST",
+   327→    headers: { "Content-Type": "application/json" },
+   328→    body: JSON.stringify({ mgrsTile }),
+   329→  });
+   330→  if (!res.ok) throw new Error(`triggerObservationScan: ${res.status}`);
+   331→  return res.json();
+   332→}
+   333→
+   334→// ===== Ground Truth & Active Learning API =====
+   335→
+   336→export interface ReviewQueueItem {
+   337→  id: string;
+   338→  observationId: string;
+   339→  hypothesisId: string | null;
+   340→  status: string;
+   341→  priority: string;
+   342→  priorityScore: number;
+   343→  uncertaintyScore: number;
+   344→  informationGain: number;
+   345→  assignedTo: string | null;
+   346→  reviewOutcome: string | null;
+   347→  reviewNotes: string | null;
+   348→  createdAt: string;
+   349→  reviewedAt: string | null;
+   350→  observation: { id: string; type: string; title: string; areaHa: number; mgrsTile: string | null; confidence: number };
+   351→}
+   352→
+   353→export interface ReviewQueueStats {
+   354→  needsReview: number;
+   355→  assigned: number;
+   356→  reviewed: number;
+   357→  groundTruth: number;
+   358→  urgent: number;
+   359→  totalGroundTruth: number;
+   360→}
+   361→
+   362→export async function fetchReviewQueue(status?: string): Promise<{ items: ReviewQueueItem[]; stats: ReviewQueueStats; count: number }> {
+   363→  const sp = new URLSearchParams();
+   364→  if (status) sp.set("status", status);
+   365→  const res = await fetch(`/api/review-queue?${sp}`);
+   366→  if (!res.ok) throw new Error(`fetchReviewQueue: ${res.status}`);
+   367→  return res.json();
+   368→}
+   369→
+   370→export async function populateReviewQueue(count?: number): Promise<any> {
+   371→  const res = await fetch("/api/review-queue", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ count }) });
+   372→  if (!res.ok) throw new Error(`populateReviewQueue: ${res.status}`);
+   373→  return res.json();
+   374→}
+   375→
+   376→export async function submitReview(reviewId: string, opts: { outcome: string; notes?: string; verificationMethod?: string; reviewerRole?: string }): Promise<any> {
+   377→  const res = await fetch(`/api/review-queue/${reviewId}`, {
+   378→    method: "PATCH",
+   379→    headers: { "Content-Type": "application/json" },
+   380→    body: JSON.stringify({ action: "submit", ...opts }),
+   381→  });
+   382→  if (!res.ok) throw new Error(`submitReview: ${res.status}`);
+   383→  return res.json();
+   384→}
+   385→
+   386→export async function fetchCalibration(): Promise<any> {
+   387→  const res = await fetch("/api/calibration");
+   388→  if (!res.ok) throw new Error(`fetchCalibration: ${res.status}`);
+   389→  return res.json();
+   390→}
+   391→
+   392→export async function generateBenchmark(): Promise<any> {
+   393→  const res = await fetch("/api/calibration", { method: "POST" });
+   394→  if (!res.ok) throw new Error(`generateBenchmark: ${res.status}`);
+   395→  return res.json();
+   396→}
+   397→
+   398→export async function fetchDriftAlerts(): Promise<any> {
+   399→  const res = await fetch("/api/drift");
+   400→  if (!res.ok) throw new Error(`fetchDriftAlerts: ${res.status}`);
+   401→  return res.json();
+   402→}
+   403→
+   404→export async function runDriftDetection(): Promise<any> {
+   405→  const res = await fetch("/api/drift", { method: "POST" });
+   406→  if (!res.ok) throw new Error(`runDriftDetection: ${res.status}`);
+   407→  return res.json();
+   408→}
+   409→
+   410→export async function generateExplainabilityReport(observationId: string): Promise<any> {
+   411→  const res = await fetch("/api/reports", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ observationId }) });
+   412→  if (!res.ok) throw new Error(`generateExplainabilityReport: ${res.status}`);
+   413→  return res.json();
+   414→}
+   415→
+   416→// ===== Continuous Pipeline & Learning API =====
+   417→
+   418→export interface PipelineStatus {
+   419→  grid: { total: number; processed: number; pending: number; stale: number; coveragePct: number };
+   420→  lastRun: {
+   421→    id: string;
+   422→    startedAt: string;
+   423→    finishedAt: string | null;
+   424→    status: string;
+   425→    tilesProcessed: number;
+   426→    tilesTotal: number;
+   427→    observationsCreated: number;
+   428→    hypothesesCreated: number;
+   429→    durationMs: number;
+   430→  } | null;
+   431→  recentRuns: { id: string; startedAt: string; status: string; tilesProcessed: number; observationsCreated: number }[];
+   432→}
+   433→
+   434→export async function fetchPipelineStatus(): Promise<PipelineStatus> {
+   435→  const res = await fetch("/api/pipeline/run-continuous");
+   436→  if (!res.ok) throw new Error(`fetchPipelineStatus: ${res.status}`);
+   437→  return res.json();
+   438→}
+   439→
+   440→export async function triggerContinuousPipeline(opts: { tileLimit?: number } = {}): Promise<any> {
+   441→  const res = await fetch("/api/pipeline/run-continuous", {
+   442→    method: "POST",
+   443→    headers: { "Content-Type": "application/json" },
+   444→    body: JSON.stringify(opts),
+   445→  });
+   446→  if (!res.ok) throw new Error(`triggerContinuousPipeline: ${res.status}`);
+   447→  return res.json();
+   448→}
+   449→
+   450→export async function fetchGridStatus(): Promise<{ total: number; processed: number; pending: number; stale: number; tiles: any[] }> {
+   451→  const res = await fetch("/api/pipeline/status");
+   452→  if (!res.ok) throw new Error(`fetchGridStatus: ${res.status}`);
+   453→  return res.json();
+   454→}
+   455→
+   456→export interface LearnedPrior {
+   457→  id: string;
+   458→  hypothesisType: string;
+   459→  originalPrior: number;
+   460→  learnedPrior: number;
+   461→  priorDelta: number;
+   462→  priorDeltaPct: number;
+   463→  confirmations: number;
+   464→  rejections: number;
+   465→  accuracy: number;
+   466→  lastUpdated: string;
+   467→}
+   468→
+   469→export async function fetchLearnedPriors(): Promise<{ priors: LearnedPrior[]; count: number }> {
+   470→  const res = await fetch("/api/learning/priors");
+   471→  if (!res.ok) throw new Error(`fetchLearnedPriors: ${res.status}`);
+   472→  return res.json();
+   473→}
+   474→
+   475→export async function triggerLearning(): Promise<any> {
+   476→  const res = await fetch("/api/learning/update", { method: "POST" });
+   477→  if (!res.ok) throw new Error(`triggerLearning: ${res.status}`);
+   478→  return res.json();
+   479→}
+   480→
+   481→export async function fetchLearningHistory(): Promise<{ updates: any[]; count: number }> {
+   482→  const res = await fetch("/api/learning/update");
+   483→  if (!res.ok) throw new Error(`fetchLearningHistory: ${res.status}`);
+   484→  return res.json();
+   485→}
+   486→
+   487→export async function submitFeedback(opts: { observationId?: string; hypothesisId?: string; outcome: string; feedbackType?: string; hypothesisType?: string; notes?: string }): Promise<any> {
+   488→  const res = await fetch("/api/feedback", {
+   489→    method: "POST",
+   490→    headers: { "Content-Type": "application/json" },
+   491→    body: JSON.stringify(opts),
+   492→  });
+   493→  if (!res.ok) throw new Error(`submitFeedback: ${res.status}`);
+   494→  return res.json();
+   495→}
+   496→
+   497→export async function fetchFeedback(outcome?: string): Promise<{ feedback: any[]; count: number }> {
+   498→  const sp = new URLSearchParams();
+   499→  if (outcome) sp.set("outcome", outcome);
+   500→  const res = await fetch(`/api/feedback?${sp}`);
+   501→  if (!res.ok) throw new Error(`fetchFeedback: ${res.status}`);
+   502→  return res.json();
+   503→}
+   504→
+   505→// ===== Intelligence Engine API =====
+   506→
+   507→export interface HypothesisRecord {
+   508→  id: string;
+   509→  uuid: string;
+   510→  observationId: string;
+   511→  type: string;
+   512→  label: string;
+   513→  description: string;
+   514→  prior: number;
+   515→  posterior: number;
+   516→  confidence: number;
+   517→  rank: number;
+   518→  isPrimary: boolean;
+   519→  supportingCount: number;
+   520→  contradictingCount: number;
+   521→  missingCount: number;
+   522→  reasoning: string;
+   523→  recommendedVerification: string;
+   524→  status: string;
+   525→  rulesFired: string[];
+   526→  evidence: {
+   527→    id: string;
+   528→    relationship: string;
+   529→    likelihoodRatio: number;
+   530→    posteriorContribution: number;
+   531→    description: string;
+   532→    weight: number;
+   533→  }[];
+   534→  createdAt: string;
+   535→}
+   536→
+   537→export async function fetchHypotheses(params: { type?: string; observationId?: string; limit?: number } = {}): Promise<{ hypotheses: HypothesisRecord[]; count: number; types?: any[] }> {
+   538→  const sp = new URLSearchParams();
+   539→  if (params.type) sp.set("type", params.type);
+   540→  if (params.observationId) sp.set("observationId", params.observationId);
+   541→  if (params.limit) sp.set("limit", String(params.limit));
+   542→  const res = await fetch(`/api/hypotheses?${sp}`);
+   543→  if (!res.ok) throw new Error(`fetchHypotheses: ${res.status}`);
+   544→  return res.json();
+   545→}
+   546→
+   547→export async function fetchHypothesis(id: string): Promise<any> {
+   548→  const res = await fetch(`/api/hypotheses/${id}`);
+   549→  if (!res.ok) throw new Error(`fetchHypothesis: ${res.status}`);
+   550→  return res.json();
+   551→}
+   552→
+   553→export async function generateHypotheses(observationId: string): Promise<any> {
+   554→  const res = await fetch("/api/hypotheses/generate", {
+   555→    method: "POST",
+   556→    headers: { "Content-Type": "application/json" },
+   557→    body: JSON.stringify({ observationId }),
+   558→  });
+   559→  if (!res.ok) throw new Error(`generateHypotheses: ${res.status}`);
+   560→  return res.json();
+   561→}
+   562→
+   563→export interface EvidenceBundleRecord {
+   564→  id: string;
+   565→  observationId: string;
+   566→  category: string;
+   567→  label: string;
+   568→  evidenceCount: number;
+   569→  meanSignal: number;
+   570→  meanConfidence: number;
+   571→  fusedUncertainty: number;
+   572→  indication: string;
+   573→  evidenceIds: string[];
+   574→}
+   575→
+   576→export async function fetchBundles(observationId: string): Promise<{ bundles: EvidenceBundleRecord[]; count: number }> {
+   577→  const res = await fetch(`/api/bundles?observationId=${observationId}`);
+   578→  if (!res.ok) throw new Error(`fetchBundles: ${res.status}`);
+   579→  return res.json();
+   580→}
+   581→
+   582→export async function fetchRules(): Promise<any> {
+   583→  const res = await fetch("/api/rules");
+   584→  if (!res.ok) throw new Error(`fetchRules: ${res.status}`);
+   585→  return res.json();
+   586→}
+   587→
+   588→export interface ScenarioRecord {
+   589→  id: string;
+   590→  uuid: string;
+   591→  type: string;
+   592→  label: string;
+   593→  description: string;
+   594→  forecastDays: number;
+   595→  predictedAreaHa: number;
+   596→  predictedGrowthPct: number;
+   597→  affectedRiversCount: number;
+   598→  affectedCommunitiesCount: number;
+   599→  expectedSedimentIncrease: number | null;
+   600→  confidence: number;
+   601→  observationId: string | null;
+   602→  phenomenonId: string | null;
+   603→  createdAt: string;
+   604→}
+   605→
+   606→export async function fetchScenarios(observationId?: string): Promise<{ scenarios: ScenarioRecord[]; count: number }> {
+   607→  const sp = new URLSearchParams();
+   608→  if (observationId) sp.set("observationId", observationId);
+   609→  const res = await fetch(`/api/scenarios?${sp}`);
+   610→  if (!res.ok) throw new Error(`fetchScenarios: ${res.status}`);
+   611→  return res.json();
+   612→}
+   613→
+   614→export async function generateScenario(opts: { observationId?: string; phenomenonId?: string; forecastDays?: number }): Promise<any> {
+   615→  const res = await fetch("/api/scenarios", {
+   616→    method: "POST",
+   617→    headers: { "Content-Type": "application/json" },
+   618→    body: JSON.stringify(opts),
+   619→  });
+   620→  if (!res.ok) throw new Error(`generateScenario: ${res.status}`);
+   621→  return res.json();
+   622→}
+   623→
+   624→export async function fetchDecisionTrace(hypothesisId: string): Promise<any> {
+   625→  const res = await fetch(`/api/decision-trace/${hypothesisId}`);
+   626→  if (!res.ok) throw new Error(`fetchDecisionTrace: ${res.status}`);
+   627→  return res.json();
+   628→}
+   629→
+   630→// ===== Temporal Intelligence API =====
+   631→
+   632→export interface EvidenceRecord {
+   633→  id: string;
+   634→  uuid: string;
+   635→  productType: string;
+   636→  indexName: string | null;
+   637→  productId: string | null;
+   638→  geometry: GeoJSON.Geometry;
+   639→  centroid: [number, number];
+   640→  observedAt: string;
+   641→  value: number;
+   642→  normalizedSignal: number;
+   643→  confidence: number;
+   644→  uncertainty: number;
+   645→  direction: string;
+   646→  description: string;
+   647→  supportingPixels: number;
+   648→  supportingSceneId: string | null;
+   649→  supportingBandHrefs: string[];
+   650→}
+   651→
+   652→export async function fetchEvidence(productType?: string, limit = 200): Promise<{ evidence: EvidenceRecord[]; total: number; count: number }> {
+   653→  const sp = new URLSearchParams();
+   654→  if (productType) sp.set("productType", productType);
+   655→  sp.set("limit", String(limit));
+   656→  const res = await fetch(`/api/evidence?${sp}`);
+   657→  if (!res.ok) throw new Error(`fetchEvidence: ${res.status}`);
+   658→  return res.json();
+   659→}
+   660→
+   661→export interface PhenomenonRecord {
+   662→  id: string;
+   663→  uuid: string;
+   664→  type: string;
+   665→  title: string;
+   666→  summary: string;
+   667→  status: string;
+   668→  centroid: [number, number];
+   669→  bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+   670→  currentAreaHa: number;
+   671→  firstObserved: string;
+   672→  lastObserved: string;
+   673→  durationDays: number;
+   674→  observationCount: number;
+   675→  growthRateHaPerWeek: number | null;
+   676→  growthPct: number | null;
+   677→  movementKm: number | null;
+   678→  persistenceScore: number | null;
+   679→  confidence: number;
+   680→  uncertainty: number;
+   681→  severity: string;
+   682→  mgrsTile: string | null;
+   683→  observations: {
+   684→    observationId: string;
+   685→    sequence: number;
+   686→    areaHa: number;
+   687→    areaDeltaHa: number | null;
+   688→    areaDeltaPct: number | null;
+   689→    centroidShiftKm: number | null;
+   690→    observedAt: string;
+   691→    confidence: number;
+   692→  }[];
+   693→}
+   694→
+   695→export async function fetchPhenomena(type?: string, status?: string, limit = 50): Promise<{ phenomena: PhenomenonRecord[]; total: number; count: number }> {
+   696→  const sp = new URLSearchParams();
+   697→  if (type) sp.set("type", type);
+   698→  if (status) sp.set("status", status);
+   699→  sp.set("limit", String(limit));
+   700→  const res = await fetch(`/api/phenomena?${sp}`);
+   701→  if (!res.ok) throw new Error(`fetchPhenomena: ${res.status}`);
+   702→  return res.json();
+   703→}
+   704→
+   705→export async function fetchPhenomenon(id: string): Promise<PhenomenonRecord> {
+   706→  const res = await fetch(`/api/phenomena/${id}`);
+   707→  if (!res.ok) throw new Error(`fetchPhenomenon: ${res.status}`);
+   708→  return res.json();
+   709→}
+   710→
+   711→export async function triggerTemporalMerge(): Promise<any> {
+   712→  const res = await fetch("/api/phenomena/merge", { method: "POST" });
+   713→  if (!res.ok) throw new Error(`triggerTemporalMerge: ${res.status}`);
+   714→  return res.json();
+   715→}
+   716→
+   717→export interface LineageNode {
+   718→  level: string;
+   719→  id: string;
+   720→  label: string;
+   721→  type: string;
+   722→  details: Record<string, any>;
+   723→  children?: LineageNode[];
+   724→}
+   725→
+   726→export async function fetchLineage(observationId: string): Promise<LineageNode> {
+   727→  const res = await fetch(`/api/observations/${observationId}/lineage`);
+   728→  if (!res.ok) throw new Error(`fetchLineage: ${res.status}`);
+   729→  return res.json();
+   730→}
+   731→
+   732→export interface KnowledgeNodeRecord {
+   733→  id: string;
+   734→  conceptId: string;
+   735→  label: string;
+   736→  category: string;
+   737→  description: string;
+   738→  color: string;
+   739→}
+   740→
+   741→export interface KnowledgeEdgeRecord {
+   742→  id: string;
+   743→  from: KnowledgeNodeRecord;
+   744→  to: KnowledgeNodeRecord;
+   745→  relation: string;
+   746→  confidence: number;
+   747→  description: string;
+   748→}
+   749→
+   750→export interface KnowledgeGraph {
+   751→  nodes: KnowledgeNodeRecord[];
+   752→  edges: KnowledgeEdgeRecord[];
+   753→}
+   754→
+   755→export async function fetchKnowledgeGraph(): Promise<KnowledgeGraph> {
+   756→  const res = await fetch("/api/knowledge-graph");
+   757→  if (!res.ok) throw new Error(`fetchKnowledgeGraph: ${res.status}`);
+   758→  return res.json();
+   759→}
+   760→
+   761→// ===== Raster Intelligence API =====
+   762→
+   763→export interface RasterProductMeta {
+   764→  id: string;
+   765→  type: string;
+   766→  indexName: string | null;
+   767→  sceneId: string | null;
+   768→  mgrsTile: string | null;
+   769→  season: string | null;
+   770→  gridSize: number;
+   771→  meanValue: number | null;
+   772→  minValue: number | null;
+   773→  maxValue: number | null;
+   774→  formula: string;
+   775→  sources: string[];
+   776→  confidence: number;
+   777→  extent: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+   778→  computedAt: string;
+   779→}
+   780→
+   781→export interface RasterProductDetail extends RasterProductMeta {
+   782→  valueGrid: number[];
+   783→  uncertaintyGrid: number[];
+   784→  stdValue: number | null;
+   785→  baselineId: string | null;
+   786→}
+   787→
+   788→export interface ProductTypeInfo {
+   789→  type: string;
+   790→  label: string;
+   791→  description: string;
+   792→  color: string;
+   793→}
+   794→
+   795→export async function fetchRasterProducts(type?: string, mgrsTile?: string): Promise<{ products: RasterProductMeta[]; types: ProductTypeInfo[]; count: number }> {
+   796→  const sp = new URLSearchParams();
+   797→  if (type) sp.set("type", type);
+   798→  if (mgrsTile) sp.set("mgrsTile", mgrsTile);
+   799→  const res = await fetch(`/api/eo/raster-products?${sp}`);
+   800→  if (!res.ok) throw new Error(`fetchRasterProducts: ${res.status}`);
+   801→  return res.json();
+   802→}
+   803→
+   804→export async function fetchRasterProduct(id: string): Promise<RasterProductDetail> {
+   805→  const res = await fetch(`/api/eo/raster-products/${id}`);
+   806→  if (!res.ok) throw new Error(`fetchRasterProduct: ${res.status}`);
+   807→  return res.json();
+   808→}
+   809→
+   810→export async function generateRasterProduct(type: string, opts: { sceneId?: string; mgrsTile?: string; indexName?: string } = {}): Promise<any> {
+   811→  const res = await fetch("/api/eo/raster-products", {
+   812→    method: "POST",
+   813→    headers: { "Content-Type": "application/json" },
+   814→    body: JSON.stringify({ type, ...opts }),
+   815→  });
+   816→  if (!res.ok) throw new Error(`generateRasterProduct: ${res.status}`);
+   817→  return res.json();
+   818→}
+   819→
+   820→export interface BaselineInfo {
+   821→  id: string;
+   822→  indexName: string;
+   823→  mgrsTile: string;
+   824→  season: string;
+   825→  sampleCount: number;
+   826→  uncertainty: number;
+   827→  gridSize: number;
+   828→  computedAt: string;
+   829→  extent: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+   830→}
+   831→
+   832→export async function fetchBaselines(mgrsTile?: string): Promise<{ baselines: BaselineInfo[]; count: number }> {
+   833→  const sp = new URLSearchParams();
+   834→  if (mgrsTile) sp.set("mgrsTile", mgrsTile);
+   835→  const res = await fetch(`/api/eo/baselines?${sp}`);
+   836→  if (!res.ok) throw new Error(`fetchBaselines: ${res.status}`);
+   837→  return res.json();
+   838→}
+   839→
+   840→export async function generateBaseline(mgrsTile: string, indexName: string, season?: string): Promise<any> {
+   841→  const res = await fetch("/api/eo/baselines", {
+   842→    method: "POST",
+   843→    headers: { "Content-Type": "application/json" },
+   844→    body: JSON.stringify({ mgrsTile, indexName, season }),
+   845→  });
+   846→  if (!res.ok) throw new Error(`generateBaseline: ${res.status}`);
+   847→  return res.json();
+   848→}
+   849→
+   850→// ---- React hooks ----
+   851→
+   852→export function useAsync<T>(fn: () => Promise<T>, deps: any[] = []): { data: T | null; loading: boolean; error: string | null; refresh: () => void } {
+   853→  const [state, setState] = useState<{ data: T | null; loading: boolean; error: string | null }>({
+   854→    data: null,
+   855→    loading: true,
+   856→    error: null,
+   857→  });
+   858→  const [nonce, setNonce] = useState(0);
+   859→
+   860→  const refresh = useCallback(() => setNonce((n) => n + 1), []);
+   861→
+   862→  useEffect(() => {
+   863→    let active = true;
+   864→    // mark loading for this fetch round (async — avoids synchronous setState in effect body)
+   865→    Promise.resolve().then(() => {
+   866→      if (active) setState((s) => ({ ...s, loading: true, error: null }));
+   867→    });
+   868→    fn()
+   869→      .then((d) => {
+   870→        if (active) setState({ data: d, loading: false, error: null });
+   871→      })
+   872→      .catch((e) => {
+   873→        if (active)
+   874→          setState({ data: null, loading: false, error: e instanceof Error ? e.message : String(e) });
+   875→      });
+   876→    return () => {
+   877→      active = false;
+   878→    };
+   879→  }, [...deps, nonce]);
+   880→
+   881→  return { ...state, refresh };
+   882→}
+   883→

@@ -331,6 +331,88 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Ground Truth & Active Learning API =====
+
+export interface ReviewQueueItem {
+  id: string;
+  observationId: string;
+  hypothesisId: string | null;
+  status: string;
+  priority: string;
+  priorityScore: number;
+  uncertaintyScore: number;
+  informationGain: number;
+  assignedTo: string | null;
+  reviewOutcome: string | null;
+  reviewNotes: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  observation: { id: string; type: string; title: string; areaHa: number; mgrsTile: string | null; confidence: number };
+}
+
+export interface ReviewQueueStats {
+  needsReview: number;
+  assigned: number;
+  reviewed: number;
+  groundTruth: number;
+  urgent: number;
+  totalGroundTruth: number;
+}
+
+export async function fetchReviewQueue(status?: string): Promise<{ items: ReviewQueueItem[]; stats: ReviewQueueStats; count: number }> {
+  const sp = new URLSearchParams();
+  if (status) sp.set("status", status);
+  const res = await fetch(`/api/review-queue?${sp}`);
+  if (!res.ok) throw new Error(`fetchReviewQueue: ${res.status}`);
+  return res.json();
+}
+
+export async function populateReviewQueue(count?: number): Promise<any> {
+  const res = await fetch("/api/review-queue", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ count }) });
+  if (!res.ok) throw new Error(`populateReviewQueue: ${res.status}`);
+  return res.json();
+}
+
+export async function submitReview(reviewId: string, opts: { outcome: string; notes?: string; verificationMethod?: string; reviewerRole?: string }): Promise<any> {
+  const res = await fetch(`/api/review-queue/${reviewId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "submit", ...opts }),
+  });
+  if (!res.ok) throw new Error(`submitReview: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchCalibration(): Promise<any> {
+  const res = await fetch("/api/calibration");
+  if (!res.ok) throw new Error(`fetchCalibration: ${res.status}`);
+  return res.json();
+}
+
+export async function generateBenchmark(): Promise<any> {
+  const res = await fetch("/api/calibration", { method: "POST" });
+  if (!res.ok) throw new Error(`generateBenchmark: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchDriftAlerts(): Promise<any> {
+  const res = await fetch("/api/drift");
+  if (!res.ok) throw new Error(`fetchDriftAlerts: ${res.status}`);
+  return res.json();
+}
+
+export async function runDriftDetection(): Promise<any> {
+  const res = await fetch("/api/drift", { method: "POST" });
+  if (!res.ok) throw new Error(`runDriftDetection: ${res.status}`);
+  return res.json();
+}
+
+export async function generateExplainabilityReport(observationId: string): Promise<any> {
+  const res = await fetch("/api/reports", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ observationId }) });
+  if (!res.ok) throw new Error(`generateExplainabilityReport: ${res.status}`);
+  return res.json();
+}
+
 // ===== Continuous Pipeline & Learning API =====
 
 export interface PipelineStatus {

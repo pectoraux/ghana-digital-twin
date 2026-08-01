@@ -888,3 +888,165 @@ model LearnedPrior {
 
   @@index([hypothesisType])
 }
+
+// ===== Milestone 5.25: Ground Truth & Active Learning =====
+
+// Human Review Queue — structured workflow for verification
+model ReviewQueue {
+  id              String   @id @default(uuid())
+  observationId   String
+  hypothesisId    String?  // specific hypothesis to review
+  // queue state
+  status          String   @default("needs_review") // needs_review | assigned | reviewed | ground_truth | skipped
+  priority        String   @default("normal") // low | normal | high | urgent
+  priorityScore   Float    @default(0.5) // 0..1, higher = more important to review
+  // active learning
+  uncertaintyScore Float   @default(0.5) // how uncertain the AI is
+  informationGain Float    @default(0) // expected information gain from reviewing
+  // assignment
+  assignedTo      String?  // reviewer id
+  assignedAt      DateTime?
+  // review result
+  reviewOutcome   String?  // confirmed | rejected | partial | needs_monitoring
+  reviewNotes     String?
+  reviewEvidence  String   @default("{}") // JSON: photos, drone scans, etc.
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  // timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([priority])
+  @@index([assignedTo])
+  @@index([observationId])
+}
+
+// Ground Truth — verified outcomes linked to observations/hypotheses
+model GroundTruth {
+  id              String   @id @default(uuid())
+  observationId   String?
+  hypothesisId    String?
+  phenomenonId    String?
+  // the verified truth
+  verifiedOutcome String   // confirmed | rejected | partial
+  verifiedHypothesisType String? // which hypothesis was correct
+  // verification method
+  verificationMethod String // field_inspection | drone_survey | government_confirmation | community_verification | multi_source
+  confidence      Float    @default(1.0) // ground truth confidence (1.0 = certain)
+  // evidence
+  evidenceSummary String   // text description of verification evidence
+  evidenceData    String   @default("{}") // JSON: photos, coordinates, reports
+  // verifier
+  verifiedBy      String?
+  verifierRole    String?  // inspector | official | community_lead | ai_auto
+  verifierCredibility Float @default(0.8)
+  // learning link
+  learningApplied Boolean  @default(false) // has this been fed to the learning engine?
+  createdAt       DateTime @default(now())
+
+  @@index([observationId])
+  @@index([verifiedOutcome])
+  @@index([verificationMethod])
+}
+
+// Calibration metrics — tracked over time
+model CalibrationMetric {
+  id              String   @id @default(uuid())
+  // what's being calibrated
+  hypothesisType  String?  // null = global
+  metricType      String   // brier_score | ece | precision | recall | f1 | accuracy
+  value           Float
+  // context
+  sampleCount     Int
+  timeWindow      String   // "7d" | "30d" | "all"
+  computedAt      DateTime @default(now())
+
+  @@index([hypothesisType])
+  @@index([metricType])
+  @@index([computedAt])
+}
+
+// Evidence Quality Score — per-evidence quality assessment
+model EvidenceQualityScore {
+  id              String   @id @default(uuid())
+  evidenceId      String   @unique
+  // quality factors (0..1 each)
+  sensorReliability Float   @default(0.9) // sentinel-2 = high
+  cloudCover      Float    @default(0) // 0..100
+  ageDays         Float    @default(0) // how old
+  resolution      Float    @default(10) // meters
+  distanceToTarget Float   @default(0) // km
+  humanCredibility Float   @default(0.8)
+  crossSourceAgreement Float @default(0.5) // 0..1
+  // computed quality
+  qualityScore    Float    @default(0.5) // 0..1 composite
+  qualityFactors  String   @default("{}") // JSON breakdown
+  createdAt       DateTime @default(now())
+
+  @@index([evidenceId])
+  @@index([qualityScore])
+}
+
+// Drift detection — distribution shift monitoring
+model DriftAlert {
+  id              String   @id @default(uuid())
+  type            String   // seasonal | distribution | sensor | anomaly_pattern
+  metric          String   // what drifted
+  baselineValue   Float
+  currentValue    Float
+  driftMagnitude  Float    // % change
+  threshold       Float    // alert threshold
+  status          String   @default("active") // active | acknowledged | resolved
+  description     String
+  affectedTiles   String   @default("[]") // JSON
+  detectedAt      DateTime @default(now())
+  resolvedAt      DateTime?
+
+  @@index([status])
+  @@index([type])
+  @@index([detectedAt])
+}
+
+// Benchmark report — periodic performance summary
+model BenchmarkReport {
+  id              String   @id @default(uuid())
+  period          String   // "2025-01" or "2025-W03"
+  periodStart     DateTime
+  periodEnd       DateTime
+  // metrics
+  detectionAccuracy Float
+  falsePositiveRate Float
+  falseNegativeRate Float
+  avgCalibrationError Float
+  timeToConfirmation Float? // hours
+  humanWorkloadHours Float
+  learningImprovement Float // % accuracy change
+  avgUncertainty  Float
+  coveragePct     Float
+  // details
+  observationsCount Int
+  groundTruthCount Int
+  reviewQueueSize Int
+  metrics         String   @default("{}") // JSON: per-hypothesis breakdown
+  createdAt       DateTime @default(now())
+
+  @@index([period])
+}
+
+// Model version — for reproducibility
+model ModelVersion {
+  id              String   @id @default(uuid())
+  versionId       String   @unique // "hypothesis-model-v12"
+  component       String   // "hypothesis_engine" | "raster_intelligence" | "baseline" | "learning_state"
+  description     String
+  // state snapshot
+  stateHash       String?  // hash of model state for reproducibility
+  parameters      String   @default("{}") // JSON: priors, weights, thresholds
+  // parentage
+  parentVersionId String?
+  createdAt       DateTime @default(now())
+
+  @@index([component])
+  @@index([createdAt])
+}
