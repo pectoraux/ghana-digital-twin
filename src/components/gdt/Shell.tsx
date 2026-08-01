@@ -24,6 +24,7 @@ import { SourcesView } from "./views/SourcesView";
 import { EOView } from "./views/EOView";
 import { RasterIntelligenceView } from "./views/RasterIntelligenceView";
 import { CommandCenterView } from "./views/CommandCenterView";
+import { CommunityView } from "./views/CommunityView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -62,6 +63,7 @@ export function Shell() {
               {view === "eo" && <EOView />}
               {view === "raster" && <RasterIntelligenceView />}
               {view === "command" && <CommandCenterView />}
+              {view === "community" && <CommunityView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>

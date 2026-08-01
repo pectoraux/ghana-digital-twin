@@ -3156,3 +3156,322 @@ model CommandCenterPackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 8.5 — COMMUNITY INTELLIGENCE NETWORK (Package Layer)
+// The "Waze layer". Citizens become intelligence producers. The kernel is
+// FROZEN. Community intelligence is another evidence channel alongside
+// satellites, sensors, and agents. Citizens → Events → Witnesses → Fusion →
+// Observation → Hypothesis → Incident → Command Center.
+// ===========================================================================
+
+// Citizen — pseudonymous identity with a civic reputation score.
+// NOT a hardcoded user. A citizen is an intelligence producer like an agent.
+model Citizen {
+  id              String   @id @default(uuid())
+  citizenId       String   @unique // "cit-7f3a2b"
+  // pseudonymous identity (no PII at the kernel layer — identity packages handle auth)
+  handle          String   @unique // "kwesi_western" (display name)
+  // home region (for location relevance scoring + nearby witness routing)
+  homeRegionId    String?
+  homeLocation    String   @default("{}") // JSON: {lng, lat}
+  // civic score (computed — see CivicScore model for breakdown)
+  civicScore      Float    @default(50) // 0..100
+  trustLevel      String   @default("new") // new | trusted | verified | expert
+  // contribution stats (accumulated)
+  totalReports    Int      @default(0)
+  confirmedReports Int     @default(0)
+  falseReports    Int      @default(0)
+  unresolvedReports Int    @default(0)
+  totalWitnessResponses Int @default(0)
+  witnessAgreements Int    @default(0)
+  // reward economy
+  totalEarnings   Float    @default(0)
+  pendingEarnings Float    @default(0)
+  // anti-gaming
+  flaggedForReview Boolean @default(false)
+  flaggedReason   String?
+  // temporal
+  joinedAt        DateTime @default(now())
+  lastActiveAt    DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([homeRegionId])
+  @@index([civicScore])
+  @@index([trustLevel])
+}
+
+// CitizenEvent — a citizen-reported intelligence event. Evidence is optional.
+// A claim + optional evidence + witness responses = a community evidence channel.
+// Lifecycle mirrors incidents: created → broadcast → witnessing → fusing →
+// verified → resolved → rewarded → learned
+model CitizenEvent {
+  id              String   @id @default(uuid())
+  eventId         String   @unique // "CE-2025-0001"
+  // reporter
+  citizenId       String   // Citizen.citizenId
+  // classification (mirrors incident types for fusion)
+  type            String   // illegal_mining | flood_risk | deforestation | water_pollution | ...
+  severity        String   @default("moderate") // low | moderate | high | critical (self-declared)
+  title           String
+  description     String   // the claim
+  // geography
+  regionId        String?
+  location        String   @default("{}") // JSON: {lng, lat}
+  accuracyM       Float    @default(50) // reported GPS accuracy in meters
+  // temporal
+  occurredAt      DateTime // when the citizen says it happened
+  reportedAt      DateTime @default(now()) // when they reported it
+  // self-declared confidence (citizen's own certainty)
+  selfConfidence  Float    @default(0.5) // 0..1
+  // computed confidence (fused from claim + witnesses + evidence + civic score)
+  fusedConfidence Float    @default(0)
+  // witness network state
+  witnessCount    Int      @default(0)
+  confirmCount    Int      @default(0)
+  rejectCount     Int      @default(0)
+  unknownCount    Int      @default(0)
+  // evidence
+  hasPhoto        Boolean  @default(false)
+  hasVideo        Boolean  @default(false)
+  hasAudio        Boolean  @default(false)
+  hasGps          Boolean  @default(false)
+  textOnly        Boolean  @default(true)
+  // fusion bridge — links to the intelligence layer
+  fusedObservationId String? // Observation.id if fused into the intelligence layer
+  fusedIncidentId String?    // IncidentArtifact.incidentId if it created an incident
+  // resolution
+  outcome         String?  // confirmed | false_positive | unverified | escalated
+  groundTruth     Boolean?
+  resolutionNote  String?
+  // reward
+  rewardDistributed Boolean @default(false)
+  rewardPoolId    String?
+  // lifecycle
+  status          String   @default("created") // created | broadcast | witnessing | fusing | verified | resolved | rewarded | learned
+  broadcastAt     DateTime?
+  witnessingDeadline DateTime? // witnesses respond by this time
+  verifiedAt      DateTime?
+  resolvedAt      DateTime?
+  rewardedAt      DateTime?
+  learnedAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([regionId])
+  @@index([reportedAt])
+  @@index([citizenId])
+}
+
+// CitizenEvidence — optional evidence attached to a citizen event.
+// Photos, videos, audio, GPS tracks, text. Each piece is scored for quality.
+model CitizenEvidence {
+  id              String   @id @default(uuid())
+  eventId         String   // CitizenEvent.eventId
+  // evidence type
+  kind            String   // photo | video | audio | gps_track | text | document
+  // storage (package layer — actual media handled by connectors)
+  mediaUrl        String?  // URL or reference to stored media
+  caption         String?
+  // metadata
+  capturedAt      DateTime?
+  location        String   @default("{}") // JSON: {lng, lat}
+  // quality score (computed: resolution, exif, geotag, timestamp match)
+  qualityScore    Float    @default(0.5) // 0..1
+  // AI verification (optional — did AI verify this evidence?)
+  aiVerified      Boolean  @default(false)
+  aiVerification  String?  // JSON: {match, confidence, notes}
+  // provenance
+  contributedBy   String   // citizenId of contributor (may differ from reporter)
+  createdAt       DateTime @default(now())
+
+  @@index([eventId])
+  @@index([kind])
+}
+
+// WitnessResponse — the Waze mechanism. Nearby users confirm/reject/unknown.
+// Each witness response is itself evidence.
+model WitnessResponse {
+  id              String   @id @default(uuid())
+  responseId      String   @unique
+  eventId         String   // CitizenEvent.eventId
+  witnessId       String   // Citizen.citizenId
+  // response
+  response        String   // confirm | reject | unknown
+  note            String?  // witness explanation
+  // witness location at time of response (for proximity scoring)
+  witnessLocation String   @default("{}") // JSON: {lng, lat}
+  distanceToEventM Float?  // computed distance
+  // optional evidence from witness
+  hasEvidence     Boolean  @default(false)
+  evidenceKind    String?  // photo | video | text
+  // witness's civic score at time of response (weighted into fusion)
+  witnessCivicScore Float  @default(50)
+  // temporal
+  respondedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@unique([eventId, witnessId]) // one response per witness per event
+  @@index([eventId])
+  @@index([witnessId])
+  @@index([response])
+}
+
+// CivicScore — the prediction-accuracy score breakdown.
+// Updated when a citizen's reports resolve. NOT a popularity score.
+model CivicScore {
+  id              String   @id @default(uuid())
+  citizenId       String   @unique
+  // overall (0..100)
+  overall         Float    @default(50)
+  trustLevel      String   @default("new") // new | trusted | verified | expert
+  // 6 factors (each 0..1)
+  accuracy        Float    @default(0.5)       // historical: confirmed / resolved
+  evidenceQuality Float    @default(0.5)       // avg quality of evidence submitted
+  witnessAgreement Float   @default(0.5)       // how often witnesses agree with this user
+  locationRelevance Float  @default(0.5)       // relevance of reported location
+  responseReliability Float @default(0.5)      // consistency/speed of witness responses
+  contributionDiversity Float @default(0.5)    // spread across categories/regions
+  // weights (sum to 1.0) — tunable by governance
+  weights         String   @default("{\"accuracy\":0.30,\"evidenceQuality\":0.20,\"witnessAgreement\":0.20,\"locationRelevance\":0.10,\"responseReliability\":0.10,\"contributionDiversity\":0.10}")
+  // history for trend
+  previousOverall Float?
+  trendDelta      Float?
+  // temporal
+  lastUpdated     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+// RegionalSubscription — users subscribe to region/category/risk/verification.
+// When a matching event verifies, an alert is generated.
+model RegionalSubscription {
+  id              String   @id @default(uuid())
+  subscriptionId  String   @unique
+  citizenId       String   // subscriber
+  // filters
+  regionId        String?  // null = all regions
+  categories      String   @default("[]") // JSON: [illegal_mining, flood_risk, ...] — empty = all
+  minSeverity     String   @default("moderate") // low | moderate | high | critical
+  verifiedOnly    Boolean  @default(true) // only alert on verified events
+  minConfidence   Float    @default(0.7)
+  // delivery
+  alertCount      Int      @default(0)
+  lastAlertAt     DateTime?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([citizenId])
+  @@index([regionId])
+  @@index([active])
+}
+
+// RewardPool — bounty pool for a category/region. Created by gov/corp/platform.
+model RewardPool {
+  id              String   @id @default(uuid())
+  poolId          String   @unique
+  name            String
+  description     String
+  // funder
+  funder          String   // "government" | "corporate" | "platform" | "ngo"
+  funderName      String   // "EPA Ghana" | "GalamseyFree Alliance"
+  // bounty
+  amountPerEvent  Float    // reward per confirmed event
+  currency        String   @default("USD")
+  totalBudget     Float
+  distributedTotal Float   @default(0)
+  // scope
+  category        String   // illegal_mining | flood_risk | ...
+  regionId        String?  // null = nationwide
+  // distribution split (must sum to 1.0)
+  splitReporter   Float    @default(0.40)
+  splitWitnesses  Float    @default(0.30)
+  splitEvidence   Float    @default(0.20)
+  splitPlatform   Float    @default(0.10)
+  // status
+  active          Boolean  @default(true)
+  fundedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([regionId])
+  @@index([active])
+}
+
+// RewardDistribution — how a reward was split for a confirmed event.
+model RewardDistribution {
+  id              String   @id @default(uuid())
+  distributionId  String   @unique
+  eventId         String   // CitizenEvent.eventId
+  poolId          String   // RewardPool.poolId
+  totalAmount     Float
+  // splits
+  reporterAmount  Float
+  witnessesAmount Float
+  evidenceAmount  Float
+  platformAmount  Float
+  // per-recipient breakdown (JSON for flexibility)
+  recipientBreakdown String @default("{}") // JSON: {citizenId: amount}
+  // recipient count
+  reporterId      String
+  witnessIds      String   @default("[]") // JSON
+  evidenceContributorIds String @default("[]") // JSON
+  // temporal
+  distributedAt   DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([eventId])
+  @@index([poolId])
+}
+
+// IntelligenceProducer — unifies agent/citizen/sensor/org reputation.
+// The AI Reputation Graph: every intelligence producer has a common schema.
+// Provenance type: "agent" | "citizen" | "sensor" | "organization" | "researcher"
+model IntelligenceProducer {
+  id              String   @id @default(uuid())
+  producerId      String   @unique // agentId | citizenId | sensorId | orgId
+  producerType    String   // agent | citizen | sensor | organization | researcher
+  name            String   // display name
+  // unified reputation (0..1)
+  reputationScore Float    @default(0.5)
+  trustLevel      String   @default("new") // new | trusted | verified | certified | official
+  // contribution stats
+  totalContributions Int   @default(0)
+  confirmedContributions Int @default(0)
+  falseContributions Int   @default(0)
+  // link back to source
+  sourceRef       String   // table or external reference
+  // ranking
+  rankByType      Int      @default(0)
+  rankOverall     Int      @default(0)
+  // temporal
+  lastActiveAt    DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([producerType])
+  @@index([reputationScore])
+  @@index([trustLevel])
+}
+
+// CommunityPackage — the package manifests for community intelligence.
+model CommunityPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  // capabilities provided
+  provides        String   @default("[]") // JSON
+  requires        String   @default("[]") // JSON
+  // composition
+  subPackages     String   @default("[]") // JSON
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

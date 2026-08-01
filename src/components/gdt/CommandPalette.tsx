@@ -26,6 +26,7 @@ import {
   Terminal,
   Radio,
   RadioTower,
+  Users,
   Clock,
 } from "lucide-react";
 
@@ -38,6 +39,7 @@ const VIEWS = [
   { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps, baselines & uncertainty" },
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
   { id: "command", label: "Command Center", icon: RadioTower, hint: "National intelligence command center" },
+  { id: "community", label: "Community Intelligence", icon: Users, hint: "Citizen intelligence network" },
   { id: "api", label: "API Explorer", icon: Terminal, hint: "Programmatic access" },
 ] as const;
 

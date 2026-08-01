@@ -44,6 +44,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   raster: { title: "Raster Intelligence", sub: "Anomaly maps, baselines & uncertainty" },
   sources: { title: "Data Sources", sub: "Ingestion pipeline & connectors" },
   command: { title: "Command Center", sub: "National intelligence command: incidents, workflows, decisions, evidence rooms" },
+  community: { title: "Community Intelligence", sub: "Citizen intelligence network: events, witnesses, civic scores, rewards" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };
 
