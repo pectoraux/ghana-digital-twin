@@ -19,6 +19,7 @@ import {
   Database,
   Satellite,
   Grid3x3,
+  RadioTower,
   Terminal,
   Settings,
   HelpCircle,
@@ -42,6 +43,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "eo", label: "Earth Observation", icon: Satellite, hint: "Sentinel-2 imagery & spectral indices" },
   { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps, baselines & uncertainty" },
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
+  { id: "command", label: "Command Center", icon: RadioTower, hint: "National intelligence command: incidents, workflows, decisions, evidence rooms" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 

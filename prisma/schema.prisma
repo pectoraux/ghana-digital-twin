@@ -2870,3 +2870,289 @@ model AgentArenaChallenge {
   @@index([status])
   @@index([datasetName])
 }
+
+// ===========================================================================
+// MILESTONE 8 — NATIONAL INTELLIGENCE COMMAND CENTER (Package Layer)
+// The kernel is FROZEN. Everything below is package-level operational state.
+// Intelligence → Assessment → Decision → Workflow → Action → Outcome → Learning
+// ===========================================================================
+
+// IncidentArtifact — operational incident (NOT an alert). An alert is information;
+// an incident is operational and tracks a human + institutional workflow.
+// Lifecycle: detected → reviewed → assigned → investigated → resolved → closed → learned
+model IncidentArtifact {
+  id              String   @id @default(uuid())
+  incidentId      String   @unique // "GH-MIN-001"
+  // classification
+  type            String   // "illegal_mining" | "flood_risk" | "deforestation" | "cocoa_disease" | ...
+  severity        String   // "low" | "moderate" | "high" | "critical"
+  title           String
+  summary         String
+  // geography
+  regionId        String?
+  location        String   @default("{}") // JSON: {lng, lat}
+  areaAffectedHa  Float?
+  // intelligence provenance — links back into the intelligence chain
+  evidence        String   @default("[]") // JSON: [observationId, sarSceneId, ...]
+  assessmentId    String?  // arbitration/assessment artifact hash this was opened from
+  confidence      Float    @default(0.5) // fused confidence from agents/arbitration
+  agentsInvolved  String   @default("[]") // JSON: [agentId, ...]
+  arbitrationId   String?  // AgentArbitration reference
+  // operational assignment
+  assignedTo      String   @default("[]") // JSON: [roleId, teamId, userId]
+  workflowId      String?  // OperationalWorkflow definition
+  workflowExecutionId String? // running WorkflowExecution
+  // resolution
+  resolution      String?  // human summary of resolution
+  outcome         String?  // "confirmed" | "false_positive" | "mitigated" | "escalated" | "monitoring"
+  // learning link (closed loop)
+  learningFeedback String? // feedback artifact hash sent back to Learning Agent
+  // lifecycle
+  status          String   @default("detected")
+  detectedAt      DateTime @default(now())
+  reviewedAt      DateTime?
+  assignedAt      DateTime?
+  investigatedAt  DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+  learnedAt       DateTime?
+  // audit
+  createdBy       String   @default("system") // "agent:mining-analyst" | "user:epa-1"
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([severity])
+  @@index([regionId])
+  @@index([detectedAt])
+}
+
+// OperationalWorkflow — human-in-the-loop workflow definitions (a package).
+// Example: environmental-enforcement with conditional steps gated on confidence.
+model OperationalWorkflow {
+  id              String   @id @default(uuid())
+  workflowId      String   @unique // "environmental-enforcement"
+  name            String
+  description     String
+  // trigger condition (declarative)
+  triggerType     String   // incident type this workflow handles
+  triggerCondition String  @default("{}") // JSON: {confidence: ">0.85", severity: ["high","critical"]}
+  // ordered steps
+  steps           String   @default("[]") // JSON: [{id, name, type:human_review|evidence_package|assign_inspector|field_verification|resolution|notify, requiredRole, sla: "24h", condition?}]
+  // governance
+  owningRole      String   // role that owns the workflow
+  // package provenance
+  packageId       String   @default("national-command-center")
+  version         String   @default("1.0.0")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([triggerType])
+  @@index([active])
+}
+
+// WorkflowExecution — a running instance of a workflow bound to an incident.
+// Each step records actor, decision, timestamp, artifact produced.
+model WorkflowExecution {
+  id              String   @id @default(uuid())
+  executionId     String   @unique
+  workflowId      String   // OperationalWorkflow.workflowId
+  incidentId      String   // IncidentArtifact.incidentId
+  // state
+  currentStep     Int      @default(0)
+  stepStates      String   @default("[]") // JSON: [{stepId, status: pending|active|completed|skipped|failed, actor, startedAt, completedAt, decision, artifactHash}]
+  // timing
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  // status
+  status          String   @default("running") // running | completed | aborted | escalated
+  abortReason     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([incidentId])
+  @@index([status])
+}
+
+// DecisionArtifact — every human decision becomes an immutable artifact.
+// Closes the provenance gap: Assessment → Human Decision → Operational Action.
+model DecisionArtifact {
+  id              String   @id @default(uuid())
+  decisionId      String   @unique // "DEC-2025-0001"
+  // context
+  incidentId      String?  // IncidentArtifact.incidentId
+  workflowExecutionId String? // WorkflowExecution
+  // actor & authority
+  actorId         String   // "epa-user-1"
+  actorRole       String   // "environmental_regulator"
+  // decision
+  decisionType    String   // "approve_field_inspection" | "dispatch_inspector" | "declare_alert" | "close_incident" | "escalate" | ...
+  decision        String   // human-readable decision text
+  rationale       String   // why
+  // provenance — what intelligence this decision was based on
+  basedOn         String   @default("[]") // JSON: [assessmentHash, observationId, arbitrationId, ...]
+  // authority check
+  permissionsUsed String   @default("[]") // JSON: [permissionId, ...] — which role permissions authorized this
+  policyChecked   Boolean  @default(true)
+  // outcome link
+  actionIds       String   @default("[]") // JSON: [OperationalAction.actionId]
+  // temporal
+  decidedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([incidentId])
+  @@index([actorId])
+  @@index([decidedAt])
+}
+
+// InstitutionalRole — roles & permissions as a governance package.
+// NOT hardcoded users. Roles are packages; users are assigned roles.
+model InstitutionalRole {
+  id              String   @id @default(uuid())
+  roleId          String   @unique // "environmental_regulator"
+  name            String
+  description     String
+  institution     String   // "EPA" | "NADMO" | "COCOBOD" | "Forestry Commission"
+  // permissions (capability-style)
+  permissions     String   @default("[]") // JSON: [{id, name, scope}]
+  // safety boundaries
+  maxSeverity     String   @default("critical") // highest severity this role can act on
+  canEscalate     Boolean  @default(true)
+  requiresApproval String  @default("[]") // JSON: [decisionType, ...] decisions that need supervisor approval
+  // package provenance
+  packageId       String   @default("institutional-roles")
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([institution])
+  @@index([active])
+}
+
+// OperationalAction — concrete field/institutional actions tied to decisions.
+// dispatch_inspector, declare_alert, publish_report, coordinate_response, ...
+model OperationalAction {
+  id              String   @id @default(uuid())
+  actionId        String   @unique // "ACT-2025-0001"
+  // provenance
+  incidentId      String   // IncidentArtifact.incidentId
+  decisionId      String?  // DecisionArtifact.decisionId that authorized this
+  // action
+  actionType      String   // "dispatch_inspector" | "drone_verification" | "declare_alert" | "publish_report" | "coordinate_response" | "issue_notice" | "shut_down_operation"
+  description     String
+  // assignment
+  assignedTo      String   // role or team
+  assignedRole    String
+  // execution
+  status          String   @default("dispatched") // dispatched | in_progress | completed | failed | cancelled
+  scheduledAt     DateTime?
+  dispatchedAt    DateTime?
+  completedAt     DateTime?
+  // result
+  result          String?  // human-readable result
+  evidenceCollected String @default("[]") // JSON: [artifactHash, ...] evidence produced by this action
+  cost            Float    @default(0)
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([incidentId])
+  @@index([status])
+  @@index([actionType])
+}
+
+// OutcomeReport — the result of operational actions, feeds the learning loop.
+// Outcome → Learning Agent → updated priors/calibration.
+model OutcomeReport {
+  id              String   @id @default(uuid())
+  outcomeId       String   @unique // "OUT-2025-0001"
+  incidentId      String   // IncidentArtifact.incidentId
+  // outcome
+  result          String   // "confirmed" | "false_positive" | "mitigated" | "escalated" | "no_action_needed"
+  groundTruth     Boolean?  // was the original intelligence assessment correct?
+  // details
+  summary         String
+  fieldFindings   String   @default("{}") // JSON: structured findings
+  // costs & timing
+  timeToResolveH  Float?   // hours from detection to resolution
+  totalCost       Float    @default(0)
+  // learning link
+  feedbackSent    Boolean  @default(false)
+  feedbackArtifact String? // artifact hash sent to learning agent
+  // temporal
+  reportedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([incidentId])
+  @@index([result])
+}
+
+// EvidenceRoomEntry — the legal-style evidence file for an incident.
+// Aggregates the FULL provenance chain into one queryable record.
+model EvidenceRoomEntry {
+  id              String   @id @default(uuid())
+  incidentId      String   @unique // one evidence room per incident
+  // aggregated evidence by modality
+  satelliteEvidence  String @default("[]") // JSON: [{type, source, date, finding, confidence, artifactHash}]
+  sarEvidence        String @default("[]")
+  weatherEvidence    String @default("[]")
+  historicalEvidence String @default("[]")
+  agentReasoning     String @default("[]") // JSON: [{agentId, position, confidence, reasoning}]
+  debateSummary      String @default("{}") // JSON: debate + arbitration result
+  // assessment
+  fusedConfidence    Float  @default(0.5)
+  recommendedAction  String?
+  // chain completeness audit
+  chainSteps         String @default("[]") // JSON: [{step, present: bool, artifactHash?}]
+  chainComplete      Boolean @default(false)
+  // provenance
+  assembledAt        DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([incidentId])
+}
+
+// SituationEvent — live situation room event stream. Real-time operational feed.
+model SituationEvent {
+  id              String   @id @default(uuid())
+  eventId         String   @unique
+  // event
+  kind            String   // "mining_anomaly" | "flood_risk" | "agent_debate" | "arbitration" | "incident_opened" | "decision_made" | "action_dispatched" | "outcome_reported" | "alert_declared"
+  severity        String   @default("info") // "info" | "warn" | "crit"
+  title           String
+  detail          String
+  regionId        String?
+  // links
+  incidentId      String?
+  agentId         String?
+  artifactHash    String?
+  // temporal
+  occurredAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([occurredAt])
+  @@index([kind])
+  @@index([severity])
+}
+
+// CommandCenterPackage — the package manifest for the command center itself.
+// Proves the command center is a package, not a core feature.
+model CommandCenterPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique // "national-command-center"
+  name            String
+  version         String
+  // capabilities required (consumes intelligence)
+  requires        String   @default("[]") // JSON: [capability:intelligence.assessment, ...]
+  // capabilities provided
+  provides        String   @default("[]") // JSON: [dashboard.command, workflow.operational, reporting.executive]
+  // composition — sub-packages
+  subPackages     String   @default("[]") // JSON: [incident-management, workflow-engine, evidence-room, institutional-roles, ...]
+  // status
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

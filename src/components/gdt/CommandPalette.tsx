@@ -25,6 +25,7 @@ import {
   Grid3x3,
   Terminal,
   Radio,
+  RadioTower,
   Clock,
 } from "lucide-react";
 
@@ -36,6 +37,7 @@ const VIEWS = [
   { id: "eo", label: "Earth Observation", icon: Satellite, hint: "Sentinel-2 imagery & spectral indices" },
   { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps, baselines & uncertainty" },
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
+  { id: "command", label: "Command Center", icon: RadioTower, hint: "National intelligence command center" },
   { id: "api", label: "API Explorer", icon: Terminal, hint: "Programmatic access" },
 ] as const;
 

@@ -43,6 +43,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   eo: { title: "Earth Observation", sub: "Sentinel-2 imagery & spectral indices" },
   raster: { title: "Raster Intelligence", sub: "Anomaly maps, baselines & uncertainty" },
   sources: { title: "Data Sources", sub: "Ingestion pipeline & connectors" },
+  command: { title: "Command Center", sub: "National intelligence command: incidents, workflows, decisions, evidence rooms" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };
 

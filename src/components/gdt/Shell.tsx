@@ -23,6 +23,7 @@ import { KnowledgeGraphView } from "./views/KnowledgeGraphView";
 import { SourcesView } from "./views/SourcesView";
 import { EOView } from "./views/EOView";
 import { RasterIntelligenceView } from "./views/RasterIntelligenceView";
+import { CommandCenterView } from "./views/CommandCenterView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -60,6 +61,7 @@ export function Shell() {
               {view === "sources" && <SourcesView />}
               {view === "eo" && <EOView />}
               {view === "raster" && <RasterIntelligenceView />}
+              {view === "command" && <CommandCenterView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>
