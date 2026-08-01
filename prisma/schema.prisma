@@ -2450,3 +2450,136 @@ model KernelVersion {
 
   @@index([status])
 }
+
+// ===== Platform Specification: Conformance, Capability Levels, Remote Registry =====
+
+// Conformance Test — standard platform test suite
+model ConformanceTest {
+  id              String   @id @default(uuid())
+  testId          String   @unique // "manifest-validation" | "capability-negotiation" | "sandbox-enforcement"
+  name            String
+  description     String
+  category        String   // "manifest" | "negotiation" | "dependency" | "sandbox" | "quota" | "replay" | "artifact" | "policy" | "provenance"
+  // test definition
+  inputSchema     String   @default("{}") // JSON: what the test provides
+  expectedOutput  String   @default("{}") // JSON: what the test expects
+  // conformance level required
+  minLevel        String   @default("verified") // "experimental" | "verified" | "certified" | "official"
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([category])
+  @@index([minLevel])
+}
+
+// Conformance Result — test execution per package
+model ConformanceResult {
+  id              String   @id @default(uuid())
+  packageId       String
+  testId          String
+  // result
+  passed          Boolean
+  output          String   @default("{}") // JSON: actual output
+  diff            String?  // JSON: differences from expected
+  durationMs      Int?
+  // environment
+  kernelVersion   String   @default("1.0.0")
+  testedAt        DateTime @default(now())
+
+  @@unique([packageId, testId])
+  @@index([packageId])
+  @@index([passed])
+}
+
+// Package Capability Level — maturity tier
+model PackageCapabilityLevel {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  level           String   @default("experimental") // "experimental" | "verified" | "certified" | "official"
+  // how it earned this level
+  conformancePassed Int    @default(0) // number of conformance tests passed
+  conformanceTotal  Int    @default(0)
+  governanceApproved Boolean @default(false)
+  // certification
+  certifiedBy     String?  // "Ghana EPA" | "University of Ghana"
+  certifiedAt     DateTime?
+  certificateUrl  String?
+  // badge
+  badgeColor      String   @default("#71717a")
+  updatedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([level])
+}
+
+// Remote Package Registry — for distributed package distribution
+model RemoteRegistry {
+  id              String   @id @default(uuid())
+  registryId      String   @unique // "official" | "epa-ghana" | "university-ghana" | "community"
+  name            String
+  url             String   // "https://registry.gdt.gh" | "https://epa.gov.gh/packages"
+  // trust
+  trustLevel      String   @default("community") // "official" | "verified" | "community"
+  isDefault       Boolean  @default(false)
+  // auth
+  requiresAuth    Boolean  @default(false)
+  authType        String?  // "bearer" | "basic" | "api-key"
+  // stats
+  packageCount    Int      @default(0)
+  lastSyncAt      DateTime?
+  status          String   @default("available") // available | syncing | degraded | unavailable
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([trustLevel])
+  @@index([status])
+}
+
+// Remote Package — cached package from a remote registry
+model RemotePackage {
+  id              String   @id @default(uuid())
+  packageId       String   // "illegal-mining"
+  version         String   // "2.3.1"
+  registryId      String   // which registry hosts this
+  // metadata
+  name            String
+  description     String
+  author          String
+  kind            String
+  // download
+  downloadUrl     String
+  contentHash     String?  // for verification
+  signatureHash   String?  // for signing verification
+  sizeBytes       Int?
+  // cache status
+  cached          Boolean  @default(false)
+  cachedAt        DateTime?
+  cachePath       String?
+  // verification
+  signatureVerified Boolean @default(false)
+  contractsValidated Boolean @default(false)
+  // status
+  status          String   @default("available") // available | downloading | cached | verified | activated | failed
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([packageId, version, registryId])
+  @@index([registryId])
+  @@index([status])
+}
+
+// SDK Interface Freeze — tracks which SDK methods are frozen
+model SDKInterfaceFreeze {
+  id              String   @id @default(uuid())
+  interfaceId     String   @unique // "ctx.v1.world.query" | "ctx.v1.features.read"
+  apiVersion      String   @default("v1")
+  methodSignature String   // "(opts: QueryOptions) => Promise<Entity[]>"
+  description     String
+  frozenAt        DateTime @default(now())
+  // compatibility
+  deprecatedIn    String?  // version where deprecated (null = not deprecated)
+  replacedBy      String?  // new interface name if replaced
+  createdAt       DateTime @default(now())
+
+  @@index([apiVersion])
+}
