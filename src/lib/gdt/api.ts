@@ -331,6 +331,32 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Extension Platform API =====
+
+export async function fetchExtensions(): Promise<any> {
+  const res = await fetch("/api/extensions");
+  if (!res.ok) throw new Error(`fetchExtensions: ${res.status}`);
+  return res.json();
+}
+
+export async function toggleExtension(extensionId: string, action: "enable" | "disable"): Promise<any> {
+  const res = await fetch("/api/extensions", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ extensionId, action }) });
+  if (!res.ok) throw new Error(`toggleExtension: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchExtensionConfig(extensionId: string): Promise<any> {
+  const res = await fetch(`/api/extensions/${extensionId}`);
+  if (!res.ok) throw new Error(`fetchExtensionConfig: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchMarketplace(): Promise<any> {
+  const res = await fetch("/api/extensions/marketplace");
+  if (!res.ok) throw new Error(`fetchMarketplace: ${res.status}`);
+  return res.json();
+}
+
 // ===== Validation Gates API =====
 
 export async function fetchSLOs(): Promise<any> {

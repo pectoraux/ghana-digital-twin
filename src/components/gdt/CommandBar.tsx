@@ -33,6 +33,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   intelligence: { title: "Intelligence", sub: "Ranked hypotheses, Bayesian reasoning & scenarios" },
   missions: { title: "Missions", sub: "Autonomous mission planning & data acquisition" },
   validation: { title: "Validation", sub: "Replay testing, scientific evaluation & observability" },
+  extensions: { title: "Extensions", sub: "Domain extensions: mining, flood, agriculture, forestry" },
   continuous: { title: "Continuous Pipeline", sub: "Nationwide processing & learning engine" },
   groundtruth: { title: "Ground Truth", sub: "Active learning, calibration & drift detection" },
   multimodal: { title: "Multi-Modal", sub: "Multi-modal evidence fusion & feature store" },

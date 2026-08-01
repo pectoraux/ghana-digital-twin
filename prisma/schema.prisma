@@ -1524,3 +1524,83 @@ model BenchmarkDiversityTag {
   @@index([season])
   @@index([biome])
 }
+
+// ===== Milestone 6.75: Extension Platform =====
+// The core platform is domain-agnostic. Domain expertise (mining, floods,
+// agriculture, forestry) lives in installable extensions with manifests,
+// permissions, and a sandboxed SDK.
+
+model Extension {
+  id              String   @id @default(uuid())
+  extensionId     String   @unique // "illegal-mining" | "flood-monitoring" | "cocoa-agriculture"
+  name            String
+  version         String   // semver "2.1.0"
+  description     String
+  author          String
+  category        String   // "mining" | "flood" | "agriculture" | "forestry" | "infrastructure" | "biodiversity" | "custom"
+  // status
+  status          String   @default("installed") // available | installed | enabled | disabled | error
+  installedAt     DateTime @default(now())
+  enabledAt       DateTime?
+  // manifest (full YAML-like JSON manifest)
+  manifest        String   @default("{}") // JSON: full extension manifest
+  // permissions
+  permissions     String   @default("{}") // JSON: datasets, compute, ui, missions, alerts
+  // what the extension contributes
+  ruleCount       Int      @default(0)
+  hypothesisTypes String   @default("[]") // JSON: types this extension defines
+  missionTypes    String   @default("[]") // JSON: mission types
+  uiViews         String   @default("[]") // JSON: UI views contributed
+  observationTypes String  @default("[]") // JSON: observation types
+  // trust
+  isSigned        Boolean  @default(false)
+  isVerified      Boolean  @default(false)
+  trustScore      Float    @default(0.5) // 0..1
+  // metadata
+  icon            String   @default("puzzle")
+  color           String   @default("#a78bfa")
+  tags            String   @default("[]") // JSON
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rules           ExtensionRule[]
+  configs         ExtensionConfig[]
+
+  @@index([status])
+  @@index([category])
+}
+
+model ExtensionRule {
+  id              String   @id @default(uuid())
+  extensionId     String   // FK to Extension.extensionId (string slug)
+  ruleId          String   // "illegal-mining-rule-01"
+  name            String
+  description     String
+  // rule definition
+  conditions      String   @default("[]") // JSON: evidence patterns
+  hypothesisType  String   // what hypothesis this rule supports
+  effect          String   // "boost" | "suppress"
+  likelihoodRatio Float    // Bayesian LR
+  priority        Int      @default(0)
+  enabled         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  extension       Extension @relation(fields: [extensionId], references: [extensionId], onDelete: Cascade)
+
+  @@index([extensionId])
+  @@index([hypothesisType])
+}
+
+model ExtensionConfig {
+  id              String   @id @default(uuid())
+  extensionId     String
+  key             String   // config key
+  value           String   // config value (JSON)
+  description     String?
+  updatedAt       DateTime @updatedAt
+
+  extension       Extension @relation(fields: [extensionId], references: [extensionId], onDelete: Cascade)
+
+  @@unique([extensionId, key])
+  @@index([extensionId])
+}
