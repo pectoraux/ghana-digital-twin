@@ -21,6 +21,7 @@ import {
   Grid3x3,
   RadioTower,
   Users,
+  Network,
   Terminal,
   Settings,
   HelpCircle,
@@ -46,6 +47,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
   { id: "command", label: "Command Center", icon: RadioTower, hint: "National intelligence command: incidents, workflows, decisions, evidence rooms" },
   { id: "community", label: "Community", icon: Users, hint: "Citizen intelligence network: events, witnesses, civic scores, rewards" },
+  { id: "civic-trust", label: "Civic Trust", icon: Network, hint: "Trust graph, propagation, Sybil resistance, identity vouching" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 

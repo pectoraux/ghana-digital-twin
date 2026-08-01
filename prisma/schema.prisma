@@ -3475,3 +3475,185 @@ model CommunityPackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 8.6 — CIVIC TRUST GRAPH (Package Layer)
+// Moves from "User → Score" to a connected trust graph. Trust propagates from
+// verified reality (confirmed outcomes) back through witnesses to reporters.
+// Includes Sybil resistance (anti-gaming) now that rewards exist, and identity
+// verification + vouching. The kernel is FROZEN. All package-layer.
+// ===========================================================================
+
+// TrustNode — any entity in the trust graph.
+model TrustNode {
+  id              String   @id @default(uuid())
+  nodeId          String   @unique
+  nodeType        String   // citizen | event | evidence | outcome | sensor | agent | organization | verification
+  label           String
+  trustScore      Float    @default(0.5)
+  baseTrust       Float    @default(0.5)
+  inDegree        Int      @default(0)
+  outDegree       Int      @default(0)
+  pagerank        Float    @default(0)
+  sourceRef       String
+  lastPropagationAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([nodeType])
+  @@index([trustScore])
+  @@index([pagerank])
+}
+
+// TrustEdge — typed relationship between trust nodes.
+model TrustEdge {
+  id              String   @id @default(uuid())
+  sourceNodeId    String
+  targetNodeId    String
+  edgeType        String   // reported | witnessed | confirmed_by | contradicted_by | verified_by | vouched_for | contributed_evidence | produced
+  weight          Float    @default(1.0)
+  sourceArtifact  String?
+  createdAt       DateTime @default(now())
+
+  @@unique([sourceNodeId, targetNodeId, edgeType])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+  @@index([edgeType])
+}
+
+// TrustScore — propagated trust per citizen (graph-based, separate from CivicScore).
+model TrustScore {
+  id              String   @id @default(uuid())
+  citizenId       String   @unique
+  propagatedTrust Float    @default(50)
+  graphCentrality Float    @default(0.5)
+  realityConnection Float  @default(0.5)
+  vouchingScore   Float    @default(0.5)
+  sybilResistance Float    @default(0.5)
+  trustTier       String   @default("unproven") // unproven | emerging | trusted | anchor
+  previousTrust   Float?
+  trendDelta      Float?
+  lastPropagationAt DateTime?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+// IdentityVerification — verification tiers for Sybil resistance.
+model IdentityVerification {
+  id              String   @id @default(uuid())
+  citizenId       String   @unique
+  phoneVerified   Boolean  @default(false)
+  phoneVerifiedAt DateTime?
+  nationalIdVerified Boolean @default(false)
+  nationalIdVerifiedAt DateTime?
+  biometricVerified Boolean @default(false)
+  biometricVerifiedAt DateTime?
+  vouchCount      Int      @default(0)
+  vouchThreshold  Int      @default(3)
+  vouchVerified   Boolean  @default(false)
+  vouchVerifiedAt DateTime?
+  verificationLevel String @default("anonymous") // anonymous | phone | national | biometric | vouched | anchor
+  trustSeedBonus  Float    @default(0)
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+// VouchRelationship — citizen A vouches for citizen B (staked web of trust).
+model VouchRelationship {
+  id              String   @id @default(uuid())
+  voucherId       String
+  vouchedForId    String
+  stake           Float    @default(0.1)
+  relationship    String   @default("knows")
+  note            String?
+  status          String   @default("active") // active | revoked | penalized
+  revokedAt       DateTime?
+  revokeReason    String?
+  vouchedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@unique([voucherId, vouchedForId])
+  @@index([voucherId])
+  @@index([vouchedForId])
+}
+
+// SybilFlag — suspected fake/gaming behavior.
+model SybilFlag {
+  id              String   @id @default(uuid())
+  flagId          String   @unique
+  citizenId       String
+  flagType        String   // coordinated_witnessing | burst_reporting | location_clustering | identity_reuse | low_diversity | unusual_pattern | manual
+  severity        String   @default("warn") // info | warn | critical | blocked
+  description     String
+  detectedPattern String   @default("{}")
+  autoDetected    Boolean  @default(true)
+  detectedBy      String   @default("sybil-engine")
+  status          String   @default("open") // open | confirmed | dismissed | resolved
+  resolvedBy      String?
+  resolutionNote  String?
+  resolvedAt      DateTime?
+  trustPenalty    Float    @default(0)
+  detectedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([citizenId])
+  @@index([flagType])
+  @@index([status])
+  @@index([severity])
+}
+
+// BehaviorProfile — per-citizen behavior patterns for anomaly detection.
+model BehaviorProfile {
+  id              String   @id @default(uuid())
+  citizenId       String   @unique
+  avgReportsPerDay Float   @default(0)
+  maxReportsPerHour Int    @default(0)
+  avgTimeBetweenReportsH Float @default(0)
+  uniqueLocations  Int     @default(0)
+  locationClusteringScore Float @default(0)
+  avgWitnessResponseTimeM Float @default(0)
+  witnessAgreementRate Float @default(0.5)
+  coordinatedWitnessCount Int @default(0)
+  uniqueCategories Int     @default(0)
+  uniqueRegions    Int     @default(0)
+  sybilRiskScore  Float    @default(0)
+  lastAnalyzedAt  DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+// TrustPropagationRun — audit record of a propagation pass.
+model TrustPropagationRun {
+  id              String   @id @default(uuid())
+  runId           String   @unique
+  algorithm       String   @default("weighted_pagerank")
+  iterations      Int      @default(20)
+  dampingFactor   Float    @default(0.85)
+  nodesProcessed  Int      @default(0)
+  edgesProcessed  Int      @default(0)
+  convergenceDelta Float   @default(0)
+  seedNodeCount   Int      @default(0)
+  avgTrustBefore  Float    @default(0)
+  avgTrustAfter   Float    @default(0)
+  maxTrustChange  Float    @default(0)
+  citizensUpdated Int      @default(0)
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
+  durationMs      Int?
+  createdAt       DateTime @default(now())
+}
+
+// CivicTrustPackage — package manifest for the civic trust graph.
+model CivicTrustPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

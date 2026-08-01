@@ -25,6 +25,7 @@ import { EOView } from "./views/EOView";
 import { RasterIntelligenceView } from "./views/RasterIntelligenceView";
 import { CommandCenterView } from "./views/CommandCenterView";
 import { CommunityView } from "./views/CommunityView";
+import { CivicTrustView } from "./views/CivicTrustView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -64,6 +65,7 @@ export function Shell() {
               {view === "raster" && <RasterIntelligenceView />}
               {view === "command" && <CommandCenterView />}
               {view === "community" && <CommunityView />}
+              {view === "civic-trust" && <CivicTrustView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>

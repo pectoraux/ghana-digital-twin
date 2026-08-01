@@ -45,6 +45,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   sources: { title: "Data Sources", sub: "Ingestion pipeline & connectors" },
   command: { title: "Command Center", sub: "National intelligence command: incidents, workflows, decisions, evidence rooms" },
   community: { title: "Community Intelligence", sub: "Citizen intelligence network: events, witnesses, civic scores, rewards" },
+  "civic-trust": { title: "Civic Trust Graph", sub: "Trust propagation, Sybil resistance, identity vouching" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };
 

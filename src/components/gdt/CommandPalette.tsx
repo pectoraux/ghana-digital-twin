@@ -27,6 +27,7 @@ import {
   Radio,
   RadioTower,
   Users,
+  Network,
   Clock,
 } from "lucide-react";
 
@@ -40,6 +41,7 @@ const VIEWS = [
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
   { id: "command", label: "Command Center", icon: RadioTower, hint: "National intelligence command center" },
   { id: "community", label: "Community Intelligence", icon: Users, hint: "Citizen intelligence network" },
+  { id: "civic-trust", label: "Civic Trust Graph", icon: Network, hint: "Trust propagation, Sybil resistance, identity vouching" },
   { id: "api", label: "API Explorer", icon: Terminal, hint: "Programmatic access" },
 ] as const;
 
