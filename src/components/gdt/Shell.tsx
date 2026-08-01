@@ -13,6 +13,7 @@ import { PhenomenaView } from "./views/PhenomenaView";
 import { IntelligenceView } from "./views/IntelligenceView";
 import { ContinuousView } from "./views/ContinuousView";
 import { GroundTruthView } from "./views/GroundTruthView";
+import { MultiModalView } from "./views/MultiModalView";
 import { EntitiesView } from "./views/EntitiesView";
 import { GraphView } from "./views/GraphView";
 import { KnowledgeGraphView } from "./views/KnowledgeGraphView";
@@ -46,6 +47,7 @@ export function Shell() {
               {view === "intelligence" && <IntelligenceView />}
               {view === "continuous" && <ContinuousView />}
               {view === "groundtruth" && <GroundTruthView />}
+              {view === "multimodal" && <MultiModalView />}
               {view === "entities" && <EntitiesView />}
               {view === "graph" && <GraphView />}
               {view === "knowledge" && <KnowledgeGraphView />}

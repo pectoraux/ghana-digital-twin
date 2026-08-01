@@ -331,6 +331,51 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Multi-Modal Evidence Fusion API =====
+
+export async function fetchModalities(): Promise<any> {
+  const res = await fetch("/api/modalities");
+  if (!res.ok) throw new Error(`fetchModalities: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchFeatureStore(tileId?: string, limit?: number): Promise<any> {
+  const sp = new URLSearchParams();
+  if (tileId) sp.set("tileId", tileId);
+  if (limit) sp.set("limit", String(limit));
+  const res = await fetch(`/api/feature-store?${sp}`);
+  if (!res.ok) throw new Error(`fetchFeatureStore: ${res.status}`);
+  return res.json();
+}
+
+export async function extractFeatures(limit?: number): Promise<any> {
+  const res = await fetch("/api/feature-store", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ limit }) });
+  if (!res.ok) throw new Error(`extractFeatures: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchTwinStates(riskLevel?: string): Promise<any> {
+  const sp = new URLSearchParams();
+  if (riskLevel) sp.set("riskLevel", riskLevel);
+  const res = await fetch(`/api/twin-state?${sp}`);
+  if (!res.ok) throw new Error(`fetchTwinStates: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchMultiModalFusion(tileId?: string): Promise<any> {
+  const sp = new URLSearchParams();
+  if (tileId) sp.set("tileId", tileId);
+  const res = await fetch(`/api/multimodal/fuse?${sp}`);
+  if (!res.ok) throw new Error(`fetchMultiModalFusion: ${res.status}`);
+  return res.json();
+}
+
+export async function fuseMultiModal(tileLimit?: number): Promise<any> {
+  const res = await fetch("/api/multimodal/fuse", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ tileLimit }) });
+  if (!res.ok) throw new Error(`fuseMultiModal: ${res.status}`);
+  return res.json();
+}
+
 // ===== Ground Truth & Active Learning API =====
 
 export interface ReviewQueueItem {

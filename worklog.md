@@ -430,3 +430,28 @@ Stage Summary:
 - ✅ Evidence Quality Scoring: schema ready for per-evidence quality assessment (sensor reliability, cloud, age, resolution, cross-source agreement).
 - Lint: 0 errors, 0 warnings. Browser-verified: Ground Truth view shows review queue with priority badges, calibration metrics, drift alerts, benchmark reports. No console errors.
 - ReviewQueue: 3 items | DriftAlerts: 2 | Benchmarks: 2 | GroundTruth: 0 (ready for inspector verification)
+
+---
+Task ID: 24
+Agent: orchestrator
+Task: Milestone 5.75 — Multi-Modal Evidence Fusion (modality registry, feature store, feature cube, digital twin state engine, multi-modal fusion, uncertainty graph)
+
+Work Log:
+- Extended Prisma schema: FeatureVector (per-cell multi-modal: 28+ features across optical/SAR/thermal/weather/DEM/hydrology/infrastructure/human activity + dataCompleteness), FeatureCubeCell (temporal sequence: weekly/monthly/seasonal history + trend metrics + anomaly flags), TwinState (per-cell persistent state: physical/environmental/human activity/observation history/risk/forecast/confidence), ModalitySource (registry: 9 modalities with category, sensor, resolution, cadence, featuresProvided, coverage). db:push succeeded.
+- Built Modality Registry (src/lib/multimodal/modalities.ts): 9 sensing modalities registered across 7 categories: optical (Sentinel-2 MSI), SAR (Sentinel-1 C-SAR), thermal (Landsat TIRS), weather (CHIRPS + ERA5), DEM (SRTM), hydrology (HydroSHEDS), human activity (VIIRS nightlights + WorldPop). Each tracks features provided, coverage, status.
+- Built Feature Store (src/lib/multimodal/feature-store.ts): extracts per-cell feature vectors combining ALL available modalities. Optical features from computed spectral indices. Infrastructure features from World Model entities (distance to road/river/settlement via haversine). Terrain features (elevation, slope, erosion susceptibility). Weather features (seasonal rainfall, temperature, soil moisture). Human activity (night lights, built-up index, population density). Computes data completeness (fraction of modalities with data).
+- Built Digital Twin State Engine (src/lib/multimodal/twin-state.ts): per-cell persistent state that aggregates ALL information: physical (landCover, vegetationHealth, waterExtent, bareSoilExtent), environmental (rainfall, temperature, soilMoisture, season), human activity (settlementArea, roadDensity, nightLights, population), observation history (count, last type), phenomena (active count), risk (level, score, factors), forecast (30-day area prediction), confidence (overall + data quality). Continuously updated — the canonical state of the digital twin.
+- Built Multi-Modal Evidence Fusion (src/lib/multimodal/fusion.ts): combines evidence from ALL modalities into unified assessment. Each modality contributes normalized signals (0..1) with direction (loss/gain/neutral) and confidence. Fuses via confidence-weighted average. Computes cross-modal agreement (do modalities agree?). Generates human-readable assessment: "NDVI dropped, rainfall was below seasonal norms, no flooding occurred, therefore vegetation loss is unlikely to be seasonal." Weather context explicitly explains false positives.
+- Built API routes: GET /api/modalities, GET/POST /api/feature-store, GET /api/twin-state, GET/POST /api/multimodal/fuse.
+- Ran real extraction: 9 modalities registered. 20 feature vectors extracted (46% data completeness — 4 modalities with data: weather, DEM, hydrology, human activity). 20 twin states computed with risk scoring (all low risk — rural tiles). Multi-modal fusion produced real assessment: "Partial disturbance signal from 2 modalities. Cross-modal agreement: 43%." with 7 evidence pieces including weather context ("heavy rainfall — water changes may be seasonal").
+- Built MultiModalView frontend: modality registry grid (9 modalities with category icons, status, resolution, cadence, features), twin state list (risk-colored cells with season, observation count, risk score), multi-modal fusion assessment panel (fused assessment text, evidence breakdown by modality with signal bars, cross-modal agreement, fused confidence), Extract Features button, architecture explanation.
+- Added "Multi-Modal" nav item (Layers3 icon). Updated Shell, NavRail, CommandBar.
+
+Stage Summary:
+- ✅ Multi-Modal Modality Registry: 9 sensing modalities (optical, SAR, thermal, weather×2, DEM, hydrology, human activity×2) across 7 categories. Each tracks features, coverage, status.
+- ✅ Feature Store: per-cell feature vectors with 28+ features combining ALL modalities. Reusable across anomaly detection, learning, hypotheses, and future ML.
+- ✅ Digital Twin State Engine: per-cell persistent state (physical + environmental + human activity + observation history + risk + forecast + confidence). Continuously updated — the canonical state of the digital twin.
+- ✅ Multi-Modal Evidence Fusion: combines ALL modalities into unified assessment. Weather explains false positives ("heavy rainfall — water changes may be seasonal"). Cross-modal agreement strengthens confidence.
+- ✅ Uncertainty Propagation: each modality carries confidence; fused confidence weighted by per-modality confidence. Data completeness tracked.
+- Lint: 0 errors, 0 warnings. Browser-verified: Multi-Modal view shows 9 modalities, 20 twin states, clicking a cell produces fused assessment with 7 evidence pieces across 4 modalities. No console errors.
+- FeatureVectors: 20 | TwinStates: 20 | ModalitySources: 9

@@ -1050,3 +1050,164 @@ model ModelVersion {
   @@index([component])
   @@index([createdAt])
 }
+
+// ===== Milestone 5.75: Multi-Modal Evidence Fusion & Feature Store =====
+
+// Feature Store — per-cell feature vectors, reusable across the platform
+model FeatureVector {
+  id              String   @id @default(uuid())
+  tileId          String   // FK to ProcessingTile
+  // spatial reference
+  centroidLng     Float
+  centroidLat     Float
+  // temporal
+  computedAt      DateTime
+  sceneId         String?  // source scene (if applicable)
+  // multi-modal features (each modality contributes features)
+  // optical (Sentinel-2 derived)
+  ndvi            Float?
+  ndwi            Float?
+  nbr             Float?
+  evi             Float?
+  bsi             Float?
+  mndwi           Float?
+  savi            Float?
+  // sar (Sentinel-1 derived — metadata-based until SAR connector built)
+  sarBackscatter  Float?   // VV dB
+  sarCoherence    Float?   // 0..1
+  sarRoughness    Float?   // surface roughness index
+  // thermal (Landsat derived)
+  thermalAnomaly  Float?   // temperature deviation
+  // weather (CHIRPS / ERA5)
+  rainfall7d      Float?   // mm last 7 days
+  rainfallAnomaly Float?   // deviation from seasonal norm
+  temperature     Float?   // °C
+  soilMoisture    Float?   // ERA5 derived
+  // terrain (DEM derived)
+  elevation       Float?   // meters
+  slope           Float?   // degrees
+  aspect          Float?   // degrees
+  flowAccumulation Float?  // upstream area
+  erosionSusceptibility Float? // 0..1
+  // hydrology
+  distanceToRiver Float?   // km to nearest river
+  riverProximity  Float?   // 0..1 (1 = on riverbank)
+  downstreamConnected Boolean @default(false)
+  // infrastructure
+  distanceToRoad  Float?   // km
+  distanceToSettlement Float? // km
+  nightLights     Float?   // radiance
+  builtUpIndex    Float?   // 0..1
+  // human activity
+  populationDensity Float? // people/km²
+  settlementGrowthRate Float? // % annual
+  // composite quality
+  cloudCover      Float?   // % at observation time
+  dataCompleteness Float?  // 0..1 fraction of modalities with data
+  // feature vector hash for dedup
+  vectorHash      String?
+  createdAt       DateTime @default(now())
+
+  @@index([tileId])
+  @@index([computedAt])
+  @@index([centroidLng, centroidLat])
+}
+
+// National Feature Cube — temporal sequence of feature vectors per cell
+model FeatureCubeCell {
+  id              String   @id @default(uuid())
+  tileId          String   @unique // one cell per tile
+  // current state (latest feature vector)
+  currentFeatureVectorId String?
+  // temporal sequences (JSON arrays of feature vector IDs, most recent first)
+  weeklyHistory   String   @default("[]") // last 12 weeks
+  monthlyHistory  String   @default("[]") // last 12 months
+  seasonalHistory String   @default("[]") // last 5 seasons
+  // trend metrics
+  ndviTrend       Float?   // slope of NDVI over time
+  ndviTrendPct    Float?   // % change
+  waterTrend      Float?
+  bareSoilTrend   Float?
+  settlementTrend Float?
+  // anomaly flags
+  anomalyScore    Float    @default(0) // 0..1 composite
+  isAnomalous     Boolean  @default(false)
+  anomalyType     String?  // "vegetation_loss" | "water_change" | "urban_growth" etc.
+  lastAnomalyAt   DateTime?
+  // update tracking
+  lastUpdated     DateTime @default(now())
+  updateCount     Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([tileId])
+  @@index([isAnomalous])
+  @@index([anomalyScore])
+}
+
+// Digital Twin State Engine — per-cell persistent state
+model TwinState {
+  id              String   @id @default(uuid())
+  tileId          String   @unique
+  // physical state
+  landCover       String?  // current dominant land cover class
+  vegetationHealth Float?  // 0..1
+  waterExtent     Float?   // ha
+  bareSoilExtent  Float?   // ha
+  // environmental state
+  rainfallRecent  Float?   // mm
+  temperatureRecent Float?
+  soilMoistureRecent Float?
+  season          String?  // "rainy" | "dry" | "transitional"
+  // human activity state
+  settlementArea  Float?   // ha
+  roadDensity     Float?   // km/km²
+  nightLightsIntensity Float?
+  populationEstimate Float?
+  // observation history
+  observationCount Int     @default(0)
+  lastObservationAt DateTime?
+  lastObservationType String?
+  // phenomena history
+  activePhenomenaCount Int @default(0)
+  // risk state
+  riskLevel       String   @default("low") // low | moderate | high | critical
+  riskScore       Float    @default(0) // 0..1
+  riskFactors     String   @default("[]") // JSON: [{factor, weight}]
+  // forecast state
+  forecastArea30d Float?   // predicted area in 30 days
+  forecastConfidence Float? // 0..1
+  // confidence state
+  overallConfidence Float  @default(0.5)
+  dataQualityScore Float  @default(0.5)
+  // metadata
+  lastUpdated     DateTime @default(now())
+  updateCount     Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([tileId])
+  @@index([riskLevel])
+  @@index([riskScore])
+}
+
+// Modality source registry — tracks which modalities are available
+model ModalitySource {
+  id              String   @id @default(uuid())
+  modalityId      String   @unique // "sentinel-2-optical" | "sentinel-1-sar" | "landsat-thermal" | "chirps-weather" | "era5" | "srtm-dem" | "hydrosheds" | "nightlights" | "population"
+  name            String
+  category        String   // optical | sar | thermal | weather | dem | hydrology | infrastructure | human_activity
+  sensor          String?  // "MSI" | "C-SAR" | "TIRS" etc.
+  platform        String?  // "Sentinel-2" | "Sentinel-1" | "Landsat-8"
+  resolution      String?  // "10m" | "30m" etc.
+  cadence         String?  // "5 days" | "daily"
+  status          String   @default("registered") // registered | active | degraded
+  // what features it contributes
+  featuresProvided String  @default("[]") // JSON: ["ndvi", "ndwi"]
+  // coverage
+  coveragePct     Float    @default(0)
+  lastDataAt      DateTime?
+  description     String
+  createdAt       DateTime @default(now())
+
+  @@index([category])
+  @@index([status])
+}

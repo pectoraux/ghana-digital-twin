@@ -33,6 +33,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   intelligence: { title: "Intelligence", sub: "Ranked hypotheses, Bayesian reasoning & scenarios" },
   continuous: { title: "Continuous Pipeline", sub: "Nationwide processing & learning engine" },
   groundtruth: { title: "Ground Truth", sub: "Active learning, calibration & drift detection" },
+  multimodal: { title: "Multi-Modal", sub: "Multi-modal evidence fusion & feature store" },
   entities: { title: "Entities", sub: "Entity registry & version history" },
   graph: { title: "Entity Graph", sub: "Geospatial relationship graph" },
   knowledge: { title: "Environmental Knowledge", sub: "Domain knowledge graph" },
