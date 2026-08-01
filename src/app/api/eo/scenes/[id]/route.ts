@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getScene } from "@/lib/eo/store";
-import { sceneIndexStats, INDICES, type IndexName } from "@/lib/eo/spectral";
+import { getScene, sceneIndexStats } from "@/lib/eo/store";
+import { INDICES, type IndexName } from "@/lib/eo/spectral";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
