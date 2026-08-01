@@ -11,10 +11,12 @@ import {
 import { DATASET_CATALOG } from "./../worldmodel/catalog";
 import { GeoBoundariesConnector } from "./geoboundaries";
 import { OsmOverpassConnector } from "./osm-overpass";
+import { StacSentinel2Connector } from "./stac-sentinel2";
 
 // ---- Register live connectors ----
 registerConnector("geoboundaries", () => new GeoBoundariesConnector());
 registerConnector("osm-overpass", () => new OsmOverpassConnector());
+registerConnector("stac-sentinel-2", () => new StacSentinel2Connector());
 
 // ---- Metadata-only connectors (register provenance; no live fetch) ----
 // These datasets require offline bulk ingest (raster tiles, large extracts).

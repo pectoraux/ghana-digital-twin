@@ -279,11 +279,43 @@ export const DATASET_CATALOG: DatasetSourceRecord[] = [
     recordCount: 0,
     metadata: { url: "https://cds.climate.copernicus.eu/" },
   },
+
+  // ===== Earth Observation (real, live-fetched via STAC) =====
+  {
+    sourceId: "stac-sentinel-2",
+    name: "Sentinel-2 L2A (STAC)",
+    category: "landcover",
+    provider: "ESA / Copernicus via Element 84 Earth Search",
+    license: "Copernicus Open",
+    resolution: "10 m",
+    cadence: "5 days",
+    coverage: "National (multispectral COGs)",
+    description: "Real Sentinel-2 L2A scenes fetched live from the Element 84 Earth Search STAC API. Each scene stored with footprint, cloud %, datetime, MGRS tile, and real Cloud-Optimized GeoTIFF band URLs (red, nir, green, blue, swir16, scl) on AWS S3. Drives spectral index computation and temporal imagery.",
+    storageType: "raster",
+    status: "pending",
+    recordCount: 0,
+    metadata: { endpoint: "https://earth-search.aws.element84.com/v1", collection: "sentinel-2-l2a" },
+  },
+  {
+    sourceId: "dynamic-world",
+    name: "Dynamic World (GEE)",
+    category: "landcover",
+    provider: "Google + WRI",
+    license: "CC-BY-4.0",
+    resolution: "10 m",
+    cadence: "5 days (per Sentinel-2 pass)",
+    coverage: "National (9-class probabilities)",
+    description: "Near-real-time 9-class land-cover probabilities (water, trees, grass, crops, flooded vegetation, shrub & scrub, built area, bare ground, snow & ice). Aligned to every Sentinel-2 image. Dramatically accelerates observation generation by providing pre-classified land cover. Accessible via Google Earth Engine API.",
+    storageType: "raster",
+    status: "pending",
+    recordCount: 0,
+    metadata: { url: "https://dynamicworld.app/", classes: 9 },
+  },
 ];
 
 export function getCatalogEntry(sourceId: string): DatasetSourceRecord | undefined {
   return DATASET_CATALOG.find((s) => s.sourceId === sourceId);
 }
 
-export const LIVE_CONNECTORS = ["geoboundaries", "osm-overpass"] as const;
+export const LIVE_CONNECTORS = ["geoboundaries", "osm-overpass", "stac-sentinel-2"] as const;
 export type LiveConnectorId = (typeof LIVE_CONNECTORS)[number];

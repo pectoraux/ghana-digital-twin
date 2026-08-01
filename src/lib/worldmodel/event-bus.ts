@@ -92,6 +92,27 @@ export const emit = {
       sourceId,
       payload: { count },
     }),
+  datasetIndexed: (sourceId: string, count: number) =>
+    eventBus.emitNow("DatasetIndexed", `Indexed ${count} scenes`, {
+      sourceId,
+      payload: { count },
+    }),
+  rasterGenerated: (sourceId: string, sceneId: string, indexName: string) =>
+    eventBus.emitNow("RasterGenerated", `Computed ${indexName} for scene`, {
+      sourceId,
+      entityId: sceneId,
+      payload: { indexName },
+    }),
+  worldModelUpdated: (sourceId: string, count: number) =>
+    eventBus.emitNow("WorldModelUpdated", `World model updated (+${count} entities)`, {
+      sourceId,
+      payload: { count },
+    }),
+  observationPipelineTriggered: (sourceId: string, count: number) =>
+    eventBus.emitNow("ObservationPipelineTriggered", `Observation pipeline triggered (${count} candidates)`, {
+      sourceId,
+      payload: { count },
+    }),
   entityCreated: (sourceId: string, entityId: string, name: string) =>
     eventBus.emitNow("EntityCreated", `Entity created: ${name}`, { sourceId, entityId }),
   relationshipsUpdated: (sourceId: string, count: number) =>

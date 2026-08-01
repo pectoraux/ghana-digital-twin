@@ -12,6 +12,7 @@ import { ObservationsView } from "./views/ObservationsView";
 import { EntitiesView } from "./views/EntitiesView";
 import { GraphView } from "./views/GraphView";
 import { SourcesView } from "./views/SourcesView";
+import { EOView } from "./views/EOView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -38,6 +39,7 @@ export function Shell() {
               {view === "entities" && <EntitiesView />}
               {view === "graph" && <GraphView />}
               {view === "sources" && <SourcesView />}
+              {view === "eo" && <EOView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>

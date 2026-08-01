@@ -149,3 +149,35 @@ Stage Summary:
 - ✅ Event system emits 13 typed events; observability via /api/health + Sources dashboard.
 - Lint: 0 errors, 0 warnings. Browser-verified: Atlas (1066 real entities), Entities (1066 rows), Graph (nodes+edges), Sources (real connectors), Change Log (real versions), EntityDetail (full provenance + 2 spatial relationships). No console errors.
 - Did NOT begin AI observation generation / change detection / illegal mining detection (deferred per instructions).
+
+---
+Task ID: 17
+Agent: orchestrator
+Task: Milestone 2.5 — Earth Observation Platform (STAC catalog, raster engine, spectral processing, temporal imagery, EO API, observation primitives, event-driven pipeline, Dynamic World registration)
+
+Work Log:
+- Installed @turf/turf (spatial), geotiff (COG reading over HTTP), proj4 (lng/lat→UTM projection).
+- Verified real data sources work: Earth Search STAC API (https://earth-search.aws.element84.com/v1) returns real Sentinel-2 L2A scenes over Ghana with real COG band URLs on AWS S3. Tested reading real Sentinel-2 red-band COG over HTTP — got real reflectance values (128–14208, mean 1781).
+- Extended Prisma schema: RasterScene (STAC item: stacId, collection, platform, instrument, footprint GeoJSON, bbox columns, centroid, mgrsTile, datetime, cloudCover, processingLevel, gsd), RasterBand (real COG URLs: name, href, type, roles, shape, gsd, bandMetadata), SpectralIndexLayer (cached scene-level index stats), EOObservation (factual index-change observations — no legal conclusions). db:push + db:generate succeeded.
+- Extended event types for event-driven pipeline: DatasetDetected, DatasetDownloaded, DatasetValidated, DatasetNormalized, DatasetIndexed, DatasetTransformed, DatasetUpdated, RasterGenerated, EntityCreated/Updated/VersionCreated, RelationshipsUpdated, WorldModelUpdated, ObservationPipelineTriggered, ConnectorStarted/Completed/Failed/Recovered. Added emit helpers for new events.
+- Built STAC connector (StacSentinel2Connector): fetches real Sentinel-2 L2A scenes from Earth Search over Ghana bbox (last 4 months, cloud <40%), paginated. Persists each scene's footprint, datetime, cloud%, MGRS tile, platform, and real COG band URLs (red, nir, green, blue, swir16, swir22, rededge1, scl, visual) to RasterScene + RasterBand tables.
+- Registered STAC connector + Dynamic World (metadata) in catalog. LIVE_CONNECTORS now [geoboundaries, osm-overpass, stac-sentinel-2]. 19 datasets total in catalog.
+- Built spectral indices engine (src/lib/eo/spectral.ts): 7 indices (NDVI, NDWI, NBR, EVI, BSI, MNDWI, SAVI) with formulas, band requirements, ranges, and compute functions. Reads real COGs over HTTP via geotiff.js with windowed pixel reads. Scene-level stats cached in SpectralIndexLayer table.
+- CRITICAL FIX: Sentinel-2 COGs are in UTM projection (EPSG:326XX), not lng/lat. Added proj4-based lng/lat→UTM conversion using MGRS tile to derive the correct UTM zone. Without this, pixel reads returned null (coordinate outside tile). After fix: real NDVI values computed at Kumasi (0.163, 0.213, 0.287 across 3 dates).
+- Built EO store (src/lib/eo/store.ts): queryScenes (bbox/cloud/date/mgrs filters), scenesAtPoint, indexTimeSeries (real pixel-level NDVI/NDWI/etc. across scenes at a coordinate), sceneIndexStats (cached), detectIndexChanges (factual observation primitives — emits EOObservation when |Δindex| ≥ 0.15 between consecutive scenes; NO legal conclusions).
+- Built Earth Observation API: GET /api/eo/imagery (scene search), GET /api/eo/indices (list 7 spectral indices), GET /api/eo/timeseries (real pixel time-series at lng/lat), GET /api/eo/pixel (all scenes + index values at a point), GET /api/eo/observations (list factual observations), POST /api/eo/observations (detect changes at a point), GET /api/eo/scenes/:id (scene detail + index stats).
+- Ran real STAC ingestion: 571 real Sentinel-2 scenes ingested, 5139 real band COG URLs stored. All scenes have real footprints, cloud%, datetime, MGRS tile, and AWS S3 COG URLs.
+- Built EOView frontend: scene footprint map (571 real scenes color-coded by cloud%), click-to-inspect pixel (crosshair), temporal index series chart (real NDVI/NDWI/NBR/etc. line chart with mean line + per-scene points), spectral index picker (7 indices with formulas), factual observations panel, cloud filter slider, detect-changes button.
+- Fixed dev server persistence (setsid -f for fully detached daemon). Fixed Prisma client regeneration after schema push.
+
+Stage Summary:
+- ✅ STAC Catalog: 571 real Sentinel-2 scenes stored with footprints, cloud%, bands, COG URLs, MGRS tiles, datetime.
+- ✅ Raster Engine: real COGs read over HTTP via geotiff.js with windowed pixel reads + 5-min cache.
+- ✅ Spectral Processing: 7 indices (NDVI, NDWI, NBR, EVI, BSI, MNDWI, SAVI) computed from real band pixels.
+- ✅ Temporal Imagery: pixel time-series at any coordinate across all covering scenes (real NDVI: 0.163→0.213→0.287 at Kumasi).
+- ✅ Earth Observation API: 7 endpoints (imagery, indices, timeseries, pixel, observations, scenes).
+- ✅ Observation Primitives: factual index-change detection (Δ≥0.15 → EOObservation), no legal conclusions.
+- ✅ Event-driven pipeline: 18 typed events including RasterGenerated, WorldModelUpdated, ObservationPipelineTriggered.
+- ✅ Dynamic World registered as dataset (metadata; GEE integration documented).
+- Lint: 0 errors, 0 warnings. Browser-verified: EO view renders 571 scenes, pixel inspector computes real NDVI from real Sentinel-2 COGs, time-series chart displays real values. No console errors.
+- Did NOT begin AI observation generation / change detection / illegal mining detection (deferred per roadmap — Milestone 3+).

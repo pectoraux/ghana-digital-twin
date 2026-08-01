@@ -21,6 +21,7 @@ import {
   Boxes,
   Share2,
   Database,
+  Satellite,
   Terminal,
   Radio,
   Clock,
@@ -28,9 +29,10 @@ import {
 
 const VIEWS = [
   { id: "atlas", label: "Atlas", icon: MapIcon, hint: "Geospatial world view" },
-  { id: "observations", label: "Observations", icon: Eye, hint: "Change detection feed" },
+  { id: "observations", label: "Change Log", icon: Eye, hint: "Entity version history" },
   { id: "entities", label: "Entities", icon: Boxes, hint: "Entity registry" },
   { id: "graph", label: "Knowledge Graph", icon: Share2, hint: "Relationship graph" },
+  { id: "eo", label: "Earth Observation", icon: Satellite, hint: "Sentinel-2 imagery & spectral indices" },
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
   { id: "api", label: "API Explorer", icon: Terminal, hint: "Programmatic access" },
 ] as const;

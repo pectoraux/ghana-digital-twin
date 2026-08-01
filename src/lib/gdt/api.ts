@@ -154,6 +154,98 @@ export async function fetchNearest(lng: number, lat: number, maxKm = 50, kind?: 
   return res.json();
 }
 
+// ===== Earth Observation API =====
+
+export interface EOScene {
+  id: string;
+  stacId: string;
+  collection: string;
+  platform: string | null;
+  datetime: string;
+  cloudCover: number | null;
+  mgrsTile: string | null;
+  centroid: [number, number];
+  bbox: { minLng: number; minLat: number; maxLng: number; maxLat: number };
+  geometry: GeoJSON.Geometry;
+  gsd: number | null;
+  bands: { name: string; href: string; commonName: string | null }[];
+}
+
+export interface EOIndex {
+  name: string;
+  formula: string;
+  bands: string[];
+  range: [number, number];
+  description: string;
+}
+
+export async function fetchImagery(params: { bbox?: string; from?: string; to?: string; maxCloud?: number; limit?: number } = {}): Promise<{ scenes: EOScene[]; total: number; count: number }> {
+  const sp = new URLSearchParams();
+  if (params.bbox) sp.set("bbox", params.bbox);
+  if (params.from) sp.set("from", params.from);
+  if (params.to) sp.set("to", params.to);
+  if (params.maxCloud != null) sp.set("maxCloud", String(params.maxCloud));
+  if (params.limit) sp.set("limit", String(params.limit));
+  const res = await fetch(`/api/eo/imagery?${sp}`);
+  if (!res.ok) throw new Error(`fetchImagery: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchIndices(): Promise<{ indices: EOIndex[] }> {
+  const res = await fetch("/api/eo/indices");
+  if (!res.ok) throw new Error(`fetchIndices: ${res.status}`);
+  return res.json();
+}
+
+export interface TimeSeriesPoint {
+  sceneId: string;
+  stacId: string;
+  datetime: string;
+  cloudCover: number | null;
+  value: number | null;
+}
+
+export async function fetchTimeSeries(lng: number, lat: number, index: string, opts: { from?: string; to?: string; maxCloud?: number } = {}): Promise<{ points: TimeSeriesPoint[]; index: string; formula: string; description: string }> {
+  const sp = new URLSearchParams({ lng: String(lng), lat: String(lat), index });
+  if (opts.from) sp.set("from", opts.from);
+  if (opts.to) sp.set("to", opts.to);
+  if (opts.maxCloud != null) sp.set("maxCloud", String(opts.maxCloud));
+  const res = await fetch(`/api/eo/timeseries?${sp}`);
+  if (!res.ok) throw new Error(`fetchTimeSeries: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchPixel(lng: number, lat: number, index: string): Promise<{ pixels: any[]; index: string; formula: string; bands: string[] }> {
+  const sp = new URLSearchParams({ lng: String(lng), lat: String(lat), index });
+  const res = await fetch(`/api/eo/pixel?${sp}`);
+  if (!res.ok) throw new Error(`fetchPixel: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchEOObservations(index?: string, limit = 50): Promise<{ observations: any[]; count: number }> {
+  const sp = new URLSearchParams({ limit: String(limit) });
+  if (index) sp.set("index", index);
+  const res = await fetch(`/api/eo/observations?${sp}`);
+  if (!res.ok) throw new Error(`fetchEOObservations: ${res.status}`);
+  return res.json();
+}
+
+export async function detectChanges(lng: number, lat: number, index: string): Promise<{ observations: any[]; count: number }> {
+  const res = await fetch("/api/eo/observations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ lng, lat, index }),
+  });
+  if (!res.ok) throw new Error(`detectChanges: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchSceneIndexStats(sceneId: string, index: string): Promise<any> {
+  const res = await fetch(`/api/eo/scenes/${sceneId}?index=${index}`);
+  if (!res.ok) throw new Error(`fetchSceneIndexStats: ${res.status}`);
+  return res.json();
+}
+
 // ---- React hooks ----
 
 export function useAsync<T>(fn: () => Promise<T>, deps: any[] = []): { data: T | null; loading: boolean; error: string | null; refresh: () => void } {

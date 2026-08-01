@@ -96,15 +96,20 @@ export interface EntityVersionRecord {
 
 // Pipeline event types
 export type PipelineEventType =
+  | "DatasetDetected"
   | "DatasetDownloaded"
   | "DatasetValidated"
   | "DatasetNormalized"
+  | "DatasetIndexed"
   | "DatasetTransformed"
   | "DatasetUpdated"
+  | "RasterGenerated"
   | "EntityCreated"
   | "EntityUpdated"
   | "EntityVersionCreated"
   | "RelationshipsUpdated"
+  | "WorldModelUpdated"
+  | "ObservationPipelineTriggered"
   | "ConnectorFailed"
   | "ConnectorRecovered"
   | "ConnectorStarted"

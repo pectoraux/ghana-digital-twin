@@ -161,3 +161,126 @@ model IngestionEvent {
   @@index([sourceId])
   @@index([createdAt])
 }
+
+// ===== Earth Observation Platform (Milestone 2.5) =====
+
+// STAC item — one satellite scene
+model RasterScene {
+  id              String   @id @default(uuid())
+  stacId          String   @unique // e.g. "S2B_30NYM_20240701_0_L2A"
+  collection      String   // "sentinel-2-l2a" | "sentinel-2-c1-l2a" | "landsat-c2-l2" | ...
+  platform        String?  // "Sentinel-2B"
+  instrument      String?  // "MSI"
+  constellation   String?  // "sentinel-2"
+  // spatial
+  geometryGeoJson String   // footprint GeoJSON
+  centroidLng     Float
+  centroidLat     Float
+  minLng          Float
+  minLat          Float
+  maxLng          Float
+  maxLat          Float
+  mgrsTile        String?  // "30NYM"
+  // temporal
+  datetime        DateTime
+  // quality
+  cloudCover      Float?
+  // processing
+  processingLevel String?  // "L2A"
+  gsd             Float?   // ground sample distance (m)
+  // provenance
+  sourceId        String   // dataset source id ("stac-sentinel-2")
+  stacVersion     String   @default("1.0.0")
+  selfHref        String?
+  metadata        String   @default("{}") // JSON (extra STAC properties)
+  createdAt       DateTime @default(now())
+
+  bands         RasterBand[]
+  indexLayers   SpectralIndexLayer[]
+
+  @@index([collection, datetime])
+  @@index([centroidLng, centroidLat])
+  @@index([minLng, maxLng, minLat, maxLat])
+  @@index([datetime])
+  @@index([mgrsTile])
+  @@index([cloudCover])
+}
+
+// One band of a scene (e.g. red, nir, green, blue, swir16, scl) — references real COG URL
+model RasterBand {
+  id           String   @id @default(uuid())
+  sceneId      String
+  scene        RasterScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  name         String   // "red" | "nir" | "green" | "blue" | "swir16" | "scl" | ...
+  commonName   String?  // "red" | "nir" ...
+  displayName  String?  // "Red (B04)"
+  href         String   // real COG URL on S3 / elsewhere
+  type         String?  // "image/tiff; application=geotiff; profile=cloud-optimized"
+  roles        String   @default("[]") // JSON array
+  gsd          Float?
+  shapeW       Int?
+  shapeH       Int?
+  // band metadata (wavelength etc.)
+  bandMetadata String   @default("{}") // JSON
+  createdAt    DateTime @default(now())
+
+  @@unique([sceneId, name])
+  @@index([sceneId])
+  @@index([name])
+}
+
+// Computed spectral index layer (NDVI, NDWI, NBR, EVI, BSI, MNDWI, SAVI)
+// References the source scene + the index formula; values computed on demand
+// from real band pixels and cached as statistics.
+model SpectralIndexLayer {
+  id           String   @id @default(uuid())
+  sceneId      String
+  scene        RasterScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  indexName    String   // "NDVI" | "NDWI" | "NBR" | "EVI" | "BSI" | "MNDWI" | "SAVI"
+  formula      String   // human-readable formula
+  // cached statistics (computed once from real pixels over the scene footprint)
+  meanValue    Float?
+  minValue     Float?
+  maxValue     Float?
+  stdValue     Float?
+  validPixelPct Float?
+  computedAt   DateTime?
+  createdAt    DateTime @default(now())
+
+  @@unique([sceneId, indexName])
+  @@index([sceneId])
+  @@index([indexName])
+}
+
+// Factual Earth-Observation Observation (NOT AI — just facts, no conclusions)
+// e.g. "NDVI decreased from 0.62 to 0.41 at [lng,lat] between [date1] and [date2]"
+model EOObservation {
+  id            String   @id @default(uuid())
+  type          String   // "index_change" | "scene_acquired" | "cloud_gap" | "landcover_shift"
+  indexName     String?  // "NDVI" | "NDWI" | ... (if applicable)
+  locationLng   Float
+  locationLat   Float
+  // the two scenes compared
+  beforeSceneId String?
+  afterSceneId  String?
+  // the measured values (objective facts)
+  beforeValue   Float?
+  afterValue    Float?
+  deltaValue    Float?
+  deltaPct      Float?
+  // timing
+  beforeDate    DateTime?
+  afterDate     DateTime
+  // affected world-model entity (if located)
+  entityId      String?
+  // objective description (NO conclusions about legality)
+  summary       String
+  confidence    Float    @default(1.0)
+  createdAt     DateTime @default(now())
+
+  @@index([type])
+  @@index([indexName])
+  @@index([entityId])
+  @@index([afterDate])
+  @@index([locationLng, locationLat])
+}
