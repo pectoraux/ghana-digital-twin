@@ -1,13 +1,13 @@
 // Ghana Digital Twin — World Model Foundation schema
-// Spatial storage on SQLite: geometry stored as GeoJSON + dedicated bbox/centroid
-// columns for indexed spatial queries. Turf provides precise geometry ops in app layer.
+// Spatial storage on PostgreSQL (Neon): geometry stored as GeoJSON + dedicated
+// bbox/centroid columns for indexed spatial queries. Turf provides precise geometry ops.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -1210,4 +1210,82 @@ model ModalitySource {
 
   @@index([category])
   @@index([status])
+}
+
+// ===== Milestone 6: Autonomous Mission Planning & Data Acquisition =====
+// The platform actively decides what evidence it needs next and creates missions
+// to acquire it. Closes the intelligence loop: observe → reason → plan → collect → re-observe.
+
+model Mission {
+  id              String   @id @default(uuid())
+  uuid            String   @unique
+  // what triggered the mission
+  observationId   String?
+  hypothesisId    String?
+  phenomenonId    String?
+  tileId          String?  // target processing tile
+  // mission type
+  type            String   // satellite_revisit | drone | community | inspector | iot | sar_tasking
+  title           String
+  description     String
+  // target
+  targetLng       Float
+  targetLat       Float
+  targetRadiusM   Float    // coverage radius in meters
+  // mission parameters (JSON — type-specific)
+  parameters      String   @default("{}") // altitude, sensor, checklist, etc.
+  // Expected Value of Information
+  informationGain Float    @default(0) // expected uncertainty reduction (0..1)
+  cost            Float    @default(0) // estimated cost ($)
+  evi             Float    @default(0) // EVI = informationGain / cost
+  // priority
+  priority        String   @default("normal") // low | normal | high | urgent
+  priorityScore   Float    @default(0.5) // 0..1
+  // lifecycle
+  status          String   @default("planned") // planned | assigned | in_progress | completed | cancelled | failed
+  assignedTo      String?  // who/what is executing
+  assignedAt      DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  // results
+  outcome         String?  // success | partial | failure
+  evidenceCollected String  @default("{}") // JSON: collected evidence
+  uncertaintyBefore Float? // hypothesis uncertainty before mission
+  uncertaintyAfter  Float? // uncertainty after mission (if completed)
+  actualInformationGain Float? // measured (not estimated) info gain
+  // reasoning
+  reasoning       String   // why this mission was created
+  missingEvidence String   @default("[]") // JSON: what evidence was missing
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([type])
+  @@index([priority])
+  @@index([observationId])
+  @@index([hypothesisId])
+  @@index([evi])
+}
+
+// Autonomous observation scheduling — tile frequency assignment
+model ObservationSchedule {
+  id              String   @id @default(uuid())
+  tileId          String   @unique
+  // frequency tier
+  tier            String   @default("low") // high | medium | low
+  frequency       String   @default("monthly") // daily | weekly | monthly | quarterly
+  // rationale
+  priorityScore   Float    @default(0) // 0..1, higher = more important to monitor
+  riskScore       Float    @default(0)
+  changeRate      Float    @default(0) // how fast this tile changes
+  lastObservationCount Int  @default(0)
+  lastPhenomenaCount Int   @default(0)
+  // scheduling
+  nextObservationAt DateTime?
+  lastScheduledAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tier])
+  @@index([priorityScore])
 }

@@ -31,6 +31,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   observations: { title: "Observations", sub: "Fused evidence from multiple raster products" },
   phenomena: { title: "Phenomena", sub: "Evolving events tracked over time" },
   intelligence: { title: "Intelligence", sub: "Ranked hypotheses, Bayesian reasoning & scenarios" },
+  missions: { title: "Missions", sub: "Autonomous mission planning & data acquisition" },
   continuous: { title: "Continuous Pipeline", sub: "Nationwide processing & learning engine" },
   groundtruth: { title: "Ground Truth", sub: "Active learning, calibration & drift detection" },
   multimodal: { title: "Multi-Modal", sub: "Multi-modal evidence fusion & feature store" },

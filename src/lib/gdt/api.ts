@@ -331,6 +331,41 @@ export async function triggerObservationScan(mgrsTile?: string): Promise<any> {
   return res.json();
 }
 
+// ===== Mission Planning API =====
+
+export async function fetchMissions(status?: string, type?: string): Promise<any> {
+  const sp = new URLSearchParams();
+  if (status) sp.set("status", status);
+  if (type) sp.set("type", type);
+  const res = await fetch(`/api/missions?${sp}`);
+  if (!res.ok) throw new Error(`fetchMissions: ${res.status}`);
+  return res.json();
+}
+
+export async function planMissions(opts: { observationId?: string; hypothesisId?: string }): Promise<any> {
+  const res = await fetch("/api/missions/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(opts) });
+  if (!res.ok) throw new Error(`planMissions: ${res.status}`);
+  return res.json();
+}
+
+export async function completeMission(missionId: string, outcome: string): Promise<any> {
+  const res = await fetch(`/api/missions/${missionId}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ outcome }) });
+  if (!res.ok) throw new Error(`completeMission: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchSchedule(): Promise<any> {
+  const res = await fetch("/api/missions/schedule");
+  if (!res.ok) throw new Error(`fetchSchedule: ${res.status}`);
+  return res.json();
+}
+
+export async function updateSchedule(): Promise<any> {
+  const res = await fetch("/api/missions/schedule", { method: "POST" });
+  if (!res.ok) throw new Error(`updateSchedule: ${res.status}`);
+  return res.json();
+}
+
 // ===== Multi-Modal Evidence Fusion API =====
 
 export async function fetchModalities(): Promise<any> {
