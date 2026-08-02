@@ -5708,3 +5708,136 @@ model VerificationToken {
 
   @@index([identifier])
 }
+
+// ===========================================================================
+// MILESTONE 14 — AUTHENTICATED APPLICATION SHELL & IDENTITY BINDING
+// Links authenticated users to the intelligence civilization: profiles,
+// reputation, organization memberships, and the personalized intelligence feed.
+// Kernel is FROZEN. All package-layer.
+// ===========================================================================
+
+// UserProfile — extended profile data linked to User.
+model UserProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique // User.id
+  displayName     String
+  avatar          String?
+  bio             String?
+  country         String?
+  region          String?
+  interests       String   @default("[]") // JSON: ["mining", "flood", "wildlife"]
+  skills          String   @default("[]") // JSON: ["remote_sensing", "field_verification"]
+  // social
+  followersCount  Int      @default(0)
+  followingCount  Int      @default(0)
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([region])
+}
+
+// UserReputation — reputation scores linked to User (not embedded in User).
+model UserReputation {
+  id              String   @id @default(uuid())
+  userId          String   @unique // User.id
+  trustScore      Float    @default(50) // 0..100 from TrustGraph
+  civicScore      Float    @default(50) // 0..100 from CivicScore
+  contributionScore Float  @default(0) // accumulated contribution points
+  verificationLevel String @default("none") // none | phone | national | biometric | vouched | anchor
+  // stats
+  totalReports    Int      @default(0)
+  totalVerified   Int      @default(0)
+  totalAssets     Int      @default(0)
+  totalMissions   Int      @default(0)
+  // temporal
+  lastUpdated     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([civicScore])
+}
+
+// OrganizationMembership — links users to AIOs.
+model OrganizationMembership {
+  id              String   @id @default(uuid())
+  userId          String   // User.id
+  organizationId  String   // AutonomousOrganization.orgId
+  organizationName String
+  role            String   @default("member") // member | officer | admin | founder
+  permissions     String   @default("[]") // JSON: [capability IDs]
+  status          String   @default("active") // active | invited | suspended
+  joinedAt        DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
+}
+
+// FeedItem — personalized intelligence feed. Like YouTube home + Twitter timeline.
+model FeedItem {
+  id              String   @id @default(uuid())
+  feedItemId      String   @unique
+  // type
+  type            String   // ALERT | REPORT | ANALYSIS | MISSION | DISCUSSION | ASSET | ANNOUNCEMENT
+  // creator
+  creatorId       String   // User.id
+  creatorName     String
+  creatorRole     String
+  creatorAvatar   String?
+  // organization (if org-created)
+  organizationId  String?
+  organizationName String?
+  // content
+  title           String
+  summary         String
+  body            String?
+  // classification
+  category        String   // mining | flood | wildlife | deforestation | agriculture | general
+  region          String?
+  // trust
+  trustScore      Float    @default(50) // creator's trust at posting time
+  confidence      Float    @default(0.5) // item confidence
+  // links to intelligence layer
+  sourceType      String?  // "citizen_event" | "observation" | "incident" | "bounty" | "package"
+  sourceId        String?  // ID of the source record
+  // engagement
+  viewCount       Int      @default(0)
+  likeCount       Int      @default(0)
+  commentCount    Int      @default(0)
+  // status
+  status          String   @default("published") // published | hidden | flagged
+  // temporal
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([type])
+  @@index([category])
+  @@index([region])
+  @@index([status])
+  @@index([publishedAt])
+  @@index([creatorId])
+}
+
+// FeedEngagement — likes, comments, shares on feed items.
+model FeedEngagement {
+  id              String   @id @default(uuid())
+  engagementId    String   @unique
+  feedItemId      String   // FeedItem.feedItemId
+  userId          String   // User.id
+  userName        String
+  // engagement
+  type            String   // like | comment | share | flag
+  content         String?  // comment text
+  // temporal
+  createdAt       DateTime @default(now())
+
+  @@unique([feedItemId, userId, type])
+  @@index([feedItemId])
+  @@index([userId])
+}
