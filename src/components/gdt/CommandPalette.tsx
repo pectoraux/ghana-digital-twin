@@ -34,6 +34,7 @@ import {
   Activity,
   Scale,
   Brain,
+  Building2,
   Clock,
 } from "lucide-react";
 
@@ -55,6 +56,7 @@ const VIEWS = [
   { id: "reality", label: "Intelligence Reality Feed", icon: Activity, hint: "Continuous ingestion, freshness monitoring, observation triggers" },
   { id: "governance", label: "Intelligence Governance", icon: Scale, hint: "Constitution, council, courts, proposals" },
   { id: "gov-intel", label: "Governance Intelligence", icon: Brain, hint: "Governance agents, precedents, institutional reputation" },
+  { id: "aio", label: "Autonomous Organizations", icon: Building2, hint: "Digital institutions: treasury, agents, objectives, charters" },
   { id: "api", label: "API Explorer", icon: Terminal, hint: "Programmatic access" },
 ] as const;
 

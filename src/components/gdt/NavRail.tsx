@@ -27,6 +27,7 @@ import {
   Globe,
   Activity,
   Scale,
+  Building2,
   Terminal,
   Settings,
   HelpCircle,
@@ -60,6 +61,7 @@ const NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[
   { id: "reality", label: "Reality Feed", icon: Activity, hint: "Continuous ingestion, freshness monitoring, automatic observation triggers" },
   { id: "governance", label: "Governance", icon: Scale, hint: "Constitution, council, courts, proposals — who governs the intelligence civilization" },
   { id: "gov-intel", label: "Gov Intelligence", icon: Brain, hint: "Governance agents, legal precedents, institutional reputation, compliance audits" },
+  { id: "aio", label: "Organizations", icon: Building2, hint: "Autonomous intelligence organizations: treasury, agents, objectives, charters" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 

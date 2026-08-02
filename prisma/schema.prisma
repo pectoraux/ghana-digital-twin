@@ -5345,3 +5345,255 @@ model GovernanceIntelligencePackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 13 — AUTONOMOUS INTELLIGENCE ORGANIZATIONS (AIOs) (Package Layer)
+// Digital institutions native to the intelligence economy. Have identity, own
+// assets, employ agents, receive funding, publish intelligence, execute
+// workflows, are governed, audited, earn revenue, and can be dissolved.
+// Like a company but native to the intelligence economy. Like a DAO but with
+// constitutional governance. Like an agent swarm but legally/economically bounded.
+// Kernel is FROZEN. All package-layer.
+// ===========================================================================
+
+// AutonomousOrganization — a digital intelligence institution.
+model AutonomousOrganization {
+  id              String   @id @default(uuid())
+  orgId           String   @unique // "aio-mining-ghana" | "aio-flood-volta"
+  name            String
+  displayName     String
+  description     String
+  orgType         String   // "environmental" | "disaster" | "wildlife" | "agricultural" | "infrastructure" | "custom"
+  mission         String   // primary mission statement
+  // founder
+  founderId       String   // who created this org
+  founderName     String
+  // status
+  status          String   @default("active") // forming | active | suspended | dissolved
+  dissolvedAt     DateTime?
+  // trust + reputation
+  trustScore      Float    @default(50)
+  reputationTier  String   @default("unproven") // unproven | emerging | trusted | elite
+  // treasury
+  treasuryBalance Float    @default(0) // current IC balance
+  totalRevenue    Float    @default(0) // lifetime revenue
+  totalExpenses   Float    @default(0) // lifetime expenses
+  // composition
+  agentCount      Int      @default(0)
+  humanMemberCount Int     @default(0)
+  partnerCount    Int      @default(0)
+  // objectives
+  objectiveCount  Int      @default(0)
+  // governance
+  charterId       String?  // OrganizationCharter.charterId
+  // federation
+  federationNodeId String? // which federation node this org belongs to
+  // temporal
+  foundedAt       DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([orgType])
+  @@index([reputationTier])
+}
+
+// OrganizationTreasury — institutional economics. Income + expenses + balance.
+model OrganizationTreasury {
+  id              String   @id @default(uuid())
+  treasuryId      String   @unique
+  orgId           String   @unique // AutonomousOrganization.orgId
+  // balance
+  balance         Float    @default(0)
+  // income tracking
+  totalIncome     Float    @default(0)
+  totalExpenses   Float    @default(0)
+  // income sources
+  bountyIncome    Float    @default(0)
+  subscriptionIncome Float @default(0)
+  serviceIncome   Float    @default(0)
+  grantIncome     Float    @default(0)
+  // expense categories
+  agentCosts      Float    @default(0)
+  dataCosts       Float    @default(0)
+  contributorPayouts Float  @default(0)
+  infrastructureCosts Float @default(0)
+  // allocations (budget envelopes)
+  allocations     String   @default("{}") // JSON: {category: amount}
+  // temporal
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+
+  @@index([orgId])
+}
+
+// OrganizationTransaction — treasury movements.
+model OrganizationTransaction {
+  id              String   @id @default(uuid())
+  transactionId   String   @unique
+  orgId           String   // AutonomousOrganization.orgId
+  // transaction
+  type            String   // "income" | "expense" | "allocation" | "transfer"
+  category        String   // "bounty" | "subscription" | "service" | "grant" | "agent_cost" | "data_cost" | "contributor_payout" | "infrastructure"
+  amount          Float    // positive for income, negative for expense
+  balanceAfter    Float    // treasury balance after this transaction
+  // counterparty
+  counterpartyId  String?
+  counterpartyName String?
+  // description
+  description     String
+  // temporal
+  processedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([orgId])
+  @@index([type])
+  @@index([category])
+  @@index([processedAt])
+}
+
+// AgentContract — organization employs/contracts an agent.
+model AgentContract {
+  id              String   @id @default(uuid())
+  contractId      String   @unique
+  orgId           String   // AutonomousOrganization.orgId
+  agentId         String   // employed agent ID
+  agentName       String
+  agentType       String   // "agent" | "citizen" | "organization"
+  // role
+  role            String   // "investigator" | "analyst" | "monitor" | "responder" | "calibration_officer"
+  // terms
+  status          String   @default("active") // active | suspended | terminated
+  // budget
+  budgetAllocation Float   @default(0) // IC allocated to this agent per month
+  totalSpent      Float    @default(0)
+  // permissions
+  permissions     String   @default("[]") // JSON: [capability IDs]
+  // objectives assigned
+  assignedObjectives String @default("[]") // JSON: [objectiveId]
+  // evaluation
+  performanceScore Float   @default(0.5) // 0..1
+  // temporal
+  contractedAt    DateTime @default(now())
+  terminatedAt    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([agentId])
+  @@index([status])
+}
+
+// OrganizationObjective — goals the organization pursues.
+model OrganizationObjective {
+  id              String   @id @default(uuid())
+  objectiveId     String   @unique // "OBJ-MINING-001"
+  orgId           String   // AutonomousOrganization.orgId
+  title           String
+  description     String
+  // target
+  targetMetric    String   // "reduction_percentage" | "detection_count" | "response_time" | "coverage_area"
+  targetValue     Float    // e.g., 30 (for 30% reduction)
+  currentValue    Float    @default(0)
+  unit            String   @default("%") // "%" | "count" | "hours" | "km2"
+  // timeframe
+  deadline        DateTime?
+  // progress
+  progressPercent Float    @default(0) // 0..100
+  status          String   @default("active") // active | achieved | missed | abandoned
+  achievedAt      DateTime?
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([status])
+}
+
+// ObjectiveProgress — tracking updates toward objectives.
+model ObjectiveProgress {
+  id              String   @id @default(uuid())
+  progressId      String   @unique
+  objectiveId     String   // OrganizationObjective.objectiveId
+  orgId           String
+  // measurement
+  measuredValue   Float    // current metric value at this point
+  progressPercent Float    // computed progress
+  // context
+  note            String?
+  measuredBy      String   // who/what measured this
+  // temporal
+  measuredAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([objectiveId])
+  @@index([measuredAt])
+}
+
+// OrganizationCharter — mini constitution for each org.
+model OrganizationCharter {
+  id              String   @id @default(uuid())
+  charterId       String   @unique // "CHARTER-aio-mining-ghana"
+  orgId           String   @unique
+  name            String
+  preamble        String
+  // rules (JSON array of {number, title, body, category})
+  rules           String   @default("[]")
+  ruleCount       Int      @default(0)
+  // governance
+  governanceModel String   @default("founder_control") // founder_control | council | democratic | weighted_vote
+  amendmentProcess String  @default("founder_approval") // founder_approval | council_vote | member_vote
+  // status
+  status          String   @default("active")
+  ratifiedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orgId])
+}
+
+// OrganizationService — org-offered intelligence services in the marketplace.
+model OrganizationService {
+  id              String   @id @default(uuid())
+  serviceId       String   @unique // "SVC-MINING-MONITOR"
+  orgId           String   // AutonomousOrganization.orgId
+  orgName         String
+  // service
+  name            String
+  description     String
+  serviceType     String   // "monitoring" | "investigation" | "prediction" | "response" | "advisory"
+  // what's included
+  includes        String   @default("[]") // JSON: [package IDs, agent IDs, connector IDs]
+  // pricing
+  pricingModel    String   @default("subscription") // subscription | one_time | per_incident
+  price           Float    @default(0) // IC
+  // adoption
+  subscribers     Int      @default(0)
+  activeDeployments Int    @default(0)
+  totalRevenue    Float    @default(0)
+  // status
+  status          String   @default("active")
+  // temporal
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orgId])
+  @@index([serviceType])
+  @@index([status])
+}
+
+// AioPackage — package manifest.
+model AioPackage {
+  id              String   @id @default(uuid())
+  packageId       String   @unique
+  name            String
+  version         String
+  provides        String   @default("[]")
+  requires        String   @default("[]")
+  subPackages     String   @default("[]")
+  active          Boolean  @default(true)
+  installedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
