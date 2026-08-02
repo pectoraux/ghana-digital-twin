@@ -44,7 +44,6 @@ export function Shell() {
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground">
       <CommandBar />
       <div className="flex min-h-0 flex-1">
-        <NavRail />
         <main className="relative min-w-0 flex-1 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
@@ -87,6 +86,7 @@ export function Shell() {
           </AnimatePresence>
         </main>
         <Inspector />
+        <NavRail />
       </div>
       <StatusBar />
 

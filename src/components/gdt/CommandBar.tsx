@@ -4,14 +4,9 @@ import { useGDT } from "@/lib/gdt/store";
 import { REGIONS } from "@/lib/gdt/geo";
 import { OBSERVATIONS } from "@/lib/gdt/observations";
 import { cn } from "@/lib/utils";
+import { useSession, signOut } from "next-auth/react";
 import {
-  Search,
-  Bell,
-  Radio,
-  Clock,
-  ChevronDown,
-  ShieldCheck,
-  Activity,
+  Search, Bell, Radio, Clock, ChevronDown, ShieldCheck, Activity, LogOut,
 } from "lucide-react";
 import {
   Select,
@@ -64,6 +59,11 @@ export function CommandBar() {
   const setPaletteOpen = useGDT((s) => s.setPaletteOpen);
   const obsFilter = useGDT((s) => s.obsFilter);
   const setObsFilter = useGDT((s) => s.setObsFilter);
+  const { data: session } = useSession();
+
+  const userName = session?.user?.name ?? "User";
+  const userRole = (session?.user as any)?.role ?? "CITIZEN";
+  const initials = userName.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
 
   const meta = VIEW_TITLES[view];
   const activeCount = OBSERVATIONS.filter((o) => o.status === "active").length;
@@ -143,15 +143,20 @@ export function CommandBar() {
         {/* User */}
         <div className="flex items-center gap-2 rounded-lg border border-border bg-background/40 pl-1.5 pr-2.5 h-9">
           <div className="flex size-6 items-center justify-center rounded-md bg-primary/20 text-primary text-[10px] font-semibold">
-            GA
+            {initials}
           </div>
           <div className="hidden xl:flex flex-col leading-tight">
-            <span className="text-[11px] font-medium">Geo Analyst</span>
+            <span className="text-[11px] font-medium">{userName}</span>
             <span className="text-[9px] text-muted-foreground flex items-center gap-1">
-              <ShieldCheck className="size-2.5" /> RBAC: analyst
+              <ShieldCheck className="size-2.5" /> {userRole.replace(/_/g, " ").toLowerCase()}
             </span>
           </div>
         </div>
+
+        {/* Logout */}
+        <Button variant="ghost" size="icon" className="size-9" onClick={() => signOut({ callbackUrl: "/login" })}>
+          <LogOut className="size-[18px]" />
+        </Button>
       </div>
     </header>
   );

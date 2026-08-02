@@ -31,6 +31,9 @@ interface GDTState {
   // navigation
   view: ViewId;
   setView: (v: ViewId) => void;
+  // nav collapsed sections
+  navExpanded: boolean;
+  setNavExpanded: (v: boolean) => void;
 
   // selection
   selectedEntityId: string | null;
@@ -93,6 +96,8 @@ let feedCounter = 0;
 export const useGDT = create<GDTState>((set) => ({
   view: "atlas",
   setView: (view) => set({ view }),
+  navExpanded: false,
+  setNavExpanded: (navExpanded) => set({ navExpanded }),
 
   selectedEntityId: null,
   selectedObservationId: null,
