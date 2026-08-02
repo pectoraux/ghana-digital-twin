@@ -31,7 +31,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Ghana Digital Twin" }],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/logo.svg",
+    appleTouchIcon: "/logo.svg",
+    shortcut: "/logo.svg",
   },
 };
 
