@@ -5597,3 +5597,114 @@ model AioPackage {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+// ===========================================================================
+// MILESTONE 13.5 — IDENTITY & ACCESS FOUNDATION
+// Real authentication, waitlist onboarding, admin approval, demo accounts,
+// role-based access control, audit trail. The identity foundation for the
+// entire intelligence civilization. Kernel is FROZEN. All package-layer.
+// ===========================================================================
+
+// User — real authenticated user account. Created by admin after waitlist approval.
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  // role
+  role            String   @default("CITIZEN") // CITIZEN | COMMUNITY_GUARDIAN | INTELLIGENCE_PRODUCER | ORGANIZATION_MEMBER | DEVELOPER | RESEARCHER | ADMIN | SUPER_ADMIN
+  // status
+  status          String   @default("ACTIVE") // ACTIVE | INVITED | SUSPENDED
+  // profile
+  phone           String?
+  country         String?
+  region          String?
+  bio             String?
+  // links to intelligence layer (filled later)
+  citizenId       String?  // links to Citizen model
+  developerId     String?  // links to DeveloperProfile
+  organizationId  String?  // links to AutonomousOrganization
+  // demo flag
+  isDemo          Boolean  @default(false)
+  // temporal
+  lastLoginAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([role])
+  @@index([status])
+  @@index([email])
+}
+
+// WaitlistEntry — public signup. Users don't get accounts immediately.
+// Admin reviews and creates accounts manually.
+model WaitlistEntry {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  phone           String?
+  country         String?
+  region          String?
+  requestedRole   String   // CITIZEN | COMMUNITY_GUARDIAN | INTELLIGENCE_PRODUCER | ORGANIZATION_MEMBER | DEVELOPER | RESEARCHER
+  reason          String?
+  // status
+  status          String   @default("pending") // pending | approved | rejected
+  reviewedBy      String?  // admin userId
+  reviewedAt      DateTime?
+  reviewNote      String?
+  // link to created user account
+  createdUserId   String?  // User.id after account creation
+  // temporal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([requestedRole])
+}
+
+// AuditLog — every auth/governance action is logged for accountability.
+model AuditLog {
+  id              String   @id @default(uuid())
+  logId           String   @unique
+  // actor
+  actorId         String?  // User.id (null for system actions)
+  actorName       String?
+  actorRole       String?
+  // action
+  action          String   // ADMIN_APPROVED_WAITLIST | ADMIN_CREATED_ACCOUNT | ADMIN_REJECTED_WAITLIST | USER_LOGIN | USER_LOGOUT | ROLE_CHANGED | ACCOUNT_SUSPENDED | ACCOUNT_ACTIVATED | DEMO_LOGIN
+  targetId        String?  // target User.id or WaitlistEntry.id
+  targetName      String?
+  // metadata
+  metadata        String   @default("{}") // JSON: additional context
+  ipAddress       String?
+  // temporal
+  timestamp       DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+// Session — NextAuth session storage (if using database sessions)
+model Session {
+  id              String   @id @default(uuid())
+  sessionToken    String   @unique
+  userId          String
+  expires         DateTime
+  createdAt       DateTime @default(now())
+
+  @@index([userId])
+}
+
+// VerificationToken — for email verification (future)
+model VerificationToken {
+  id              String   @id @default(uuid())
+  identifier      String
+  token           String   @unique
+  expires         DateTime
+  createdAt       DateTime @default(now())
+
+  @@index([identifier])
+}
