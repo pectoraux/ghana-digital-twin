@@ -79,12 +79,12 @@ export function NavRail() {
             )}
           >
             {active && (
-              <span className="absolute right-[-10px] top-1/2 h-5 -translate-y-1/2 w-[3px] rounded-full bg-primary" />
+              <span className="absolute left-[-10px] top-1/2 h-5 -translate-y-1/2 w-[3px] rounded-full bg-primary" />
             )}
             <Icon className="size-[18px]" />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="left" sideOffset={8}>
+        <TooltipContent side="right" sideOffset={8}>
           <div className="font-medium">{item.label}</div>
           <div className="text-[10px] text-muted-foreground">{item.hint}</div>
         </TooltipContent>
@@ -94,7 +94,7 @@ export function NavRail() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <nav className="flex w-[56px] shrink-0 flex-col items-center border-l border-border bg-sidebar/60 py-2">
+      <nav className="flex w-[56px] shrink-0 flex-col items-center border-r border-border bg-sidebar/60 py-2">
         {/* Logo mark */}
         <div className="mb-3 flex size-9 items-center justify-center rounded-lg bg-primary/15 border border-primary/30 text-primary">
           <svg viewBox="0 0 24 24" className="size-5" fill="none">
@@ -135,7 +135,7 @@ export function NavRail() {
                 {theme === "dark" ? <Sun className="size-[18px]" /> : <Moon className="size-[18px]" />}
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" sideOffset={8}>
+            <TooltipContent side="right" sideOffset={8}>
               Toggle {theme === "dark" ? "light" : "dark"} mode
             </TooltipContent>
           </Tooltip>
@@ -150,7 +150,7 @@ export function NavRail() {
                 <kbd className="text-[9px] font-mono border border-border rounded px-1 py-0.5">⌘K</kbd>
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" sideOffset={8}>
+            <TooltipContent side="right" sideOffset={8}>
               Command palette
             </TooltipContent>
           </Tooltip>
@@ -162,7 +162,7 @@ export function NavRail() {
                 <Settings className="size-[18px]" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" sideOffset={8}>
+            <TooltipContent side="right" sideOffset={8}>
               Settings
             </TooltipContent>
           </Tooltip>
@@ -174,7 +174,7 @@ export function NavRail() {
                 {initials}
               </div>
             </TooltipTrigger>
-            <TooltipContent side="left" sideOffset={8}>
+            <TooltipContent side="right" sideOffset={8}>
               <div className="font-medium">{userName}</div>
               <div className="text-[10px] text-muted-foreground">{userRole.replace(/_/g, " ").toLowerCase()}</div>
             </TooltipContent>
@@ -190,7 +190,7 @@ export function NavRail() {
                 <LogOut className="size-[18px]" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="left" sideOffset={8}>
+            <TooltipContent side="right" sideOffset={8}>
               Logout
             </TooltipContent>
           </Tooltip>
