@@ -9,44 +9,45 @@ import {
   Map as MapIcon, Eye, Clock, Brain, Crosshair, ShieldCheck, Puzzle,
   Radar, CheckCircle2, Layers3, Boxes, Share2, Database, Satellite,
   Grid3x3, RadioTower, Users, Network, Store, Coins, Globe, Activity,
-  Scale, Building2, Terminal, Settings, HelpCircle, LogOut, Sun, Moon,
-  ChevronDown, ChevronUp,
+  Scale, Building2, Terminal, Settings, LogOut, Sun, Moon,
+  ChevronDown, ChevronUp, Home, Bell, Award,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-// Primary nav items (always visible)
+// Consumer-facing primary nav — what a normal user thinks in
 const PRIMARY_NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[] = [
-  { id: "atlas", label: "Atlas", icon: MapIcon, hint: "Geospatial world view" },
-  { id: "observations", label: "Observations", icon: Eye, hint: "Fused evidence observations" },
-  { id: "intelligence", label: "Intelligence", icon: Brain, hint: "Ranked hypotheses, Bayesian reasoning, scenarios" },
-  { id: "command", label: "Command Center", icon: RadioTower, hint: "Incidents, workflows, decisions, evidence rooms" },
-  { id: "community", label: "Community", icon: Users, hint: "Citizen intelligence: events, witnesses, civic scores" },
+  { id: "atlas", label: "Home", icon: Home, hint: "Intelligence dashboard" },
+  { id: "observations", label: "Intelligence Feed", icon: Eye, hint: "Latest verified intelligence" },
+  { id: "atlas", label: "Map", icon: MapIcon, hint: "Live intelligence map" },
+  { id: "missions", label: "Missions", icon: Crosshair, hint: "Active intelligence missions" },
+  { id: "community", label: "Community", icon: Users, hint: "Citizen intelligence network" },
+  { id: "intelligence", label: "Rewards", icon: Award, hint: "Your earnings and reputation" },
 ];
 
-// Secondary nav items (collapsed by default, expandable)
-const SECONDARY_NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[] = [
-  { id: "phenomena", label: "Phenomena", icon: Clock, hint: "Evolving events tracked over time" },
-  { id: "missions", label: "Missions", icon: Crosshair, hint: "Autonomous mission planning" },
-  { id: "validation", label: "Validation", icon: ShieldCheck, hint: "Replay testing, evaluation & observability" },
-  { id: "extensions", label: "Extensions", icon: Puzzle, hint: "Domain extensions" },
-  { id: "continuous", label: "Continuous", icon: Radar, hint: "Nationwide pipeline & learning" },
-  { id: "groundtruth", label: "Ground Truth", icon: CheckCircle2, hint: "Active learning & calibration" },
-  { id: "multimodal", label: "Multi-Modal", icon: Layers3, hint: "Multi-modal evidence fusion" },
-  { id: "entities", label: "Entities", icon: Boxes, hint: "Entity registry" },
-  { id: "graph", label: "Entity Graph", icon: Share2, hint: "Entity relationship graph" },
-  { id: "knowledge", label: "Env Knowledge", icon: Brain, hint: "Domain knowledge graph" },
-  { id: "eo", label: "Earth Observation", icon: Satellite, hint: "Sentinel-2 imagery & indices" },
-  { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps & baselines" },
-  { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
-  { id: "civic-trust", label: "Civic Trust", icon: Network, hint: "Trust graph, Sybil resistance" },
+// Advanced console — power users only, collapsed by default
+const ADVANCED_NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[] = [
+  { id: "command", label: "Command Center", icon: RadioTower, hint: "Incidents, workflows, evidence rooms" },
+  { id: "civic-trust", label: "Trust Graph", icon: Network, hint: "Trust propagation, Sybil resistance" },
   { id: "marketplace", label: "Marketplace", icon: Store, hint: "Intelligence marketplace" },
   { id: "finance", label: "Finance", icon: Coins, hint: "Credits, licensing, royalties" },
-  { id: "federation", label: "Federation", icon: Globe, hint: "Federated intelligence network" },
+  { id: "federation", label: "Federation", icon: Globe, hint: "Cross-border intelligence" },
   { id: "os", label: "OS Marketplace", icon: Boxes, hint: "Package registry, developers" },
   { id: "reality", label: "Reality Feed", icon: Activity, hint: "Continuous ingestion" },
   { id: "governance", label: "Governance", icon: Scale, hint: "Constitution, council, courts" },
   { id: "gov-intel", label: "Gov Intelligence", icon: Brain, hint: "Governance agents, precedents" },
   { id: "aio", label: "Organizations", icon: Building2, hint: "Autonomous intelligence organizations" },
+  { id: "phenomena", label: "Phenomena", icon: Clock, hint: "Evolving events" },
+  { id: "validation", label: "Validation", icon: ShieldCheck, hint: "Replay testing, evaluation" },
+  { id: "extensions", label: "Extensions", icon: Puzzle, hint: "Domain extensions" },
+  { id: "continuous", label: "Continuous", icon: Radar, hint: "Nationwide pipeline" },
+  { id: "groundtruth", label: "Ground Truth", icon: CheckCircle2, hint: "Active learning, calibration" },
+  { id: "multimodal", label: "Multi-Modal", icon: Layers3, hint: "Multi-modal evidence fusion" },
+  { id: "entities", label: "Entities", icon: Boxes, hint: "Entity registry" },
+  { id: "graph", label: "Entity Graph", icon: Share2, hint: "Entity relationship graph" },
+  { id: "knowledge", label: "Env Knowledge", icon: Brain, hint: "Domain knowledge graph" },
+  { id: "eo", label: "Earth Observation", icon: Satellite, hint: "Sentinel-2 imagery" },
+  { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps" },
+  { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
   { id: "api", label: "API", icon: Terminal, hint: "Programmatic access" },
 ];
 
@@ -67,7 +68,7 @@ export function NavRail() {
     const active = view === item.id;
     const Icon = item.icon;
     return (
-      <Tooltip key={item.id}>
+      <Tooltip key={item.id + item.label}>
         <TooltipTrigger asChild>
           <button
             onClick={() => setView(item.id)}
@@ -103,23 +104,24 @@ export function NavRail() {
           </svg>
         </div>
 
-        {/* Primary nav (always visible) */}
+        {/* Primary consumer nav */}
         <div className="flex flex-col gap-1">
           {PRIMARY_NAV.map(renderNavItem)}
         </div>
 
-        {/* Expand/collapse button */}
+        {/* Advanced console expand/collapse */}
         <button
           onClick={() => setNavExpanded(!navExpanded)}
-          className="mt-1 flex size-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="mt-2 flex flex-col items-center gap-0.5 rounded-lg px-1 py-1.5 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
-          {navExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+          <span className="text-[8px] font-medium uppercase tracking-wider">Advanced</span>
+          {navExpanded ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
         </button>
 
-        {/* Secondary nav (collapsed by default) */}
+        {/* Advanced nav (collapsed by default) */}
         {navExpanded && (
-          <div className="flex flex-col gap-1 mt-1 max-h-[40vh] overflow-y-auto gdt-scroll">
-            {SECONDARY_NAV.map(renderNavItem)}
+          <div className="mt-1 flex max-h-[35vh] flex-col gap-1 overflow-y-auto gdt-scroll">
+            {ADVANCED_NAV.map(renderNavItem)}
           </div>
         )}
 
@@ -167,7 +169,7 @@ export function NavRail() {
             </TooltipContent>
           </Tooltip>
 
-          {/* User avatar + logout */}
+          {/* User avatar */}
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 border border-primary/30 text-primary text-[10px] font-semibold cursor-default">
