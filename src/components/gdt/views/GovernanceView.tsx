@@ -136,7 +136,7 @@ async function api(path: string, opts?: RequestInit) {
 function ColorPill({ color, label }: { color: string; label: string }) {
   return (
     <span
-      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-semibold"
+      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[13px] font-semibold"
       style={{ color, background: `${color}1a`, border: `1px solid ${color}33` }}
     >
       <span className="size-1.5 rounded-full" style={{ background: color }} />
@@ -159,10 +159,10 @@ export function GovernanceView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Scale className="size-4 text-primary" /> Intelligence Governance &amp; Constitutional Layer
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: intelligence-governance
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Constitution · Council · Courts · Proposals — who governs the intelligence civilization
           </p>
           <PackageBadge />
@@ -211,7 +211,7 @@ function PackageBadge() {
   if (packages.length === 0) return null;
   const p = packages[0];
   return (
-    <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="ml-auto hidden md:flex items-center gap-2 text-[14px] text-muted-foreground">
       <ShieldCheck className="size-3 text-emerald-400" />
       <span className="font-mono">v{p.version}</span>
       <span>·</span>
@@ -267,42 +267,42 @@ function OverviewTab() {
         <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
           <div className="flex items-center gap-2">
             <ScrollText className="size-3.5 text-emerald-400" />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Ratified</span>
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground">Ratified</span>
           </div>
           <div className="text-xl font-bold tnum text-emerald-400 mt-1">{a.ratifiedConstitutions}</div>
-          <div className="text-[10px] text-muted-foreground">constitutions in force</div>
+          <div className="text-[14px] text-muted-foreground">constitutions in force</div>
         </div>
         <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3">
           <div className="flex items-center gap-2">
             <Users className="size-3.5 text-cyan-400" />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Councils</span>
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground">Councils</span>
           </div>
           <div className="text-xl font-bold tnum text-cyan-400 mt-1">{a.activeCouncils}</div>
-          <div className="text-[10px] text-muted-foreground">active governance bodies</div>
+          <div className="text-[14px] text-muted-foreground">active governance bodies</div>
         </div>
         <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
           <div className="flex items-center gap-2">
             <Vote className="size-3.5 text-amber-400" />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Open Proposals</span>
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground">Open Proposals</span>
           </div>
           <div className="text-xl font-bold tnum text-amber-400 mt-1">{a.openProposals}</div>
-          <div className="text-[10px] text-muted-foreground">proposed / voting</div>
+          <div className="text-[14px] text-muted-foreground">proposed / voting</div>
         </div>
         <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
           <div className="flex items-center gap-2">
             <Gavel className="size-3.5 text-violet-400" />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Open Cases</span>
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground">Open Cases</span>
           </div>
           <div className="text-xl font-bold tnum text-violet-400 mt-1">{a.openCases}</div>
-          <div className="text-[10px] text-muted-foreground">filed / under review / hearing</div>
+          <div className="text-[14px] text-muted-foreground">filed / under review / hearing</div>
         </div>
         <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="size-3.5 text-emerald-400" />
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Ruled Cases</span>
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground">Ruled Cases</span>
           </div>
           <div className="text-xl font-bold tnum text-emerald-400 mt-1">{a.ruledCases}</div>
-          <div className="text-[10px] text-muted-foreground">with binding verdicts</div>
+          <div className="text-[14px] text-muted-foreground">with binding verdicts</div>
         </div>
       </div>
 
@@ -315,17 +315,17 @@ function OverviewTab() {
           {o.constitution ? (
             <div>
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="font-mono text-[10px] text-muted-foreground">{o.constitution.constitutionId}</span>
-                <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] font-medium text-emerald-300 capitalize">
+                <span className="font-mono text-[14px] text-muted-foreground">{o.constitution.constitutionId}</span>
+                <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] font-medium text-emerald-300 capitalize">
                   {o.constitution.status}
                 </span>
-                <span className="font-mono text-[9px] text-muted-foreground">v{o.constitution.version}</span>
+                <span className="font-mono text-[13px] text-muted-foreground">v{o.constitution.version}</span>
               </div>
-              <div className="text-[13px] font-semibold mb-1.5">{o.constitution.title}</div>
-              <p className="text-[11px] text-foreground/70 leading-snug line-clamp-5 mb-2">
+              <div className="text-[17px] font-semibold mb-1.5">{o.constitution.title}</div>
+              <p className="text-[15px] text-foreground/70 leading-snug line-clamp-5 mb-2">
                 {o.constitution.preamble}
               </p>
-              <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
+              <div className="flex items-center gap-3 text-[14px] text-muted-foreground mt-1">
                 <span className="flex items-center gap-1">
                   <FileText className="size-2.5" /> {o.constitution.articleCount} articles
                 </span>
@@ -338,7 +338,7 @@ function OverviewTab() {
               </div>
             </div>
           ) : (
-            <div className="text-[11px] text-muted-foreground">No constitution ratified yet.</div>
+            <div className="text-[15px] text-muted-foreground">No constitution ratified yet.</div>
           )}
         </div>
 
@@ -353,13 +353,13 @@ function OverviewTab() {
               return (
                 <div key={cs.caseId} className="rounded border border-border bg-card/30 px-2 py-1.5">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-mono text-[9px] text-muted-foreground">{cs.caseId}</span>
+                    <span className="font-mono text-[13px] text-muted-foreground">{cs.caseId}</span>
                     <ColorPill color={tMeta.color} label={tMeta.label} />
                     <ColorPill color={sMeta.color} label={sMeta.label} />
-                    <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(cs.filedAt)}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(cs.filedAt)}</span>
                   </div>
-                  <div className="text-[11px] font-medium leading-tight line-clamp-1">{cs.title}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <div className="text-[15px] font-medium leading-tight line-clamp-1">{cs.title}</div>
+                  <div className="text-[14px] text-muted-foreground mt-0.5 flex items-center gap-1">
                     <span className="text-emerald-400">{cs.plaintiffName}</span>
                     <ArrowRight className="size-2.5" />
                     <span className="text-rose-400">{cs.defendantName}</span>
@@ -368,7 +368,7 @@ function OverviewTab() {
               );
             })}
             {o.recentCases.length === 0 && (
-              <div className="text-[11px] text-muted-foreground">No cases filed.</div>
+              <div className="text-[15px] text-muted-foreground">No cases filed.</div>
             )}
           </div>
         </div>
@@ -383,12 +383,12 @@ function OverviewTab() {
               return (
                 <div key={p.proposalId} className="rounded border border-border bg-card/30 px-2 py-1.5">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="font-mono text-[9px] text-muted-foreground">{p.proposalId}</span>
+                    <span className="font-mono text-[13px] text-muted-foreground">{p.proposalId}</span>
                     <ColorPill color={sMeta.color} label={sMeta.label} />
-                    <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(p.proposedAt)}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(p.proposedAt)}</span>
                   </div>
-                  <div className="text-[11px] font-medium leading-tight line-clamp-1">{p.title}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-2">
+                  <div className="text-[15px] font-medium leading-tight line-clamp-1">{p.title}</div>
+                  <div className="text-[14px] text-muted-foreground mt-0.5 flex items-center gap-2">
                     <span>by <span className="text-foreground">{p.proposerName}</span></span>
                     <span className="text-emerald-400">{p.approveCount}✓</span>
                     <span className="text-rose-400">{p.rejectCount}✗</span>
@@ -398,7 +398,7 @@ function OverviewTab() {
               );
             })}
             {o.recentProposals.length === 0 && (
-              <div className="text-[11px] text-muted-foreground">No proposals submitted.</div>
+              <div className="text-[15px] text-muted-foreground">No proposals submitted.</div>
             )}
           </div>
         </div>
@@ -408,24 +408,24 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Scale className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">GOVERNANCE PRINCIPLES</span>
+          <span className="text-[15px] font-semibold text-primary">GOVERNANCE PRINCIPLES</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-emerald-400 mb-0.5">Constitution</div>
-            <div className="text-[10px] text-muted-foreground">Foundational rules — rights, obligations, procedures, limits, oversight. Ratified by the council.</div>
+            <div className="text-[14px] font-medium text-emerald-400 mb-0.5">Constitution</div>
+            <div className="text-[14px] text-muted-foreground">Foundational rules — rights, obligations, procedures, limits, oversight. Ratified by the council.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-cyan-400 mb-0.5">Council</div>
-            <div className="text-[10px] text-muted-foreground">Federated governance: governments, citizens, developers, scientists, NGOs. Quorum + approval thresholds.</div>
+            <div className="text-[14px] font-medium text-cyan-400 mb-0.5">Council</div>
+            <div className="text-[14px] text-muted-foreground">Federated governance: governments, citizens, developers, scientists, NGOs. Quorum + approval thresholds.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-violet-400 mb-0.5">Courts</div>
-            <div className="text-[10px] text-muted-foreground">Dispute resolution — false enforcement, evidence manipulation, license violations, reputation attacks.</div>
+            <div className="text-[14px] font-medium text-violet-400 mb-0.5">Courts</div>
+            <div className="text-[14px] text-muted-foreground">Dispute resolution — false enforcement, evidence manipulation, license violations, reputation attacks.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-amber-400 mb-0.5">Proposals</div>
-            <div className="text-[10px] text-muted-foreground">Change process — budgets, suspensions, amendments, treaties. Weighted voting; binding outcomes.</div>
+            <div className="text-[14px] font-medium text-amber-400 mb-0.5">Proposals</div>
+            <div className="text-[14px] text-muted-foreground">Change process — budgets, suspensions, amendments, treaties. Weighted voting; binding outcomes.</div>
           </div>
         </div>
       </div>
@@ -470,7 +470,7 @@ function ConstitutionTab() {
         <span className="text-xs">Constitution not found.</span>
         <button
           onClick={retry}
-          className="mt-2 rounded-md border border-border bg-card/40 px-2.5 py-1 text-[11px] hover:bg-accent"
+          className="mt-2 rounded-md border border-border bg-card/40 px-2.5 py-1 text-[15px] hover:bg-accent"
         >
           Retry
         </button>
@@ -482,10 +482,10 @@ function ConstitutionTab() {
       <div className="px-4 py-2 border-b border-border sticky top-0 bg-background/95 backdrop-blur z-10 flex items-center gap-2">
         <ScrollText className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">{data.title}</span>
-        <span className="font-mono text-[10px] text-muted-foreground">{data.constitutionId}</span>
-        <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] font-medium text-emerald-300 capitalize">{data.status}</span>
-        <span className="font-mono text-[9px] text-muted-foreground">v{data.version}</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">
+        <span className="font-mono text-[14px] text-muted-foreground">{data.constitutionId}</span>
+        <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] font-medium text-emerald-300 capitalize">{data.status}</span>
+        <span className="font-mono text-[13px] text-muted-foreground">v{data.version}</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">
           {data.articleCount} articles · {data.amendmentCount} amendments
           {data.ratifiedAt && ` · ratified ${fmtDate(data.ratifiedAt)}`}
         </span>
@@ -496,9 +496,9 @@ function ConstitutionTab() {
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="size-3.5 text-primary" />
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">Preamble</span>
+            <span className="text-[15px] font-semibold uppercase tracking-wider text-primary">Preamble</span>
           </div>
-          <p className="text-[12px] text-foreground/80 leading-relaxed italic">{data.preamble}</p>
+          <p className="text-[16px] text-foreground/80 leading-relaxed italic">{data.preamble}</p>
         </div>
 
         {/* Articles */}
@@ -513,22 +513,22 @@ function ConstitutionTab() {
               return (
                 <div key={art.articleId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-mono text-[10px] font-semibold text-muted-foreground">{art.articleId}</span>
-                    <span className="font-mono text-[10px] text-muted-foreground">#{art.number}</span>
+                    <span className="font-mono text-[14px] font-semibold text-muted-foreground">{art.articleId}</span>
+                    <span className="font-mono text-[14px] text-muted-foreground">#{art.number}</span>
                     <ColorPill color={cMeta.color} label={cMeta.label} />
-                    <span className="text-[9px] text-muted-foreground">governs:</span>
-                    <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono text-foreground/80">{art.governs}</span>
-                    <span className="text-[9px] text-muted-foreground">enforcement:</span>
+                    <span className="text-[13px] text-muted-foreground">governs:</span>
+                    <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono text-foreground/80">{art.governs}</span>
+                    <span className="text-[13px] text-muted-foreground">enforcement:</span>
                     <ColorPill color={eMeta.color} label={eMeta.label} />
-                    <span className="ml-auto text-[9px] text-muted-foreground capitalize">{art.status}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground capitalize">{art.status}</span>
                   </div>
-                  <div className="text-[13px] font-semibold mb-1">{art.title}</div>
-                  <p className="text-[11px] text-foreground/70 leading-snug">{art.body}</p>
+                  <div className="text-[17px] font-semibold mb-1">{art.title}</div>
+                  <p className="text-[15px] text-foreground/70 leading-snug">{art.body}</p>
                 </div>
               );
             })}
             {(!data.articles || data.articles.length === 0) && (
-              <div className="text-[11px] text-muted-foreground">No articles.</div>
+              <div className="text-[15px] text-muted-foreground">No articles.</div>
             )}
           </div>
         </div>
@@ -548,25 +548,25 @@ function ConstitutionTab() {
               return (
                 <div key={am.amendmentId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-mono text-[10px] font-semibold text-muted-foreground">{am.amendmentId}</span>
+                    <span className="font-mono text-[14px] font-semibold text-muted-foreground">{am.amendmentId}</span>
                     <ColorPill color={aMeta.color} label={aMeta.label} />
-                    <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium capitalize",
+                    <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium capitalize",
                       am.status === "ratified" ? "bg-emerald-500/10 text-emerald-300" :
                       am.status === "rejected" ? "bg-rose-500/10 text-rose-300" :
                       "bg-amber-500/10 text-amber-300")}>
                       {am.status}
                     </span>
-                    <span className="text-[9px] text-muted-foreground ml-auto">{timeAgo(am.proposedAt)}</span>
+                    <span className="text-[13px] text-muted-foreground ml-auto">{timeAgo(am.proposedAt)}</span>
                   </div>
-                  <div className="text-[12px] font-medium mb-0.5">{am.title}</div>
-                  <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{am.description}</p>
+                  <div className="text-[16px] font-medium mb-0.5">{am.title}</div>
+                  <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{am.description}</p>
                   {am.proposedText && (
                     <div className="rounded border border-border bg-card/30 px-2 py-1.5 mb-1.5">
-                      <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">Proposed Text</div>
-                      <p className="text-[10px] text-foreground/70 leading-snug italic line-clamp-3">{am.proposedText}</p>
+                      <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-0.5">Proposed Text</div>
+                      <p className="text-[14px] text-foreground/70 leading-snug italic line-clamp-3">{am.proposedText}</p>
                     </div>
                   )}
-                  <div className="flex items-center gap-3 text-[10px]">
+                  <div className="flex items-center gap-3 text-[14px]">
                     <span className="text-muted-foreground">
                       proposed by <span className="text-foreground">{am.proposerName}</span>
                     </span>
@@ -590,7 +590,7 @@ function ConstitutionTab() {
               );
             })}
             {(!data.recentAmendments || data.recentAmendments.length === 0) && (
-              <div className="text-[11px] text-muted-foreground">No amendments proposed.</div>
+              <div className="text-[15px] text-muted-foreground">No amendments proposed.</div>
             )}
           </div>
         </div>
@@ -651,7 +651,7 @@ function CouncilTab() {
                 key={c.councilId}
                 onClick={() => setSelectedId(c.councilId)}
                 className={cn(
-                  "rounded-md px-2 py-1 text-[10px] font-medium transition-all whitespace-nowrap border",
+                  "rounded-md px-2 py-1 text-[14px] font-medium transition-all whitespace-nowrap border",
                   active
                     ? "bg-primary/15 text-primary border-primary/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent border-transparent"
@@ -662,7 +662,7 @@ function CouncilTab() {
             );
           })}
         </div>
-        <span className="ml-auto text-[10px] text-muted-foreground">{councils.length} councils</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{councils.length} councils</span>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-4 space-y-4">
@@ -676,42 +676,42 @@ function CouncilTab() {
             <div className="rounded-lg border border-border bg-card/40 p-4">
               <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                 <Landmark className="size-4 text-primary" />
-                <span className="text-[13px] font-semibold">{council.name}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">{council.councilId}</span>
-                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono text-muted-foreground capitalize">
+                <span className="text-[17px] font-semibold">{council.name}</span>
+                <span className="font-mono text-[14px] text-muted-foreground">{council.councilId}</span>
+                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono text-muted-foreground capitalize">
                   {council.councilType}
                 </span>
-                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono text-muted-foreground capitalize">
+                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono text-muted-foreground capitalize">
                   scope: {council.scope}
                 </span>
-                <span className="ml-auto text-[10px] text-muted-foreground">
+                <span className="ml-auto text-[14px] text-muted-foreground">
                   established {council.establishedAt ? fmtDate(council.establishedAt) : "—"}
                 </span>
               </div>
-              <p className="text-[11px] text-foreground/70 leading-snug mb-2.5">{council.description}</p>
+              <p className="text-[15px] text-foreground/70 leading-snug mb-2.5">{council.description}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <div className="rounded border border-border bg-card/30 px-2 py-1.5">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Seats</div>
-                  <div className="text-[13px] font-mono font-semibold">
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground">Seats</div>
+                  <div className="text-[17px] font-mono font-semibold">
                     <span className="text-emerald-400">{council.memberCount}</span>
                     <span className="text-muted-foreground">/{council.seatCount}</span>
                   </div>
                 </div>
                 <div className="rounded border border-border bg-card/30 px-2 py-1.5">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Quorum</div>
-                  <div className="text-[13px] font-mono font-semibold text-amber-400">
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground">Quorum</div>
+                  <div className="text-[17px] font-mono font-semibold text-amber-400">
                     {(council.quorumThreshold * 100).toFixed(0)}%
                   </div>
                 </div>
                 <div className="rounded border border-border bg-card/30 px-2 py-1.5">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Approval</div>
-                  <div className="text-[13px] font-mono font-semibold text-violet-400">
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground">Approval</div>
+                  <div className="text-[17px] font-mono font-semibold text-violet-400">
                     {(council.approvalThreshold * 100).toFixed(0)}%
                   </div>
                 </div>
                 <div className="rounded border border-border bg-card/30 px-2 py-1.5">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground">Status</div>
-                  <div className="text-[13px] font-semibold text-emerald-400 capitalize">{council.status}</div>
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground">Status</div>
+                  <div className="text-[17px] font-semibold text-emerald-400 capitalize">{council.status}</div>
                 </div>
               </div>
             </div>
@@ -727,24 +727,24 @@ function CouncilTab() {
                     const meta = CONSTITUENCY_META[m.constituencyType] ?? { color: "#a1a1aa", label: m.constituencyType, icon: User };
                     const Icon = meta.icon;
                     return (
-                      <div key={m.memberId} className="flex items-center gap-2 text-[11px] py-1 rounded hover:bg-card/30 px-1.5">
+                      <div key={m.memberId} className="flex items-center gap-2 text-[15px] py-1 rounded hover:bg-card/30 px-1.5">
                         <span className="flex size-5 items-center justify-center rounded" style={{ background: `${meta.color}1a`, color: meta.color }}>
                           <Icon className="size-3" />
                         </span>
                         <div className="min-w-0 flex-1">
                           <div className="font-medium truncate">{m.representativeName}</div>
-                          <div className="text-[9px] text-muted-foreground truncate">{m.constituencyName}</div>
+                          <div className="text-[13px] text-muted-foreground truncate">{m.constituencyName}</div>
                         </div>
                         <ColorPill color={meta.color} label={meta.label} />
-                        <span className="font-mono text-[10px] text-muted-foreground">×{m.votingWeight.toFixed(1)}</span>
+                        <span className="font-mono text-[14px] text-muted-foreground">×{m.votingWeight.toFixed(1)}</span>
                         {m.termEnd && (
-                          <span className="text-[9px] text-muted-foreground">term {fmtDate(m.termEnd)}</span>
+                          <span className="text-[13px] text-muted-foreground">term {fmtDate(m.termEnd)}</span>
                         )}
                       </div>
                     );
                   })}
                   {(!council.members || council.members.length === 0) && (
-                    <div className="text-[11px] text-muted-foreground">No members seated.</div>
+                    <div className="text-[15px] text-muted-foreground">No members seated.</div>
                   )}
                 </div>
               </div>
@@ -763,13 +763,13 @@ function CouncilTab() {
                     return (
                       <div key={p.proposalId} className="rounded border border-border bg-card/30 px-2 py-1.5">
                         <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                          <span className="font-mono text-[9px] text-muted-foreground">{p.proposalId}</span>
+                          <span className="font-mono text-[13px] text-muted-foreground">{p.proposalId}</span>
                           <ColorPill color={tMeta.color} label={tMeta.label} />
                           <ColorPill color={sMeta.color} label={sMeta.label} />
-                          <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(p.proposedAt)}</span>
+                          <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(p.proposedAt)}</span>
                         </div>
-                        <div className="text-[11px] font-medium leading-tight line-clamp-1 mb-1">{p.title}</div>
-                        <div className="flex items-center gap-2 text-[10px]">
+                        <div className="text-[15px] font-medium leading-tight line-clamp-1 mb-1">{p.title}</div>
+                        <div className="flex items-center gap-2 text-[14px]">
                           <span className="flex items-center gap-1 text-emerald-400">
                             <CheckCircle2 className="size-2.5" /> {p.approveCount}
                           </span>
@@ -790,7 +790,7 @@ function CouncilTab() {
                     );
                   })}
                   {proposals.length === 0 && (
-                    <div className="text-[11px] text-muted-foreground">No proposals from this council.</div>
+                    <div className="text-[15px] text-muted-foreground">No proposals from this council.</div>
                   )}
                 </div>
               </div>
@@ -836,8 +836,8 @@ function CourtsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Gavel className="size-4 text-violet-400" />
         <span className="text-xs font-semibold">Intelligence Courts</span>
-        <span className="text-[11px] text-muted-foreground">— dispute resolution: false enforcement, evidence manipulation, license violations, reputation attacks</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">
+        <span className="text-[15px] text-muted-foreground">— dispute resolution: false enforcement, evidence manipulation, license violations, reputation attacks</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">
           {courts.length} courts · {cases.length} cases
         </span>
       </div>
@@ -854,13 +854,13 @@ function CourtsTab() {
                     <Landmark className="size-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[12px] font-semibold truncate">{c.name}</div>
-                    <div className="font-mono text-[9px] text-muted-foreground">{c.courtId}</div>
+                    <div className="text-[16px] font-semibold truncate">{c.name}</div>
+                    <div className="font-mono text-[13px] text-muted-foreground">{c.courtId}</div>
                   </div>
                   <ColorPill color={jMeta.color} label={jMeta.label} />
                 </div>
-                <p className="text-[10px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{c.description}</p>
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                <p className="text-[14px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{c.description}</p>
+                <div className="flex items-center gap-3 text-[14px] text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <Users className="size-2.5" /> {c.justiceCount} justices
                   </span>
@@ -870,7 +870,7 @@ function CourtsTab() {
             );
           })}
           {courts.length === 0 && (
-            <div className="text-[11px] text-muted-foreground col-span-full">No courts established.</div>
+            <div className="text-[15px] text-muted-foreground col-span-full">No courts established.</div>
           )}
         </div>
 
@@ -884,7 +884,7 @@ function CourtsTab() {
               <CaseCard key={cs.caseId} courtCase={cs} courts={courts} />
             ))}
             {cases.length === 0 && (
-              <div className="text-[11px] text-muted-foreground">No cases filed.</div>
+              <div className="text-[15px] text-muted-foreground">No cases filed.</div>
             )}
           </div>
         </div>
@@ -924,35 +924,35 @@ function CaseCard({ courtCase: cs, courts }: { courtCase: any; courts: any[] }) 
         className="w-full text-left px-3 py-2.5 hover:bg-card/20 transition-colors"
       >
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className="font-mono text-[10px] font-semibold text-muted-foreground">{cs.caseId}</span>
+          <span className="font-mono text-[14px] font-semibold text-muted-foreground">{cs.caseId}</span>
           <ColorPill color={tMeta.color} label={tMeta.label} />
           <ColorPill color={sMeta.color} label={sMeta.label} />
-          <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono text-muted-foreground">{courtName}</span>
+          <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono text-muted-foreground">{courtName}</span>
           {cs.damagesClaimed > 0 && (
-            <span className="flex items-center gap-0.5 text-[9px] text-amber-400">
+            <span className="flex items-center gap-0.5 text-[13px] text-amber-400">
               <Banknote className="size-2.5" /> {cs.damagesClaimed} IC claimed
             </span>
           )}
           {cs.damagesAwarded > 0 && (
-            <span className="flex items-center gap-0.5 text-[9px] text-emerald-400">
+            <span className="flex items-center gap-0.5 text-[13px] text-emerald-400">
               <Banknote className="size-2.5" /> {cs.damagesAwarded} IC awarded
             </span>
           )}
-          <span className="ml-auto text-[9px] text-muted-foreground">filed {timeAgo(cs.filedAt)}</span>
+          <span className="ml-auto text-[13px] text-muted-foreground">filed {timeAgo(cs.filedAt)}</span>
           <ArrowRight className={cn("size-3 text-muted-foreground transition-transform", expanded && "rotate-90")} />
         </div>
-        <div className="text-[12px] font-medium leading-tight mb-1">{cs.title}</div>
-        <div className="flex items-center gap-2 text-[10px] flex-wrap">
+        <div className="text-[16px] font-medium leading-tight mb-1">{cs.title}</div>
+        <div className="flex items-center gap-2 text-[14px] flex-wrap">
           <span className="rounded border border-emerald-500/20 bg-emerald-500/5 px-1.5 py-0.5">
-            <span className="text-[9px] text-muted-foreground">plaintiff:</span>{" "}
+            <span className="text-[13px] text-muted-foreground">plaintiff:</span>{" "}
             <span className="text-emerald-300 font-medium">{cs.plaintiffName}</span>
-            <span className="text-[9px] text-muted-foreground"> ({cs.plaintiffType})</span>
+            <span className="text-[13px] text-muted-foreground"> ({cs.plaintiffType})</span>
           </span>
           <span className="text-muted-foreground">vs.</span>
           <span className="rounded border border-rose-500/20 bg-rose-500/5 px-1.5 py-0.5">
-            <span className="text-[9px] text-muted-foreground">defendant:</span>{" "}
+            <span className="text-[13px] text-muted-foreground">defendant:</span>{" "}
             <span className="text-rose-300 font-medium">{cs.defendantName}</span>
-            <span className="text-[9px] text-muted-foreground"> ({cs.defendantType})</span>
+            <span className="text-[13px] text-muted-foreground"> ({cs.defendantType})</span>
           </span>
         </div>
       </button>
@@ -960,23 +960,23 @@ function CaseCard({ courtCase: cs, courts }: { courtCase: any; courts: any[] }) 
       {expanded && (
         <div className="border-t border-border px-3 py-2.5 space-y-2.5">
           {loadingDetail && (
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-[15px] text-muted-foreground">
               <Loader2 className="size-3 animate-spin" /> Loading case detail…
             </div>
           )}
           {detail && (
             <>
               <div>
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">Description</div>
-                <p className="text-[11px] text-foreground/70 leading-snug">{detail.description}</p>
+                <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-0.5">Description</div>
+                <p className="text-[15px] text-foreground/70 leading-snug">{detail.description}</p>
               </div>
 
               {detail.evidenceArtifacts && detail.evidenceArtifacts.length > 0 && (
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">Evidence Artifacts</div>
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-0.5">Evidence Artifacts</div>
                   <div className="flex flex-wrap gap-1">
                     {detail.evidenceArtifacts.map((a: string) => (
-                      <span key={a} className="rounded bg-foreground/5 px-1.5 py-0.5 text-[9px] font-mono text-foreground/80">{a}</span>
+                      <span key={a} className="rounded bg-foreground/5 px-1.5 py-0.5 text-[13px] font-mono text-foreground/80">{a}</span>
                     ))}
                   </div>
                 </div>
@@ -987,7 +987,7 @@ function CaseCard({ courtCase: cs, courts }: { courtCase: any; courts: any[] }) 
               ) : (
                 <div className="rounded border border-amber-500/20 bg-amber-500/5 px-2.5 py-2 flex items-center gap-2">
                   <AlertTriangle className="size-3.5 text-amber-400" />
-                  <span className="text-[11px] text-amber-300">
+                  <span className="text-[15px] text-amber-300">
                     Case is {cs.status.replace("_", " ")} — no verdict issued yet.
                   </span>
                 </div>
@@ -1009,47 +1009,47 @@ function VerdictBlock({ verdict: v }: { verdict: any }) {
     <div className="rounded border border-primary/20 bg-primary/5 p-3 space-y-2">
       <div className="flex items-center gap-2 flex-wrap">
         <Gavel className="size-3.5 text-primary" />
-        <span className="text-[10px] font-mono text-muted-foreground">{v.verdictId}</span>
+        <span className="text-[14px] font-mono text-muted-foreground">{v.verdictId}</span>
         <ColorPill color={rMeta.color} label={rMeta.label} />
         {v.ruledAt && (
-          <span className="text-[9px] text-muted-foreground ml-auto">ruled {fmtDate(v.ruledAt)}</span>
+          <span className="text-[13px] text-muted-foreground ml-auto">ruled {fmtDate(v.ruledAt)}</span>
         )}
       </div>
 
       <div>
-        <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">Summary</div>
-        <p className="text-[11px] text-foreground/80 leading-snug font-medium">{v.summary}</p>
+        <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-0.5">Summary</div>
+        <p className="text-[15px] text-foreground/80 leading-snug font-medium">{v.summary}</p>
       </div>
 
       <div>
-        <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-0.5">Reasoning</div>
-        <p className="text-[11px] text-foreground/70 leading-snug">{v.reasoning}</p>
+        <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-0.5">Reasoning</div>
+        <p className="text-[15px] text-foreground/70 leading-snug">{v.reasoning}</p>
       </div>
 
       {/* Vote split */}
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded border border-border bg-card/40 px-2 py-1.5 text-center">
-          <div className="text-[9px] text-muted-foreground uppercase">Justices</div>
-          <div className="text-[14px] font-mono font-bold">{totalJustices}</div>
+          <div className="text-[13px] text-muted-foreground uppercase">Justices</div>
+          <div className="text-[18px] font-mono font-bold">{totalJustices}</div>
         </div>
         <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-1.5 text-center">
-          <div className="text-[9px] text-emerald-400 uppercase">Concurring</div>
-          <div className="text-[14px] font-mono font-bold text-emerald-400">{concurring}</div>
+          <div className="text-[13px] text-emerald-400 uppercase">Concurring</div>
+          <div className="text-[18px] font-mono font-bold text-emerald-400">{concurring}</div>
         </div>
         <div className="rounded border border-rose-500/20 bg-rose-500/5 px-2 py-1.5 text-center">
-          <div className="text-[9px] text-rose-400 uppercase">Dissenting</div>
-          <div className="text-[14px] font-mono font-bold text-rose-400">{dissenting}</div>
+          <div className="text-[13px] text-rose-400 uppercase">Dissenting</div>
+          <div className="text-[18px] font-mono font-bold text-rose-400">{dissenting}</div>
         </div>
       </div>
 
       {/* Remedies */}
       {v.remedies && v.remedies.length > 0 && (
         <div>
-          <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">Remedies</div>
+          <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-1">Remedies</div>
           <div className="space-y-1">
             {v.remedies.map((r: any, i: number) => (
-              <div key={i} className="rounded border border-border bg-card/40 px-2 py-1.5 flex items-center gap-2 text-[10px] flex-wrap">
-                <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[9px] font-medium text-violet-300">
+              <div key={i} className="rounded border border-border bg-card/40 px-2 py-1.5 flex items-center gap-2 text-[14px] flex-wrap">
+                <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[13px] font-medium text-violet-300">
                   {r.type.replace(/_/g, " ")}
                 </span>
                 <span className="text-muted-foreground">target:</span>
@@ -1071,8 +1071,8 @@ function VerdictBlock({ verdict: v }: { verdict: any }) {
       {v.damagesAwarded > 0 && (
         <div className="flex items-center gap-2 rounded border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-2">
           <Banknote className="size-3.5 text-emerald-400" />
-          <span className="text-[11px] text-muted-foreground">Damages awarded:</span>
-          <span className="text-[14px] font-mono font-bold text-emerald-400">{v.damagesAwarded} IC</span>
+          <span className="text-[15px] text-muted-foreground">Damages awarded:</span>
+          <span className="text-[18px] font-mono font-bold text-emerald-400">{v.damagesAwarded} IC</span>
         </div>
       )}
     </div>
@@ -1105,17 +1105,17 @@ function ProposalsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
         <Vote className="size-4 text-amber-400" />
         <span className="text-xs font-semibold">Governance Proposals</span>
-        <span className="text-[11px] text-muted-foreground">— council voting on budgets, suspensions, amendments, treaties</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{proposals.length} proposals</span>
+        <span className="text-[15px] text-muted-foreground">— council voting on budgets, suspensions, amendments, treaties</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{proposals.length} proposals</span>
       </div>
 
       {/* Filters */}
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] text-muted-foreground">status:</span>
+        <span className="text-[14px] text-muted-foreground">status:</span>
         <button
           onClick={() => setStatusFilter("")}
           className={cn(
-            "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+            "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
             statusFilter === "" ? "bg-primary/15 text-primary border-primary/30" : "bg-card/40 text-muted-foreground border-transparent hover:text-foreground"
           )}
         >
@@ -1126,7 +1126,7 @@ function ProposalsTab() {
             key={k}
             onClick={() => setStatusFilter(k)}
             className={cn(
-              "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+              "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
               statusFilter === k ? "text-foreground" : "text-muted-foreground hover:text-foreground border-transparent"
             )}
             style={statusFilter === k ? { color: m.color, background: `${m.color}1a`, borderColor: `${m.color}33` } : undefined}
@@ -1134,11 +1134,11 @@ function ProposalsTab() {
             {m.label}
           </button>
         ))}
-        <span className="text-[10px] text-muted-foreground ml-3">type:</span>
+        <span className="text-[14px] text-muted-foreground ml-3">type:</span>
         <button
           onClick={() => setTypeFilter("")}
           className={cn(
-            "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+            "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
             typeFilter === "" ? "bg-primary/15 text-primary border-primary/30" : "bg-card/40 text-muted-foreground border-transparent hover:text-foreground"
           )}
         >
@@ -1149,7 +1149,7 @@ function ProposalsTab() {
             key={k}
             onClick={() => setTypeFilter(k)}
             className={cn(
-              "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+              "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
               typeFilter === k ? "text-foreground" : "text-muted-foreground hover:text-foreground border-transparent"
             )}
             style={typeFilter === k ? { color: m.color, background: `${m.color}1a`, borderColor: `${m.color}33` } : undefined}
@@ -1211,24 +1211,24 @@ function ProposalRow({ proposal: p }: { proposal: any }) {
     <div className="rounded-lg border border-border bg-card/40">
       <button onClick={toggle} className="w-full text-left px-3 py-2.5 hover:bg-card/20 transition-colors">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className="font-mono text-[10px] font-semibold text-muted-foreground">{p.proposalId}</span>
+          <span className="font-mono text-[14px] font-semibold text-muted-foreground">{p.proposalId}</span>
           <ColorPill color={tMeta.color} label={tMeta.label} />
           <ColorPill color={sMeta.color} label={sMeta.label} />
-          <span className="ml-auto text-[9px] text-muted-foreground">
+          <span className="ml-auto text-[13px] text-muted-foreground">
             proposed {timeAgo(p.proposedAt)}
             {p.enactedAt && ` · enacted ${timeAgo(p.enactedAt)}`}
           </span>
           <ArrowRight className={cn("size-3 text-muted-foreground transition-transform", expanded && "rotate-90")} />
         </div>
-        <div className="text-[12px] font-medium leading-tight mb-1">{p.title}</div>
-        <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{p.description}</p>
+        <div className="text-[16px] font-medium leading-tight mb-1">{p.title}</div>
+        <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{p.description}</p>
 
         {/* Proposer + vote tally */}
-        <div className="flex items-center gap-3 text-[10px] flex-wrap">
+        <div className="flex items-center gap-3 text-[14px] flex-wrap">
           <span className="text-muted-foreground">
             by <span className="text-foreground font-medium">{p.proposerName}</span>
           </span>
-          <span className="font-mono text-[9px] text-muted-foreground">{p.councilId}</span>
+          <span className="font-mono text-[13px] text-muted-foreground">{p.councilId}</span>
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-0.5 text-emerald-400">
               <CheckCircle2 className="size-2.5" /> {p.approveCount}
@@ -1239,7 +1239,7 @@ function ProposalRow({ proposal: p }: { proposal: any }) {
             <span className="flex items-center gap-0.5 text-muted-foreground">
               <MinusCircle className="size-2.5" /> {p.abstainCount}
             </span>
-            <span className="text-[9px] text-muted-foreground">{total} total votes</span>
+            <span className="text-[13px] text-muted-foreground">{total} total votes</span>
           </div>
           {total > 0 && (
             <div className="flex-1 min-w-[80px] flex h-1.5 rounded-full overflow-hidden bg-foreground/10">
@@ -1253,7 +1253,7 @@ function ProposalRow({ proposal: p }: { proposal: any }) {
       {expanded && (
         <div className="border-t border-border px-3 py-2.5 space-y-2">
           {loadingDetail && (
-            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-[15px] text-muted-foreground">
               <Loader2 className="size-3 animate-spin" /> Loading votes…
             </div>
           )}
@@ -1262,8 +1262,8 @@ function ProposalRow({ proposal: p }: { proposal: any }) {
               {/* Details JSON */}
               {detail.details && Object.keys(detail.details).length > 0 && (
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">Proposal Details</div>
-                  <div className="rounded border border-border bg-card/40 px-2 py-1.5 grid grid-cols-2 md:grid-cols-3 gap-1.5 text-[10px]">
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-1">Proposal Details</div>
+                  <div className="rounded border border-border bg-card/40 px-2 py-1.5 grid grid-cols-2 md:grid-cols-3 gap-1.5 text-[14px]">
                     {Object.entries(detail.details).map(([k, v]) => (
                       <div key={k} className="flex items-center gap-1">
                         <span className="text-muted-foreground">{k}:</span>
@@ -1277,12 +1277,12 @@ function ProposalRow({ proposal: p }: { proposal: any }) {
               {/* Weighted vote bar */}
               {weightedTotal > 0 && (
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">Weighted Vote Split</div>
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-1">Weighted Vote Split</div>
                   <div className="flex h-2 rounded-full overflow-hidden bg-foreground/10">
                     <div className="bg-emerald-400" style={{ width: `${weightedApprovePct}%` }} />
                     <div className="bg-rose-400" style={{ width: `${100 - weightedApprovePct}%` }} />
                   </div>
-                  <div className="flex justify-between text-[9px] mt-0.5">
+                  <div className="flex justify-between text-[13px] mt-0.5">
                     <span className="text-emerald-400 font-mono">{(p.weightedApprove ?? 0).toFixed(1)} weighted approve ({weightedApprovePct.toFixed(0)}%)</span>
                     <span className="text-rose-400 font-mono">{(p.weightedReject ?? 0).toFixed(1)} weighted reject</span>
                   </div>
@@ -1292,7 +1292,7 @@ function ProposalRow({ proposal: p }: { proposal: any }) {
               {/* Individual votes */}
               {detail.votes && detail.votes.length > 0 && (
                 <div>
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-1">
                     Individual Votes ({detail.votes.length})
                   </div>
                   <div className="space-y-0.5">
@@ -1304,17 +1304,17 @@ function ProposalRow({ proposal: p }: { proposal: any }) {
                         v.vote === "approve" ? CheckCircle2 :
                         v.vote === "reject" ? XCircle : MinusCircle;
                       return (
-                        <div key={v.voteId} className="flex items-center gap-2 text-[10px] py-0.5 rounded hover:bg-card/30 px-1.5">
+                        <div key={v.voteId} className="flex items-center gap-2 text-[14px] py-0.5 rounded hover:bg-card/30 px-1.5">
                           <VoteIcon className="size-3 shrink-0" style={{ color: voteColor }} />
                           <span className="font-medium flex-1 truncate">{v.memberName}</span>
-                          <span className="font-mono text-[9px] text-muted-foreground">×{v.votingWeight?.toFixed(1) ?? "1.0"}</span>
-                          <span className="rounded px-1 py-0.5 text-[9px] font-medium capitalize" style={{ color: voteColor, background: `${voteColor}1a` }}>
+                          <span className="font-mono text-[13px] text-muted-foreground">×{v.votingWeight?.toFixed(1) ?? "1.0"}</span>
+                          <span className="rounded px-1 py-0.5 text-[13px] font-medium capitalize" style={{ color: voteColor, background: `${voteColor}1a` }}>
                             {v.vote}
                           </span>
                           {v.rationale && (
-                            <span className="text-[9px] text-muted-foreground italic max-w-[200px] truncate">"{v.rationale}"</span>
+                            <span className="text-[13px] text-muted-foreground italic max-w-[200px] truncate">"{v.rationale}"</span>
                           )}
-                          <span className="text-[9px] text-muted-foreground shrink-0">{timeAgo(v.votedAt)}</span>
+                          <span className="text-[13px] text-muted-foreground shrink-0">{timeAgo(v.votedAt)}</span>
                         </div>
                       );
                     })}

@@ -87,7 +87,7 @@ export function NavRail() {
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={8}>
           <div className="font-medium">{item.label}</div>
-          <div className="text-[10px] text-muted-foreground">{item.hint}</div>
+          <div className="text-[14px] text-muted-foreground">{item.hint}</div>
         </TooltipContent>
       </Tooltip>
     );
@@ -149,7 +149,7 @@ export function NavRail() {
                 onClick={() => setPaletteOpen(true)}
                 className="flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
               >
-                <kbd className="text-[9px] font-mono border border-border rounded px-1 py-0.5">⌘K</kbd>
+                <kbd className="text-[13px] font-mono border border-border rounded px-1 py-0.5">⌘K</kbd>
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8}>
@@ -172,13 +172,13 @@ export function NavRail() {
           {/* User avatar */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 border border-primary/30 text-primary text-[10px] font-semibold cursor-default">
+              <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 border border-primary/30 text-primary text-[14px] font-semibold cursor-default">
                 {initials}
               </div>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8}>
               <div className="font-medium">{userName}</div>
-              <div className="text-[10px] text-muted-foreground">{userRole.replace(/_/g, " ").toLowerCase()}</div>
+              <div className="text-[14px] text-muted-foreground">{userRole.replace(/_/g, " ").toLowerCase()}</div>
             </TooltipContent>
           </Tooltip>
 

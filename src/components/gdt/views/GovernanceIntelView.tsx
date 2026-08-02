@@ -121,7 +121,7 @@ async function api(path: string, opts?: RequestInit) {
 function ColorPill({ color, label }: { color: string; label: string }) {
   return (
     <span
-      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-semibold"
+      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[13px] font-semibold"
       style={{ color, background: `${color}1a`, border: `1px solid ${color}33` }}
     >
       <span className="size-1.5 rounded-full" style={{ background: color }} />
@@ -144,10 +144,10 @@ export function GovernanceIntelView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Brain className="size-4 text-primary" /> Governance Intelligence &amp; Institutional Memory
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: governance-intelligence
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Advisory agents · Legal precedents · Institutional reputation — intelligence that governs intelligence
           </p>
           <PackageBadge />
@@ -196,7 +196,7 @@ function PackageBadge() {
   if (packages.length === 0) return null;
   const p = packages[0];
   return (
-    <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="ml-auto hidden md:flex items-center gap-2 text-[14px] text-muted-foreground">
       <ShieldCheck className="size-3 text-emerald-400" />
       <span className="font-mono">v{p.version}</span>
       <span>·</span>
@@ -250,7 +250,7 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="size-3.5 text-primary" />
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-primary">Governance Agents — Advisory Only, Never Decide</span>
+          <span className="text-[14px] font-semibold uppercase tracking-wider text-primary">Governance Agents — Advisory Only, Never Decide</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {o.agents.map((ag: any) => {
@@ -264,12 +264,12 @@ function OverviewTab() {
                     <Icon className="size-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[11px] font-semibold truncate">{ag.name}</div>
-                    <div className="font-mono text-[9px] text-muted-foreground">{ag.agentId}</div>
+                    <div className="text-[15px] font-semibold truncate">{ag.name}</div>
+                    <div className="font-mono text-[13px] text-muted-foreground">{ag.agentId}</div>
                   </div>
                   <ColorPill color={aMeta.color} label={aMeta.label} />
                 </div>
-                <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
                   <span className="flex items-center gap-0.5">
                     <Activity className="size-2.5" /> {ag.totalRuns ?? 0} runs
                   </span>
@@ -284,7 +284,7 @@ function OverviewTab() {
             );
           })}
           {o.agents.length === 0 && (
-            <div className="text-[11px] text-muted-foreground col-span-full">No governance agents registered.</div>
+            <div className="text-[15px] text-muted-foreground col-span-full">No governance agents registered.</div>
           )}
         </div>
       </div>
@@ -302,13 +302,13 @@ function OverviewTab() {
               return (
                 <div key={au.runId} className="rounded border border-border bg-card/30 px-2 py-1.5">
                   <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                    <span className="font-mono text-[9px] text-muted-foreground">{au.runId}</span>
+                    <span className="font-mono text-[13px] text-muted-foreground">{au.runId}</span>
                     <ColorPill color={tMeta.color} label={tMeta.label} />
                     <ColorPill color={rMeta.color} label={rMeta.label} />
-                    <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(au.completedAt || au.startedAt)}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(au.completedAt || au.startedAt)}</span>
                   </div>
-                  <div className="text-[11px] font-medium leading-tight line-clamp-2">{au.summary}</div>
-                  <div className="text-[9px] text-muted-foreground mt-0.5 flex items-center gap-2">
+                  <div className="text-[15px] font-medium leading-tight line-clamp-2">{au.summary}</div>
+                  <div className="text-[13px] text-muted-foreground mt-0.5 flex items-center gap-2">
                     <span>by <span className="text-foreground">{au.agentName}</span></span>
                     {au.violationCount > 0 && <span className="text-rose-400">{au.violationCount} violations</span>}
                     <span className="ml-auto font-mono">{au.durationMs ?? 0}ms</span>
@@ -317,7 +317,7 @@ function OverviewTab() {
               );
             })}
             {o.recentAudits.length === 0 && (
-              <div className="text-[11px] text-muted-foreground">No audit runs yet.</div>
+              <div className="text-[15px] text-muted-foreground">No audit runs yet.</div>
             )}
           </div>
         </div>
@@ -333,13 +333,13 @@ function OverviewTab() {
               return (
                 <div key={pr.precedentId} className="rounded border border-border bg-card/30 px-2 py-1.5">
                   <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
-                    <span className="font-mono text-[9px] text-muted-foreground">{pr.precedentId}</span>
+                    <span className="font-mono text-[13px] text-muted-foreground">{pr.precedentId}</span>
                     <ColorPill color={lMeta.color} label={lMeta.label} />
                     <ColorPill color={clMeta.color} label={clMeta.label} />
-                    <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(pr.establishedAt)}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(pr.establishedAt)}</span>
                   </div>
-                  <div className="text-[11px] font-medium leading-tight line-clamp-2">{pr.principleEstablished}</div>
-                  <div className="text-[9px] text-muted-foreground mt-0.5 flex items-center gap-2">
+                  <div className="text-[15px] font-medium leading-tight line-clamp-2">{pr.principleEstablished}</div>
+                  <div className="text-[13px] text-muted-foreground mt-0.5 flex items-center gap-2">
                     <span>from <span className="text-foreground">{pr.caseTitle}</span></span>
                     <span className="ml-auto">{pr.citedByCount} cited by</span>
                   </div>
@@ -347,7 +347,7 @@ function OverviewTab() {
               );
             })}
             {o.recentPrecedents.length === 0 && (
-              <div className="text-[11px] text-muted-foreground">No precedents established yet.</div>
+              <div className="text-[15px] text-muted-foreground">No precedents established yet.</div>
             )}
           </div>
         </div>
@@ -367,11 +367,11 @@ function OverviewTab() {
                     <span className="flex size-4 items-center justify-center rounded" style={{ background: `${tyMeta.color}1a`, color: tyMeta.color }}>
                       <Icon className="size-2.5" />
                     </span>
-                    <span className="text-[11px] font-medium truncate">{inst.name}</span>
+                    <span className="text-[15px] font-medium truncate">{inst.name}</span>
                     <ColorPill color={tMeta.color} label={tMeta.label} />
-                    <span className="ml-auto text-[10px] font-mono font-bold" style={{ color: tMeta.color }}>{inst.overallScore ?? 0}</span>
+                    <span className="ml-auto text-[14px] font-mono font-bold" style={{ color: tMeta.color }}>{inst.overallScore ?? 0}</span>
                   </div>
-                  <div className="text-[9px] text-muted-foreground flex items-center gap-2">
+                  <div className="text-[13px] text-muted-foreground flex items-center gap-2">
                     <span className="font-mono">{inst.institutionId}</span>
                     {inst.countryCode && <span>· {inst.countryCode}</span>}
                     <span className="ml-auto">{inst.packagesPublished ?? 0} packages</span>
@@ -380,7 +380,7 @@ function OverviewTab() {
               );
             })}
             {o.topInstitutions.length === 0 && (
-              <div className="text-[11px] text-muted-foreground">No institutions registered.</div>
+              <div className="text-[15px] text-muted-foreground">No institutions registered.</div>
             )}
           </div>
         </div>
@@ -390,24 +390,24 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Scale className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">GOVERNANCE INTELLIGENCE PRINCIPLES</span>
+          <span className="text-[15px] font-semibold text-primary">GOVERNANCE INTELLIGENCE PRINCIPLES</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-emerald-400 mb-0.5">Agents Advise, Never Decide</div>
-            <div className="text-[10px] text-muted-foreground">Constitutional Auditor, Court Research, Council Intelligence — all monitor/advisory only. The council and courts retain decision authority.</div>
+            <div className="text-[14px] font-medium text-emerald-400 mb-0.5">Agents Advise, Never Decide</div>
+            <div className="text-[14px] text-muted-foreground">Constitutional Auditor, Court Research, Council Intelligence — all monitor/advisory only. The council and courts retain decision authority.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-cyan-400 mb-0.5">Audits Are Continuous</div>
-            <div className="text-[10px] text-muted-foreground">Agents run compliance checks, precedent searches, and impact analyses. Findings feed the council + courts as evidence — never as binding action.</div>
+            <div className="text-[14px] font-medium text-cyan-400 mb-0.5">Audits Are Continuous</div>
+            <div className="text-[14px] text-muted-foreground">Agents run compliance checks, precedent searches, and impact analyses. Findings feed the council + courts as evidence — never as binding action.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-violet-400 mb-0.5">Precedents Compound</div>
-            <div className="text-[10px] text-muted-foreground">Past verdicts establish binding/persuasive principles. Future cases reference them. Confidence grows with each citation — the institutional memory of governance.</div>
+            <div className="text-[14px] font-medium text-violet-400 mb-0.5">Precedents Compound</div>
+            <div className="text-[14px] text-muted-foreground">Past verdicts establish binding/persuasive principles. Future cases reference them. Confidence grows with each citation — the institutional memory of governance.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-amber-400 mb-0.5">Institutions Are Accountable</div>
-            <div className="text-[10px] text-muted-foreground">Compliance, decision quality, transparency, public trust — organizations rise through trust tiers: unproven → emerging → trusted → anchor.</div>
+            <div className="text-[14px] font-medium text-amber-400 mb-0.5">Institutions Are Accountable</div>
+            <div className="text-[14px] text-muted-foreground">Compliance, decision quality, transparency, public trust — organizations rise through trust tiers: unproven → emerging → trusted → anchor.</div>
           </div>
         </div>
       </div>
@@ -471,13 +471,13 @@ function AgentsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
         <Brain className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">Governance Agents</span>
-        <span className="text-[11px] text-muted-foreground">— advisory AI that assists governance. Monitors compliance, researches precedents, analyses impact. Never decides.</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{agents.length} agents</span>
+        <span className="text-[15px] text-muted-foreground">— advisory AI that assists governance. Monitors compliance, researches precedents, analyses impact. Never decides.</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{agents.length} agents</span>
         <button
           onClick={runAudit}
           disabled={running}
           className={cn(
-            "rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5",
+            "rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[14px] font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5",
             running && "opacity-50 cursor-wait"
           )}
         >
@@ -492,17 +492,17 @@ function AgentsTab() {
           <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3">
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle2 className="size-3.5 text-emerald-400" />
-              <span className="text-[11px] font-semibold text-emerald-300">Audit Run Completed</span>
-              <span className="font-mono text-[10px] text-muted-foreground">{runResult.runId}</span>
-              <span className="ml-auto text-[9px] text-muted-foreground">{runResult.durationMs ?? 0}ms</span>
+              <span className="text-[15px] font-semibold text-emerald-300">Audit Run Completed</span>
+              <span className="font-mono text-[14px] text-muted-foreground">{runResult.runId}</span>
+              <span className="ml-auto text-[13px] text-muted-foreground">{runResult.durationMs ?? 0}ms</span>
             </div>
-            <p className="text-[11px] text-foreground/80">{runResult.summary}</p>
+            <p className="text-[15px] text-foreground/80">{runResult.summary}</p>
           </div>
         )}
         {error && (
           <div className="rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 flex items-center gap-2">
             <AlertTriangle className="size-3.5 text-rose-400" />
-            <span className="text-[11px] text-rose-300">{error}</span>
+            <span className="text-[15px] text-rose-300">{error}</span>
           </div>
         )}
 
@@ -520,30 +520,30 @@ function AgentsTab() {
                     <Icon className="size-4.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[12px] font-semibold truncate">{ag.name}</div>
-                    <div className="font-mono text-[9px] text-muted-foreground">{ag.agentId}</div>
+                    <div className="text-[16px] font-semibold truncate">{ag.name}</div>
+                    <div className="font-mono text-[13px] text-muted-foreground">{ag.agentId}</div>
                   </div>
                 </div>
 
                 {/* Type + scope + authority pills */}
                 <div className="flex items-center gap-1.5 flex-wrap mb-2">
                   <ColorPill color={tMeta.color} label={tMeta.label} />
-                  <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono text-muted-foreground capitalize">scope: {ag.scope}</span>
+                  <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono text-muted-foreground capitalize">scope: {ag.scope}</span>
                   <ColorPill color={aMeta.color} label={aMeta.label} />
                 </div>
 
                 {/* Description */}
-                <p className="text-[10px] text-foreground/70 leading-snug mb-2.5 line-clamp-5">{ag.description}</p>
+                <p className="text-[14px] text-foreground/70 leading-snug mb-2.5 line-clamp-5">{ag.description}</p>
 
                 {/* Capabilities */}
                 <div className="mb-2.5">
-                  <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">Capabilities</div>
+                  <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-1">Capabilities</div>
                   <div className="flex flex-wrap gap-1">
                     {ag.capabilities?.map((cap: string) => (
-                      <span key={cap} className="rounded bg-foreground/5 px-1.5 py-0.5 text-[9px] font-mono text-foreground/80">{cap}</span>
+                      <span key={cap} className="rounded bg-foreground/5 px-1.5 py-0.5 text-[13px] font-mono text-foreground/80">{cap}</span>
                     ))}
                     {(!ag.capabilities || ag.capabilities.length === 0) && (
-                      <span className="text-[9px] text-muted-foreground">No capabilities registered.</span>
+                      <span className="text-[13px] text-muted-foreground">No capabilities registered.</span>
                     )}
                   </div>
                 </div>
@@ -551,21 +551,21 @@ function AgentsTab() {
                 {/* Run stats */}
                 <div className="mt-auto grid grid-cols-3 gap-1.5">
                   <div className="rounded border border-border bg-card/30 px-2 py-1.5 text-center">
-                    <div className="text-[9px] text-muted-foreground uppercase">Runs</div>
-                    <div className="text-[14px] font-mono font-bold text-cyan-400">{ag.totalRuns ?? 0}</div>
+                    <div className="text-[13px] text-muted-foreground uppercase">Runs</div>
+                    <div className="text-[18px] font-mono font-bold text-cyan-400">{ag.totalRuns ?? 0}</div>
                   </div>
                   <div className="rounded border border-border bg-card/30 px-2 py-1.5 text-center">
-                    <div className="text-[9px] text-muted-foreground uppercase">Findings</div>
-                    <div className="text-[14px] font-mono font-bold text-rose-400">{ag.totalFindings ?? 0}</div>
+                    <div className="text-[13px] text-muted-foreground uppercase">Findings</div>
+                    <div className="text-[18px] font-mono font-bold text-rose-400">{ag.totalFindings ?? 0}</div>
                   </div>
                   <div className="rounded border border-border bg-card/30 px-2 py-1.5 text-center">
-                    <div className="text-[9px] text-muted-foreground uppercase">Recs</div>
-                    <div className="text-[14px] font-mono font-bold text-amber-400">{ag.totalRecommendations ?? 0}</div>
+                    <div className="text-[13px] text-muted-foreground uppercase">Recs</div>
+                    <div className="text-[18px] font-mono font-bold text-amber-400">{ag.totalRecommendations ?? 0}</div>
                   </div>
                 </div>
 
                 {/* Last run */}
-                <div className="mt-2 text-[9px] text-muted-foreground flex items-center gap-1">
+                <div className="mt-2 text-[13px] text-muted-foreground flex items-center gap-1">
                   <Activity className="size-2.5" />
                   {ag.lastRunAt ? `last run ${timeAgo(ag.lastRunAt)}` : "never run"}
                 </div>
@@ -610,17 +610,17 @@ function PrecedentsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
         <Gavel className="size-4 text-violet-400" />
         <span className="text-xs font-semibold">Legal Precedents</span>
-        <span className="text-[11px] text-muted-foreground">— past verdicts establish principles for future decisions. Institutional memory of the intelligence civilization.</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{precedents.length} precedents</span>
+        <span className="text-[15px] text-muted-foreground">— past verdicts establish principles for future decisions. Institutional memory of the intelligence civilization.</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{precedents.length} precedents</span>
       </div>
 
       {/* Filters */}
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] text-muted-foreground">level:</span>
+        <span className="text-[14px] text-muted-foreground">level:</span>
         <button
           onClick={() => setLevelFilter("")}
           className={cn(
-            "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+            "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
             levelFilter === "" ? "bg-primary/15 text-primary border-primary/30" : "bg-card/40 text-muted-foreground border-transparent hover:text-foreground"
           )}
         >
@@ -631,7 +631,7 @@ function PrecedentsTab() {
             key={k}
             onClick={() => setLevelFilter(k)}
             className={cn(
-              "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+              "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
               levelFilter === k ? "text-foreground" : "text-muted-foreground hover:text-foreground border-transparent"
             )}
             style={levelFilter === k ? { color: m.color, background: `${m.color}1a`, borderColor: `${m.color}33` } : undefined}
@@ -639,11 +639,11 @@ function PrecedentsTab() {
             {m.label}
           </button>
         ))}
-        <span className="text-[10px] text-muted-foreground ml-3">court:</span>
+        <span className="text-[14px] text-muted-foreground ml-3">court:</span>
         <button
           onClick={() => setCourtFilter("")}
           className={cn(
-            "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+            "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
             courtFilter === "" ? "bg-primary/15 text-primary border-primary/30" : "bg-card/40 text-muted-foreground border-transparent hover:text-foreground"
           )}
         >
@@ -654,7 +654,7 @@ function PrecedentsTab() {
             key={k}
             onClick={() => setCourtFilter(k)}
             className={cn(
-              "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+              "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
               courtFilter === k ? "text-foreground" : "text-muted-foreground hover:text-foreground border-transparent"
             )}
             style={courtFilter === k ? { color: m.color, background: `${m.color}1a`, borderColor: `${m.color}33` } : undefined}
@@ -692,21 +692,21 @@ function PrecedentCard({ precedent: pr }: { precedent: any }) {
   return (
     <div className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
       <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-        <span className="font-mono text-[10px] font-semibold text-muted-foreground">{pr.precedentId}</span>
+        <span className="font-mono text-[14px] font-semibold text-muted-foreground">{pr.precedentId}</span>
         <ColorPill color={lMeta.color} label={lMeta.label} />
         <ColorPill color={clMeta.color} label={clMeta.label} />
         <ColorPill color={cMeta.color} label={cMeta.label} />
-        <span className="ml-auto text-[9px] text-muted-foreground">established {timeAgo(pr.establishedAt)}</span>
+        <span className="ml-auto text-[13px] text-muted-foreground">established {timeAgo(pr.establishedAt)}</span>
       </div>
 
-      <div className="text-[12px] font-semibold leading-tight mb-1.5 flex items-start gap-1.5">
+      <div className="text-[16px] font-semibold leading-tight mb-1.5 flex items-start gap-1.5">
         <Scale className="size-3 mt-0.5 text-primary shrink-0" />
         <span>{pr.principleEstablished}</span>
       </div>
 
-      <p className="text-[11px] text-foreground/70 leading-snug mb-2 ml-4.5">{pr.principleSummary}</p>
+      <p className="text-[15px] text-foreground/70 leading-snug mb-2 ml-4.5">{pr.principleSummary}</p>
 
-      <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap ml-4.5">
+      <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap ml-4.5">
         <span className="flex items-center gap-1">
           <FileSearch className="size-2.5" />
           from <span className="text-foreground font-medium">{pr.caseTitle}</span>
@@ -722,7 +722,7 @@ function PrecedentCard({ precedent: pr }: { precedent: any }) {
       <div className="mt-2 ml-4.5 flex items-center gap-3 flex-wrap">
         {pr.appliesTo && pr.appliesTo.length > 0 && (
           <div className="flex items-center gap-1 flex-wrap">
-            <span className="text-[9px] text-muted-foreground">applies to:</span>
+            <span className="text-[13px] text-muted-foreground">applies to:</span>
             {pr.appliesTo.map((at: string) => {
               const atMeta = CASE_TYPE_META[at] ?? { color: "#a1a1aa", label: at };
               return <ColorPill key={at} color={atMeta.color} label={atMeta.label} />;
@@ -730,11 +730,11 @@ function PrecedentCard({ precedent: pr }: { precedent: any }) {
           </div>
         )}
         <div className="ml-auto flex items-center gap-2 min-w-[120px]">
-          <span className="text-[9px] text-muted-foreground">confidence</span>
+          <span className="text-[13px] text-muted-foreground">confidence</span>
           <div className="w-20">
             <ConfidenceBar value={pr.confidence ?? 0} showLabel={false} size="sm" />
           </div>
-          <span className="font-mono text-[10px] tnum text-muted-foreground">{((pr.confidence ?? 0) * 100).toFixed(0)}%</span>
+          <span className="font-mono text-[14px] tnum text-muted-foreground">{((pr.confidence ?? 0) * 100).toFixed(0)}%</span>
         </div>
       </div>
     </div>
@@ -802,13 +802,13 @@ function InstitutionsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
         <Building2 className="size-4 text-amber-400" />
         <span className="text-xs font-semibold">Institutional Reputation</span>
-        <span className="text-[11px] text-muted-foreground">— accountability for organizations operating in the intelligence civilization. 4-component composite score.</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{institutions.length} institutions</span>
+        <span className="text-[15px] text-muted-foreground">— accountability for organizations operating in the intelligence civilization. 4-component composite score.</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{institutions.length} institutions</span>
         <button
           onClick={evaluateAll}
           disabled={evaluatingAll}
           className={cn(
-            "rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-medium text-cyan-300 hover:bg-cyan-500/20 transition-colors flex items-center gap-1.5",
+            "rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2.5 py-1 text-[14px] font-medium text-cyan-300 hover:bg-cyan-500/20 transition-colors flex items-center gap-1.5",
             evaluatingAll && "opacity-50 cursor-wait"
           )}
         >
@@ -865,8 +865,8 @@ function InstitutionCard({
           <Icon className="size-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-semibold truncate">{inst.name}</div>
-          <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+          <div className="text-[17px] font-semibold truncate">{inst.name}</div>
+          <div className="flex items-center gap-1.5 text-[13px] text-muted-foreground">
             <span className="font-mono">{inst.institutionId}</span>
             <ColorPill color={tyMeta.color} label={tyMeta.label} />
             {inst.countryCode && <span>· {inst.countryCode}</span>}
@@ -877,7 +877,7 @@ function InstitutionCard({
           onClick={() => onEvaluate(inst.institutionId)}
           disabled={evaluating}
           className={cn(
-            "rounded-md border border-border bg-card/40 px-2 py-1 text-[9px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1",
+            "rounded-md border border-border bg-card/40 px-2 py-1 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors flex items-center gap-1",
             evaluating && "opacity-50 cursor-wait"
           )}
         >
@@ -894,13 +894,13 @@ function InstitutionCard({
             <div key={c.label} className="rounded border border-border bg-card/30 px-2 py-1.5">
               <div className="flex items-center gap-1 mb-1">
                 <CIcon className="size-2.5" style={{ color: c.color }} />
-                <span className="text-[9px] uppercase tracking-wider text-muted-foreground">{c.label}</span>
+                <span className="text-[13px] uppercase tracking-wider text-muted-foreground">{c.label}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="flex-1 h-1 rounded-full bg-foreground/10 overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${c.value}%`, background: c.color }} />
                 </div>
-                <span className="font-mono text-[11px] font-bold tnum" style={{ color: c.color }}>{Math.round(c.value)}</span>
+                <span className="font-mono text-[15px] font-bold tnum" style={{ color: c.color }}>{Math.round(c.value)}</span>
               </div>
             </div>
           );
@@ -910,11 +910,11 @@ function InstitutionCard({
       {/* Overall score + stats */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-2 rounded border border-border bg-card/30 px-2.5 py-1.5">
-          <span className="text-[9px] uppercase tracking-wider text-muted-foreground">Overall</span>
+          <span className="text-[13px] uppercase tracking-wider text-muted-foreground">Overall</span>
           <span className="text-[16px] font-mono font-bold tnum" style={{ color: tMeta.color }}>{Math.round(inst.overallScore ?? 0)}</span>
-          <span className="text-[10px] text-muted-foreground">/100</span>
+          <span className="text-[14px] text-muted-foreground">/100</span>
         </div>
-        <div className="flex items-center gap-2 text-[9px] text-muted-foreground flex-wrap">
+        <div className="flex items-center gap-2 text-[13px] text-muted-foreground flex-wrap">
           <span className="flex items-center gap-0.5">
             <ScrollText className="size-2.5" /> {inst.packagesPublished ?? 0} packages
           </span>
@@ -933,7 +933,7 @@ function InstitutionCard({
           )}
         </div>
         {inst.lastEvaluatedAt && (
-          <span className="ml-auto text-[9px] text-muted-foreground">evaluated {timeAgo(inst.lastEvaluatedAt)}</span>
+          <span className="ml-auto text-[13px] text-muted-foreground">evaluated {timeAgo(inst.lastEvaluatedAt)}</span>
         )}
       </div>
     </div>
@@ -966,17 +966,17 @@ function AuditsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
         <ShieldCheck className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">Audit Runs</span>
-        <span className="text-[11px] text-muted-foreground">— agent executions: constitutional audits, precedent searches, impact analyses.</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{audits.length} runs</span>
+        <span className="text-[15px] text-muted-foreground">— agent executions: constitutional audits, precedent searches, impact analyses.</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{audits.length} runs</span>
       </div>
 
       {/* Filters */}
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
-        <span className="text-[10px] text-muted-foreground">result:</span>
+        <span className="text-[14px] text-muted-foreground">result:</span>
         <button
           onClick={() => setResultFilter("")}
           className={cn(
-            "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+            "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
             resultFilter === "" ? "bg-primary/15 text-primary border-primary/30" : "bg-card/40 text-muted-foreground border-transparent hover:text-foreground"
           )}
         >
@@ -987,7 +987,7 @@ function AuditsTab() {
             key={k}
             onClick={() => setResultFilter(k)}
             className={cn(
-              "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+              "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
               resultFilter === k ? "text-foreground" : "text-muted-foreground hover:text-foreground border-transparent"
             )}
             style={resultFilter === k ? { color: m.color, background: `${m.color}1a`, borderColor: `${m.color}33` } : undefined}
@@ -995,11 +995,11 @@ function AuditsTab() {
             {m.label}
           </button>
         ))}
-        <span className="text-[10px] text-muted-foreground ml-3">type:</span>
+        <span className="text-[14px] text-muted-foreground ml-3">type:</span>
         <button
           onClick={() => setTypeFilter("")}
           className={cn(
-            "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+            "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
             typeFilter === "" ? "bg-primary/15 text-primary border-primary/30" : "bg-card/40 text-muted-foreground border-transparent hover:text-foreground"
           )}
         >
@@ -1010,7 +1010,7 @@ function AuditsTab() {
             key={k}
             onClick={() => setTypeFilter(k)}
             className={cn(
-              "rounded px-1.5 py-0.5 text-[9px] font-medium border transition-colors",
+              "rounded px-1.5 py-0.5 text-[13px] font-medium border transition-colors",
               typeFilter === k ? "text-foreground" : "text-muted-foreground hover:text-foreground border-transparent"
             )}
             style={typeFilter === k ? { color: m.color, background: `${m.color}1a`, borderColor: `${m.color}33` } : undefined}
@@ -1052,23 +1052,23 @@ function AuditCard({ audit: au }: { audit: any }) {
     <div className="rounded-lg border border-border bg-card/40">
       <button onClick={toggle} className="w-full text-left px-3 py-2.5 hover:bg-card/20 transition-colors">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className="font-mono text-[10px] font-semibold text-muted-foreground">{au.runId}</span>
+          <span className="font-mono text-[14px] font-semibold text-muted-foreground">{au.runId}</span>
           <ColorPill color={tMeta.color} label={tMeta.label} />
           <ColorPill color={rMeta.color} label={rMeta.label} />
           {au.targetType && (
-            <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono text-muted-foreground">
+            <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono text-muted-foreground">
               target: {au.targetType}{au.targetId ? `/${au.targetId}` : ""}
             </span>
           )}
-          <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(au.completedAt || au.startedAt)}</span>
+          <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(au.completedAt || au.startedAt)}</span>
           <ChevronDown className={cn("size-3 text-muted-foreground transition-transform", expanded && "rotate-180")} />
         </div>
-        <div className="text-[12px] font-medium leading-tight mb-1">{au.summary}</div>
-        <div className="flex items-center gap-3 text-[10px] flex-wrap">
+        <div className="text-[16px] font-medium leading-tight mb-1">{au.summary}</div>
+        <div className="flex items-center gap-3 text-[14px] flex-wrap">
           <span className="text-muted-foreground">
             by <span className="text-foreground font-medium">{au.agentName}</span>
           </span>
-          <span className="font-mono text-[9px] text-muted-foreground">{au.agentId}</span>
+          <span className="font-mono text-[13px] text-muted-foreground">{au.agentId}</span>
           {au.findingCount > 0 && (
             <span className="flex items-center gap-0.5 text-amber-400">
               <AlertTriangle className="size-2.5" /> {au.findingCount} findings
@@ -1084,7 +1084,7 @@ function AuditCard({ audit: au }: { audit: any }) {
               <TrendingUp className="size-2.5" /> {au.recommendationCount} recommendations
             </span>
           )}
-          <span className="ml-auto font-mono text-[9px] text-muted-foreground">{au.durationMs ?? 0}ms</span>
+          <span className="ml-auto font-mono text-[13px] text-muted-foreground">{au.durationMs ?? 0}ms</span>
         </div>
       </button>
 
@@ -1093,11 +1093,11 @@ function AuditCard({ audit: au }: { audit: any }) {
           {findings.length === 0 ? (
             <div className="flex items-center gap-2 rounded border border-emerald-500/20 bg-emerald-500/5 px-2.5 py-2">
               <CheckCircle2 className="size-3.5 text-emerald-400" />
-              <span className="text-[11px] text-emerald-300">No findings — agent found no issues.</span>
+              <span className="text-[15px] text-emerald-300">No findings — agent found no issues.</span>
             </div>
           ) : (
             <div className="space-y-1">
-              <div className="text-[9px] uppercase tracking-wider text-muted-foreground mb-1">
+              <div className="text-[13px] uppercase tracking-wider text-muted-foreground mb-1">
                 Findings ({findings.length})
               </div>
               {findings.map((f: any, i: number) => {
@@ -1106,14 +1106,14 @@ function AuditCard({ audit: au }: { audit: any }) {
                   <div key={i} className="rounded border border-border bg-card/30 px-2 py-1.5 flex items-start gap-2 flex-wrap">
                     <ColorPill color={sMeta.color} label={sMeta.label} />
                     {f.article && (
-                      <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono text-muted-foreground">
+                      <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono text-muted-foreground">
                         {f.article}
                       </span>
                     )}
                     <div className="flex-1 min-w-[200px]">
-                      <div className="text-[10px] text-foreground/80 leading-snug">{f.description}</div>
+                      <div className="text-[14px] text-foreground/80 leading-snug">{f.description}</div>
                       {f.recommendation && (
-                        <div className="text-[10px] text-muted-foreground italic mt-0.5 flex items-start gap-1">
+                        <div className="text-[14px] text-muted-foreground italic mt-0.5 flex items-start gap-1">
                           <ArrowRight className="size-2.5 mt-0.5 shrink-0" />
                           <span>{f.recommendation}</span>
                         </div>
@@ -1126,7 +1126,7 @@ function AuditCard({ audit: au }: { audit: any }) {
           )}
 
           {/* Audit metadata */}
-          <div className="flex items-center gap-3 text-[9px] text-muted-foreground pt-1 border-t border-border/50 flex-wrap">
+          <div className="flex items-center gap-3 text-[13px] text-muted-foreground pt-1 border-t border-border/50 flex-wrap">
             <span>started: {au.startedAt ? fmtDate(au.startedAt) : "—"}</span>
             <span>completed: {au.completedAt ? fmtDate(au.completedAt) : "—"}</span>
             <span className="font-mono">duration: {au.durationMs ?? 0}ms</span>

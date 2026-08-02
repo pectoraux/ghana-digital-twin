@@ -179,7 +179,7 @@ export function GhanaMap() {
       />
 
       {/* live data source badge */}
-      <div className="absolute left-3 bottom-12 z-10 flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-mono text-emerald-400 backdrop-blur">
+      <div className="absolute left-3 bottom-12 z-10 flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[14px] font-mono text-emerald-400 backdrop-blur">
         <span className="size-1.5 rounded-full bg-emerald-400 gdt-blink" />
         WORLD MODEL · {entities.length} REAL ENTITIES
       </div>
@@ -188,7 +188,7 @@ export function GhanaMap() {
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/40 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-2">
             <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            <span className="text-[11px] font-mono text-muted-foreground">Loading world model…</span>
+            <span className="text-[15px] font-mono text-muted-foreground">Loading world model…</span>
           </div>
         </div>
       )}
@@ -381,7 +381,7 @@ export function GhanaMap() {
       </div>
 
       {/* Scale + zoom readout */}
-      <div className="absolute bottom-3 left-3 rounded-md border border-border bg-card/70 px-2 py-1 text-[10px] font-mono text-muted-foreground backdrop-blur">
+      <div className="absolute bottom-3 left-3 rounded-md border border-border bg-card/70 px-2 py-1 text-[14px] font-mono text-muted-foreground backdrop-blur">
         <div className="flex items-center gap-2">
           <span>ZOOM {vp.scale.toFixed(1)}×</span>
           <span className="text-border">│</span>

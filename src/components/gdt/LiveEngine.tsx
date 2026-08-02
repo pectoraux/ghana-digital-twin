@@ -78,13 +78,13 @@ export function LiveEngine() {
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    <span className="text-[14px] font-mono uppercase tracking-wider text-muted-foreground">
                       {om.label}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">· just now</span>
+                    <span className="text-[14px] text-muted-foreground">· just now</span>
                   </div>
-                  <div className="text-[13px] font-medium leading-snug mt-0.5">{o.text}</div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                  <div className="text-[17px] font-medium leading-snug mt-0.5">{o.text}</div>
+                  <div className="text-[15px] text-muted-foreground mt-0.5">
                     {region.name} · {o.detail}
                   </div>
                 </div>

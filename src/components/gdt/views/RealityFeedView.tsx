@@ -68,10 +68,10 @@ export function RealityFeedView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Activity className="size-4 text-primary" /> Intelligence Reality Feed
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: reality-feed
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Continuous ingestion of reality · Freshness monitoring · Automatic observation triggers
           </p>
         </div>
@@ -148,30 +148,30 @@ function OverviewTab() {
             <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <Satellite className="size-4 text-emerald-400" />
-                <span className="text-[11px] font-semibold text-emerald-300">Sentinel-2 Satellite</span>
-                <span className={cn("ml-auto rounded px-1.5 py-0.5 text-[9px] font-semibold",
+                <span className="text-[15px] font-semibold text-emerald-300">Sentinel-2 Satellite</span>
+                <span className={cn("ml-auto rounded px-1.5 py-0.5 text-[13px] font-semibold",
                   o.latestData.latestScene.hoursAgo < 120 ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300")}>
                   {o.latestData.latestScene.hoursAgo < 120 ? "🟢 LIVE" : "🟡 RECENT"}
                 </span>
               </div>
-              <div className="text-[10px] text-muted-foreground mb-0.5">Latest scene: {o.latestData.latestScene.stacId}</div>
-              <div className="text-[10px] text-muted-foreground mb-0.5">Tile: {o.latestData.latestScene.mgrsTile}</div>
-              <div className="text-[14px] font-mono font-semibold text-emerald-300">
+              <div className="text-[14px] text-muted-foreground mb-0.5">Latest scene: {o.latestData.latestScene.stacId}</div>
+              <div className="text-[14px] text-muted-foreground mb-0.5">Tile: {o.latestData.latestScene.mgrsTile}</div>
+              <div className="text-[18px] font-mono font-semibold text-emerald-300">
                 {o.latestData.latestScene.hoursAgo < 24 ? `${o.latestData.latestScene.hoursAgo.toFixed(1)}h ago` : `${(o.latestData.latestScene.hoursAgo / 24).toFixed(1)}d ago`}
               </div>
-              <div className="text-[9px] text-muted-foreground">{new Date(o.latestData.latestScene.datetime).toUTCString()}</div>
+              <div className="text-[13px] text-muted-foreground">{new Date(o.latestData.latestScene.datetime).toUTCString()}</div>
             </div>
           )}
           {o.latestData.latestObservation && (
             <div className="rounded-lg border border-cyan-500/20 bg-cyan-500/5 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <Zap className="size-4 text-cyan-400" />
-                <span className="text-[11px] font-semibold text-cyan-300">Latest Observation</span>
-                <span className="ml-auto rounded bg-cyan-500/15 px-1.5 py-0.5 text-[9px] font-semibold text-cyan-300">🟢 ACTIVE</span>
+                <span className="text-[15px] font-semibold text-cyan-300">Latest Observation</span>
+                <span className="ml-auto rounded bg-cyan-500/15 px-1.5 py-0.5 text-[13px] font-semibold text-cyan-300">🟢 ACTIVE</span>
               </div>
-              <div className="text-[10px] text-muted-foreground mb-0.5">Type: {o.latestData.latestObservation.type}</div>
-              <div className="text-[10px] text-muted-foreground mb-0.5 truncate">UUID: {o.latestData.latestObservation.uuid}</div>
-              <div className="text-[14px] font-mono font-semibold text-cyan-300">
+              <div className="text-[14px] text-muted-foreground mb-0.5">Type: {o.latestData.latestObservation.type}</div>
+              <div className="text-[14px] text-muted-foreground mb-0.5 truncate">UUID: {o.latestData.latestObservation.uuid}</div>
+              <div className="text-[18px] font-mono font-semibold text-cyan-300">
                 {o.latestData.latestObservation.hoursAgo < 1 ? `${(o.latestData.latestObservation.hoursAgo * 60).toFixed(0)}m ago` : `${o.latestData.latestObservation.hoursAgo.toFixed(1)}h ago`}
               </div>
             </div>
@@ -180,12 +180,12 @@ function OverviewTab() {
             <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="size-4 text-violet-400" />
-                <span className="text-[11px] font-semibold text-violet-300">Community Intelligence</span>
-                <span className="ml-auto rounded bg-violet-500/15 px-1.5 py-0.5 text-[9px] font-semibold text-violet-300">🟢 LIVE</span>
+                <span className="text-[15px] font-semibold text-violet-300">Community Intelligence</span>
+                <span className="ml-auto rounded bg-violet-500/15 px-1.5 py-0.5 text-[13px] font-semibold text-violet-300">🟢 LIVE</span>
               </div>
-              <div className="text-[10px] text-muted-foreground mb-0.5 truncate">{o.latestData.latestCommunityEvent.title}</div>
-              <div className="text-[10px] text-muted-foreground mb-0.5">Event: {o.latestData.latestCommunityEvent.eventId}</div>
-              <div className="text-[14px] font-mono font-semibold text-violet-300">
+              <div className="text-[14px] text-muted-foreground mb-0.5 truncate">{o.latestData.latestCommunityEvent.title}</div>
+              <div className="text-[14px] text-muted-foreground mb-0.5">Event: {o.latestData.latestCommunityEvent.eventId}</div>
+              <div className="text-[18px] font-mono font-semibold text-violet-300">
                 {o.latestData.latestCommunityEvent.hoursAgo < 1 ? `${(o.latestData.latestCommunityEvent.hoursAgo * 60).toFixed(0)}m ago` : `${o.latestData.latestCommunityEvent.hoursAgo.toFixed(1)}h ago`}
               </div>
             </div>
@@ -201,19 +201,19 @@ function OverviewTab() {
             const Icon = SOURCE_TYPE_ICON[c.sourceType] ?? Database;
             const fmeta = FRESHNESS_META[c.freshnessStatus] ?? FRESHNESS_META.unknown;
             return (
-              <div key={c.connectorId} className="flex items-center gap-2 text-[11px] py-1 border-b border-border/30 last:border-0">
+              <div key={c.connectorId} className="flex items-center gap-2 text-[15px] py-1 border-b border-border/30 last:border-0">
                 <Icon className="size-3 shrink-0" style={{ color: fmeta.color }} />
                 <span className="font-medium flex-1 truncate">{c.name}</span>
-                <span className="text-[9px] text-muted-foreground">{c.cadenceLabel}</span>
+                <span className="text-[13px] text-muted-foreground">{c.cadenceLabel}</span>
                 {c.freshnessHoursAgo !== null && c.freshnessHoursAgo !== undefined && (
-                  <span className="text-[9px] text-muted-foreground">
+                  <span className="text-[13px] text-muted-foreground">
                     {c.freshnessHoursAgo < 24 ? `${c.freshnessHoursAgo.toFixed(0)}h ago` : `${(c.freshnessHoursAgo / 24).toFixed(1)}d ago`}
                   </span>
                 )}
-                <span className="rounded px-1.5 py-0.5 text-[9px] font-semibold" style={{ color: fmeta.color, background: `${fmeta.color}1a` }}>
+                <span className="rounded px-1.5 py-0.5 text-[13px] font-semibold" style={{ color: fmeta.color, background: `${fmeta.color}1a` }}>
                   {fmeta.icon} {fmeta.label}
                 </span>
-                <span className={cn("rounded px-1 py-0.5 text-[9px]",
+                <span className={cn("rounded px-1 py-0.5 text-[13px]",
                   c.status === "active" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300")}>{c.status}</span>
               </div>
             );
@@ -225,9 +225,9 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Zap className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">MANUAL REALITY INGESTION</span>
+          <span className="text-[15px] font-semibold text-primary">MANUAL REALITY INGESTION</span>
         </div>
-        <p className="text-[11px] text-foreground/80 leading-relaxed mb-3">
+        <p className="text-[15px] text-foreground/80 leading-relaxed mb-3">
           Trigger a fresh Sentinel-2 STAC ingestion from the Element 84 Earth Search API. Fetches recent scenes,
           stores COG band URLs, and automatically triggers observation generation on new data. This is the
           "perceive reality" button — the heartbeat of the intelligence OS.
@@ -270,9 +270,9 @@ function FreshnessTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <RefreshCw className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">Freshness Monitor</span>
-        <span className="text-[11px] text-muted-foreground">— per-capability freshness status</span>
+        <span className="text-[15px] text-muted-foreground">— per-capability freshness status</span>
         <button onClick={handleRefresh} disabled={refreshing}
-          className="ml-auto flex items-center gap-1 rounded border border-border px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-50">
+          className="ml-auto flex items-center gap-1 rounded border border-border px-2 py-1 text-[14px] text-muted-foreground hover:text-foreground disabled:opacity-50">
           <RefreshCw className={cn("size-3", refreshing && "animate-spin")} /> Refresh
         </button>
       </div>
@@ -287,20 +287,20 @@ function FreshnessTab() {
                 <Icon className="size-4" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-medium truncate">{f.capabilityLabel}</div>
-                <div className="text-[9px] text-muted-foreground font-mono">{f.capabilityId}</div>
+                <div className="text-[16px] font-medium truncate">{f.capabilityLabel}</div>
+                <div className="text-[13px] text-muted-foreground font-mono">{f.capabilityId}</div>
               </div>
               <div className="text-right shrink-0">
-                <div className="font-mono text-[14px] font-bold" style={{ color: fmeta.color }}>
+                <div className="font-mono text-[18px] font-bold" style={{ color: fmeta.color }}>
                   {f.freshnessHoursAgo !== null ? (f.freshnessHoursAgo < 24 ? `${f.freshnessHoursAgo.toFixed(0)}h` : `${(f.freshnessHoursAgo / 24).toFixed(1)}d`) : "—"}
                 </div>
-                <div className="text-[9px] text-muted-foreground">ago</div>
+                <div className="text-[13px] text-muted-foreground">ago</div>
               </div>
               <div className="text-right shrink-0">
-                <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ color: fmeta.color, background: `${fmeta.color}1a` }}>
+                <span className="rounded px-1.5 py-0.5 text-[14px] font-semibold" style={{ color: fmeta.color, background: `${fmeta.color}1a` }}>
                   {fmeta.icon} {fmeta.label}
                 </span>
-                <div className={cn("text-[9px] mt-0.5",
+                <div className={cn("text-[13px] mt-0.5",
                   f.healthStatus === "healthy" ? "text-emerald-400" : f.healthStatus === "degraded" ? "text-amber-400" : "text-rose-400")}>
                   {f.healthStatus}
                 </div>
@@ -336,8 +336,8 @@ function ConnectorsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Database className="size-4 text-cyan-400" />
         <span className="text-xs font-semibold">Data Source Connectors</span>
-        <span className="text-[11px] text-muted-foreground">— registered ingestion pipelines with schedules</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{connectors.length} connectors</span>
+        <span className="text-[15px] text-muted-foreground">— registered ingestion pipelines with schedules</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{connectors.length} connectors</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -351,18 +351,18 @@ function ConnectorsTab() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <Icon className="size-3.5" style={{ color: fmeta.color }} />
-                    <span className="font-mono text-[10px] font-semibold text-muted-foreground">{c.connectorId}</span>
-                    <span className={cn("rounded px-1 py-0.5 text-[9px]",
+                    <span className="font-mono text-[14px] font-semibold text-muted-foreground">{c.connectorId}</span>
+                    <span className={cn("rounded px-1 py-0.5 text-[13px]",
                       c.status === "active" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300")}>{c.status}</span>
-                    <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] capitalize">{c.sourceType}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: fmeta.color, background: `${fmeta.color}1a` }}>
+                    <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] capitalize">{c.sourceType}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: fmeta.color, background: `${fmeta.color}1a` }}>
                       {fmeta.icon} {fmeta.label}
                     </span>
-                    {c.autoTriggerObservations && <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[9px] text-violet-300">⚡ auto-trigger</span>}
+                    {c.autoTriggerObservations && <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[13px] text-violet-300">⚡ auto-trigger</span>}
                   </div>
-                  <div className="text-[12px] font-medium mb-0.5">{c.name}</div>
-                  <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{c.description}</p>
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+                  <div className="text-[16px] font-medium mb-0.5">{c.name}</div>
+                  <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{c.description}</p>
+                  <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap">
                     <span>provider: {c.provider}</span>
                     <span className="flex items-center gap-1"><Clock className="size-2.5" /> {c.cadenceLabel}</span>
                     <span>runs: {c.totalRuns} ({c.totalSuccess}✓ {c.totalFailed}✗)</span>
@@ -372,7 +372,7 @@ function ConnectorsTab() {
                     )}
                     {c.lastRunAt && <span>last run: {timeAgo(c.lastRunAt)}</span>}
                   </div>
-                  {c.lastError && <div className="text-[10px] text-rose-400 mt-1">⚠ {c.lastError}</div>}
+                  {c.lastError && <div className="text-[14px] text-rose-400 mt-1">⚠ {c.lastError}</div>}
                 </div>
               </div>
             </div>
@@ -400,8 +400,8 @@ function RunsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Clock className="size-4 text-amber-400" />
         <span className="text-xs font-semibold">Ingestion Runs</span>
-        <span className="text-[11px] text-muted-foreground">— execution audit trail</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{runs.length} runs</span>
+        <span className="text-[15px] text-muted-foreground">— execution audit trail</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{runs.length} runs</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -420,12 +420,12 @@ function RunsTab() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] font-semibold text-muted-foreground">{r.runId}</span>
-                  <span className="text-[10px] text-muted-foreground">connector: {r.connectorId}</span>
-                  <span className="text-[10px] text-muted-foreground">by: {r.triggeredBy}</span>
+                  <span className="font-mono text-[14px] font-semibold text-muted-foreground">{r.runId}</span>
+                  <span className="text-[14px] text-muted-foreground">connector: {r.connectorId}</span>
+                  <span className="text-[14px] text-muted-foreground">by: {r.triggeredBy}</span>
                 </div>
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
-                  <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color, background: `${color}1a` }}>{r.status}</span>
+                <div className="flex items-center gap-3 text-[14px] text-muted-foreground mt-0.5">
+                  <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color, background: `${color}1a` }}>{r.status}</span>
                   <span>found: {r.recordsFound}</span>
                   <span>ingested: {r.recordsIngested}</span>
                   {r.observationsTriggered > 0 && <span className="text-violet-400">observations: {r.observationsTriggered}</span>}
@@ -465,8 +465,8 @@ function AlertsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <AlertTriangle className="size-4 text-rose-400" />
         <span className="text-xs font-semibold">Freshness Alerts</span>
-        <span className="text-[11px] text-muted-foreground">— stale data + connector failures</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{alerts.length} alerts</span>
+        <span className="text-[15px] text-muted-foreground">— stale data + connector failures</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{alerts.length} alerts</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -481,17 +481,17 @@ function AlertsTab() {
           return (
             <div key={a.alertId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5" style={{ borderLeftColor: color, borderLeftWidth: 3 }}>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground">{a.alertId}</span>
-                <span className="rounded px-1 py-0.5 text-[9px] font-semibold uppercase" style={{ color, background: `${color}1a` }}>{a.severity}</span>
-                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono">{a.alertType}</span>
-                {a.connectorId && <span className="text-[9px] text-muted-foreground">connector: {a.connectorId}</span>}
-                <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(a.triggeredAt)}</span>
+                <span className="font-mono text-[14px] font-semibold text-muted-foreground">{a.alertId}</span>
+                <span className="rounded px-1 py-0.5 text-[13px] font-semibold uppercase" style={{ color, background: `${color}1a` }}>{a.severity}</span>
+                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono">{a.alertType}</span>
+                {a.connectorId && <span className="text-[13px] text-muted-foreground">connector: {a.connectorId}</span>}
+                <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(a.triggeredAt)}</span>
               </div>
-              <div className="text-[12px] font-medium mb-0.5">{a.title}</div>
-              <div className="text-[11px] text-foreground/70">{a.description}</div>
+              <div className="text-[16px] font-medium mb-0.5">{a.title}</div>
+              <div className="text-[15px] text-foreground/70">{a.description}</div>
               {a.status === "active" && (
                 <button onClick={() => handleResolve(a.alertId)}
-                  className="mt-1.5 flex items-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[10px] text-emerald-400 hover:bg-emerald-500/10">
+                  className="mt-1.5 flex items-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[14px] text-emerald-400 hover:bg-emerald-500/10">
                   <CheckCircle2 className="size-3" /> Resolve
                 </button>
               )}

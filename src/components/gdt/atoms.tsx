@@ -29,7 +29,7 @@ export function ConfidenceBar({
         />
       </div>
       {showLabel && (
-        <span className="text-[10px] font-mono tnum text-muted-foreground tabular-nums w-9 text-right">
+        <span className="text-[14px] font-mono tnum text-muted-foreground tabular-nums w-9 text-right">
           {(value * 100).toFixed(0)}%
         </span>
       )}
@@ -41,7 +41,7 @@ export function ConfidencePill({ value }: { value: number }) {
   const color = confidenceColor(value);
   return (
     <span
-      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium font-mono tnum"
+      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-medium font-mono tnum"
       style={{ color, background: `${color}1a`, border: `1px solid ${color}33` }}
     >
       <span className="size-1.5 rounded-full" style={{ background: color }} />
@@ -77,7 +77,7 @@ export function MetricStat({
 }) {
   return (
     <div className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+      <div className="text-[14px] uppercase tracking-wider text-muted-foreground font-medium">
         {label}
       </div>
       <div
@@ -86,7 +86,7 @@ export function MetricStat({
       >
         {value}
       </div>
-      {sub && <div className="text-[10px] text-muted-foreground mt-0.5">{sub}</div>}
+      {sub && <div className="text-[14px] text-muted-foreground mt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -127,7 +127,7 @@ export function SectionLabel({ children, className }: { children: React.ReactNod
   return (
     <div
       className={cn(
-        "text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80",
+        "text-[14px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80",
         className
       )}
     >

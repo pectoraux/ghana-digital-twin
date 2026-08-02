@@ -140,15 +140,15 @@ function LineageNodeRow({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <span
-              className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+              className="inline-flex items-center rounded px-1.5 py-0.5 text-[13px] font-semibold uppercase tracking-wider"
               style={{ color, background: `${color}1a`, border: `1px solid ${color}33` }}
             >
               {node.level.replace(/_/g, " ")}
             </span>
-            <span className="text-[11px] font-medium truncate">{node.label}</span>
+            <span className="text-[15px] font-medium truncate">{node.label}</span>
           </div>
           {details.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[9px] font-mono text-muted-foreground">
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-[13px] font-mono text-muted-foreground">
               {details.map((d, i) => (
                 <span key={i} className="truncate">
                   <span className="text-muted-foreground/60">{d.label}:</span>{" "}
@@ -265,30 +265,30 @@ export function ObservationDetail({ id }: { id: string }) {
       <div className="border-b border-border p-4">
         <div className="flex items-center gap-2 mb-2">
           <span
-            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[10px] font-semibold"
+            className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[14px] font-semibold"
             style={{ color: typeColor, background: `${typeColor}1a`, border: `1px solid ${typeColor}33` }}
           >
             <span className="size-1.5 rounded-full" style={{ background: typeColor }} />
             {o.type.replace(/_/g, " ")}
           </span>
           <span
-            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold"
+            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-semibold"
             style={{ color: sevColor, background: `${sevColor}1a` }}
           >
             {o.severity}
           </span>
-          <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground bg-foreground/5">
+          <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-medium text-muted-foreground bg-foreground/5">
             <StatusDot color={o.status === "active" ? "#f43f5e" : "#fbbf24"} pulse={o.status === "active"} />
             {o.status}
           </span>
         </div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-mono text-[11px] text-muted-foreground">{o.uuid.slice(0, 13)}…</span>
-          <span className="text-[10px] text-muted-foreground">· v{o.currentVersion}</span>
-          <span className="text-[10px] text-muted-foreground">· {timeAgo(o.observedAt)}</span>
+          <span className="font-mono text-[15px] text-muted-foreground">{o.uuid.slice(0, 13)}…</span>
+          <span className="text-[14px] text-muted-foreground">· v{o.currentVersion}</span>
+          <span className="text-[14px] text-muted-foreground">· {timeAgo(o.observedAt)}</span>
         </div>
-        <h2 className="text-[14px] font-semibold leading-snug">{o.title}</h2>
-        <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <h2 className="text-[18px] font-semibold leading-snug">{o.title}</h2>
+        <div className="mt-1 flex items-center gap-1.5 text-[15px] text-muted-foreground">
           <MapPin className="size-3" />
           {formatCoord(o.centroid)} · {o.mgrsTile ?? "—"}
         </div>
@@ -296,7 +296,7 @@ export function ObservationDetail({ id }: { id: string }) {
 
       <div className="flex flex-col gap-4 p-4">
         {/* summary */}
-        <p className="text-[12px] leading-relaxed text-foreground/85">{o.summary}</p>
+        <p className="text-[16px] leading-relaxed text-foreground/85">{o.summary}</p>
 
         {/* key metrics */}
         <div className="grid grid-cols-2 gap-2">
@@ -315,7 +315,7 @@ export function ObservationDetail({ id }: { id: string }) {
             </span>
           </div>
           <ConfidenceBar value={o.confidence} showLabel={false} />
-          <div className="flex items-center gap-1.5 text-[10px] text-amber-400/80 pt-1 border-t border-border">
+          <div className="flex items-center gap-1.5 text-[14px] text-amber-400/80 pt-1 border-t border-border">
             <Sigma className="size-3" />
             Uncertainty propagated from {o.evidence.length} evidence sources
           </div>
@@ -334,17 +334,17 @@ export function ObservationDetail({ id }: { id: string }) {
                 <div key={i} className="rounded-lg border border-border bg-card/40 p-2.5">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="size-2 rounded-full" style={{ background: typeColor }} />
-                    <span className="text-[11px] font-medium">{e.productType.replace(/_/g, " ")}</span>
-                    <span className="ml-auto font-mono text-[9px] text-muted-foreground">
+                    <span className="text-[15px] font-medium">{e.productType.replace(/_/g, " ")}</span>
+                    <span className="ml-auto font-mono text-[13px] text-muted-foreground">
                       w={e.weight.toFixed(2)} · signal={signalPct}% · contrib={contribPct}%
                     </span>
                   </div>
-                  <div className="text-[10px] text-muted-foreground mb-1.5">{e.description}</div>
+                  <div className="text-[14px] text-muted-foreground mb-1.5">{e.description}</div>
                   {/* contribution bar */}
                   <div className="h-1 rounded-full bg-foreground/8 overflow-hidden">
                     <div className="h-full rounded-full" style={{ width: `${e.contribution * 100 / 0.35}%`, background: typeColor }} />
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-[9px] font-mono text-muted-foreground">
+                  <div className="mt-1 flex items-center justify-between text-[13px] font-mono text-muted-foreground">
                     <span>conf {(e.confidence * 100).toFixed(0)}%</span>
                     <span>±{(e.uncertainty * 100).toFixed(1)}%</span>
                   </div>
@@ -367,9 +367,9 @@ export function ObservationDetail({ id }: { id: string }) {
                   onClick={() => selectEntity(a.entityId)}
                   className="group flex w-full items-center gap-2 rounded-md border border-border bg-card/40 px-2.5 py-1.5 text-left transition-colors hover:border-primary/40 hover:bg-card"
                 >
-                  <span className="font-mono text-[10px] text-muted-foreground w-3">→</span>
-                  <span className="text-[11px] font-mono text-primary/80 flex-1 truncate">{a.relationship}</span>
-                  {a.distance != null && <span className="text-[9px] text-muted-foreground">{a.distance.toFixed(2)}km</span>}
+                  <span className="font-mono text-[14px] text-muted-foreground w-3">→</span>
+                  <span className="text-[15px] font-mono text-primary/80 flex-1 truncate">{a.relationship}</span>
+                  {a.distance != null && <span className="text-[13px] text-muted-foreground">{a.distance.toFixed(2)}km</span>}
                   <ChevronRight className="size-3.5 text-muted-foreground opacity-0 group-hover:opacity-100" />
                 </button>
               ))}
@@ -393,12 +393,12 @@ export function ObservationDetail({ id }: { id: string }) {
                       style={{ background: i === 0 ? typeColor : "#71717a" }}
                     />
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono text-muted-foreground">v{v.version}</span>
-                      <span className="text-[10px] text-muted-foreground">· {timeAgo(v.observedAt)}</span>
-                      {i === 0 && <span className="text-[9px] font-medium text-primary">latest</span>}
+                      <span className="text-[14px] font-mono text-muted-foreground">v{v.version}</span>
+                      <span className="text-[14px] text-muted-foreground">· {timeAgo(v.observedAt)}</span>
+                      {i === 0 && <span className="text-[13px] font-medium text-primary">latest</span>}
                     </div>
-                    <p className="text-[12px] text-foreground/85 mt-0.5">{v.change}</p>
-                    <div className="text-[10px] text-muted-foreground font-mono">
+                    <p className="text-[16px] text-foreground/85 mt-0.5">{v.change}</p>
+                    <div className="text-[14px] text-muted-foreground font-mono">
                       conf {(v.confidence * 100).toFixed(0)}% · {v.evidenceCount} evidence sources
                     </div>
                   </div>
@@ -411,7 +411,7 @@ export function ObservationDetail({ id }: { id: string }) {
         {/* provenance */}
         <div>
           <SectionLabel className="mb-2">Provenance</SectionLabel>
-          <div className="rounded-lg border border-border bg-card/40 p-3 space-y-1 text-[10px] font-mono text-muted-foreground">
+          <div className="rounded-lg border border-border bg-card/40 p-3 space-y-1 text-[14px] font-mono text-muted-foreground">
             <div className="flex items-center gap-1.5"><Database className="size-3" /> Source products: {o.sourceProducts.length}</div>
             <div className="flex items-center gap-1.5"><GitCommit className="size-3" /> Source models: {o.sourceModels.join(", ")}</div>
             <div className="flex items-center gap-1.5"><MapPin className="size-3" /> MGRS: {o.mgrsTile ?? "—"}</div>
@@ -424,19 +424,19 @@ export function ObservationDetail({ id }: { id: string }) {
             <GitBranch className="size-3" /> Observation Lineage
           </SectionLabel>
           {lineageLoading ? (
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-card/40 p-3 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-card/40 p-3 text-[15px] text-muted-foreground">
               <Loader2 className="size-3 animate-spin text-primary" />
               Tracing provenance chain…
             </div>
           ) : lineage ? (
             <div className="space-y-2">
               <LineageTree key={lineage.id} root={lineage} />
-              <p className="text-[10px] text-muted-foreground leading-relaxed px-1">
+              <p className="text-[14px] text-muted-foreground leading-relaxed px-1">
                 Full provenance chain from observation to original satellite COG. Every transformation is traceable.
               </p>
             </div>
           ) : (
-            <div className="rounded-lg border border-border bg-card/40 p-3 text-[11px] text-muted-foreground italic">
+            <div className="rounded-lg border border-border bg-card/40 p-3 text-[15px] text-muted-foreground italic">
               Lineage unavailable for this observation.
             </div>
           )}
@@ -446,9 +446,9 @@ export function ObservationDetail({ id }: { id: string }) {
         <div className="rounded-lg border border-border bg-foreground/[0.02] p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <AlertCircle className="size-3 text-muted-foreground" />
-            <span className="text-[10px] font-semibold text-muted-foreground">Objectivity</span>
+            <span className="text-[14px] font-semibold text-muted-foreground">Objectivity</span>
           </div>
-          <p className="text-[10px] text-muted-foreground leading-relaxed">
+          <p className="text-[14px] text-muted-foreground leading-relaxed">
             This observation describes objective physical-world change. No legal conclusion is asserted.
             Evidence is fused from multiple independent raster products with propagated uncertainty.
           </p>
@@ -461,10 +461,10 @@ export function ObservationDetail({ id }: { id: string }) {
 function Fact({ icon: Icon, label, value, mono }: { icon: React.ElementType; label: string; value: string; mono?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-card/40 px-2.5 py-1.5">
-      <div className="flex items-center gap-1 text-[9px] uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center gap-1 text-[13px] uppercase tracking-wider text-muted-foreground">
         <Icon className="size-2.5" /> {label}
       </div>
-      <div className={cn("text-[12px] font-medium mt-0.5 truncate", mono && "font-mono")}>{value}</div>
+      <div className={cn("text-[16px] font-medium mt-0.5 truncate", mono && "font-mono")}>{value}</div>
     </div>
   );
 }

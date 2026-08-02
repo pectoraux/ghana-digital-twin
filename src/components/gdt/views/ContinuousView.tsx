@@ -75,10 +75,10 @@ export function ContinuousView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <Radar className="size-4 text-primary" /> Continuous Pipeline
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {status ? `${status.grid.coveragePct.toFixed(0)}% coverage` : "—"}
             </span>
-            <p className="text-[11px] text-muted-foreground hidden lg:block">
+            <p className="text-[15px] text-muted-foreground hidden lg:block">
               Automatic nationwide processing · learns from feedback
             </p>
             <button
@@ -108,10 +108,10 @@ export function ContinuousView() {
               <div className="rounded-lg border border-border bg-card/40 p-3">
                 <div className="flex items-center gap-2 mb-2">
                   <StatusDot color={status.lastRun.status === "success" ? "#34d399" : status.lastRun.status === "partial" ? "#fbbf24" : "#f43f5e"} />
-                  <span className="text-[12px] font-medium capitalize">{status.lastRun.status}</span>
-                  <span className="text-[10px] text-muted-foreground font-mono ml-auto">{timeAgo(status.lastRun.startedAt)}</span>
+                  <span className="text-[16px] font-medium capitalize">{status.lastRun.status}</span>
+                  <span className="text-[14px] text-muted-foreground font-mono ml-auto">{timeAgo(status.lastRun.startedAt)}</span>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[15px]">
                   <div><span className="text-muted-foreground">Tiles: </span><span className="font-mono tnum">{status.lastRun.tilesProcessed}/{status.lastRun.tilesTotal}</span></div>
                   <div><span className="text-muted-foreground">Duration: </span><span className="font-mono tnum">{(status.lastRun.durationMs / 1000).toFixed(1)}s</span></div>
                   <div><span className="text-muted-foreground">Observations: </span><span className="font-mono tnum">{status.lastRun.observationsCreated}</span></div>
@@ -127,7 +127,7 @@ export function ContinuousView() {
               <SectionLabel className="mb-2">Recent Runs</SectionLabel>
               <div className="space-y-1">
                 {status.recentRuns.map((r) => (
-                  <div key={r.id} className="flex items-center gap-3 rounded-md border border-border bg-card/30 px-2.5 py-1.5 text-[11px]">
+                  <div key={r.id} className="flex items-center gap-3 rounded-md border border-border bg-card/30 px-2.5 py-1.5 text-[15px]">
                     <StatusDot color={r.status === "success" ? "#34d399" : r.status === "partial" ? "#fbbf24" : "#f43f5e"} />
                     <span className="font-mono text-muted-foreground">{r.id.slice(0, 8)}</span>
                     <span className="text-muted-foreground">{r.tilesProcessed} tiles</span>
@@ -150,9 +150,9 @@ export function ContinuousView() {
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5">
             <div className="flex items-center gap-2 mb-2">
               <Activity className="size-4 text-primary" />
-              <span className="text-[11px] font-semibold text-primary">CONTINUOUS PROCESSING</span>
+              <span className="text-[15px] font-semibold text-primary">CONTINUOUS PROCESSING</span>
             </div>
-            <p className="text-[12px] text-foreground/80 leading-relaxed">
+            <p className="text-[16px] text-foreground/80 leading-relaxed">
               The pipeline automatically processes new satellite imagery across all {status?.grid.total ?? 945} Ghana grid tiles.
               For each tile: finds newest scene → computes raster products → generates observations → updates hypotheses →
               merges phenomena. Tiles become "stale" after 7 days and are automatically reprocessed. The system runs itself.
@@ -170,7 +170,7 @@ export function ContinuousView() {
             <button
               onClick={handleRunLearning}
               disabled={learning}
-              className="ml-auto flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] text-primary hover:bg-primary/15 disabled:opacity-50"
+              className="ml-auto flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2 py-0.5 text-[14px] text-primary hover:bg-primary/15 disabled:opacity-50"
             >
               {learning ? <Loader2 className="size-3 animate-spin" /> : <Zap className="size-3" />}
               Learn
@@ -190,13 +190,13 @@ export function ContinuousView() {
                 return (
                   <div key={p.id} className="rounded-lg border border-border bg-card/40 p-2.5">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[11px] font-medium truncate flex-1">{p.hypothesisType.replace(/_/g, " ")}</span>
+                      <span className="text-[15px] font-medium truncate flex-1">{p.hypothesisType.replace(/_/g, " ")}</span>
                       {isUp ? <TrendingUp className="size-3 text-emerald-400" /> : delta < 0 ? <TrendingDown className="size-3 text-rose-400" /> : null}
-                      <span className="font-mono text-[10px] tnum" style={{ color: isUp ? "#34d399" : delta < 0 ? "#f43f5e" : "#71717a" }}>
+                      <span className="font-mono text-[14px] tnum" style={{ color: isUp ? "#34d399" : delta < 0 ? "#f43f5e" : "#71717a" }}>
                         {delta >= 0 ? "+" : ""}{delta.toFixed(0)}%
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-[9px] font-mono text-muted-foreground">
+                    <div className="flex items-center gap-2 text-[13px] font-mono text-muted-foreground">
                       <span>{(p.originalPrior * 100).toFixed(0)}% → {(p.learnedPrior * 100).toFixed(0)}%</span>
                       <span>·</span>
                       <span className="text-emerald-400">{p.confirmations}✓</span>
@@ -208,13 +208,13 @@ export function ContinuousView() {
                     <div className="mt-1.5 flex gap-1">
                       <button
                         onClick={() => handleSubmitFeedback(p.hypothesisType, "confirmed")}
-                        className="flex-1 flex items-center justify-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-1.5 py-0.5 text-[9px] text-emerald-400 hover:bg-emerald-500/10"
+                        className="flex-1 flex items-center justify-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-1.5 py-0.5 text-[13px] text-emerald-400 hover:bg-emerald-500/10"
                       >
                         <CheckCircle2 className="size-2.5" /> Confirm
                       </button>
                       <button
                         onClick={() => handleSubmitFeedback(p.hypothesisType, "rejected")}
-                        className="flex-1 flex items-center justify-center gap-1 rounded border border-rose-500/20 bg-rose-500/5 px-1.5 py-0.5 text-[9px] text-rose-400 hover:bg-rose-500/10"
+                        className="flex-1 flex items-center justify-center gap-1 rounded border border-rose-500/20 bg-rose-500/5 px-1.5 py-0.5 text-[13px] text-rose-400 hover:bg-rose-500/10"
                       >
                         <XCircle className="size-2.5" /> Reject
                       </button>
@@ -223,7 +223,7 @@ export function ContinuousView() {
                 );
               })}
               {priors.filter(p => p.confirmations + p.rejections > 0).length === 0 && (
-                <div className="rounded-lg border border-dashed border-border px-3 py-3 text-center text-[10px] text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border px-3 py-3 text-center text-[14px] text-muted-foreground">
                   No feedback yet. Submit feedback to start learning.
                 </div>
               )}
@@ -235,11 +235,11 @@ export function ContinuousView() {
             <SectionLabel className="mb-2">All Hypothesis Priors</SectionLabel>
             <div className="space-y-0.5">
               {priors.map((p) => (
-                <div key={p.id} className="flex items-center gap-2 rounded px-2 py-1 text-[10px] hover:bg-accent">
+                <div key={p.id} className="flex items-center gap-2 rounded px-2 py-1 text-[14px] hover:bg-accent">
                   <span className="text-muted-foreground truncate flex-1">{p.hypothesisType.replace(/_/g, " ")}</span>
                   <span className="font-mono tnum text-muted-foreground">{(p.learnedPrior * 100).toFixed(0)}%</span>
                   {p.confirmations + p.rejections > 0 && (
-                    <span className="font-mono text-[9px]" style={{ color: p.accuracy > 0.5 ? "#34d399" : "#fbbf24" }}>
+                    <span className="font-mono text-[13px]" style={{ color: p.accuracy > 0.5 ? "#34d399" : "#fbbf24" }}>
                       {(p.accuracy * 100).toFixed(0)}%
                     </span>
                   )}
@@ -257,10 +257,10 @@ export function ContinuousView() {
                   <div key={f.id} className="rounded-md border border-border bg-card/30 px-2.5 py-1.5">
                     <div className="flex items-center gap-2">
                       {f.outcome === "confirmed" ? <CheckCircle2 className="size-3 text-emerald-400" /> : <XCircle className="size-3 text-rose-400" />}
-                      <span className="text-[10px] font-medium">{f.hypothesisType?.replace(/_/g, " ") ?? "—"}</span>
-                      <span className="ml-auto text-[9px] text-muted-foreground font-mono">{timeAgo(f.createdAt)}</span>
+                      <span className="text-[14px] font-medium">{f.hypothesisType?.replace(/_/g, " ") ?? "—"}</span>
+                      <span className="ml-auto text-[13px] text-muted-foreground font-mono">{timeAgo(f.createdAt)}</span>
                     </div>
-                    <div className="text-[9px] text-muted-foreground mt-0.5">{f.feedbackType} · {f.providerRole ?? "—"}</div>
+                    <div className="text-[13px] text-muted-foreground mt-0.5">{f.feedbackType} · {f.providerRole ?? "—"}</div>
                   </div>
                 ))}
               </div>
@@ -271,9 +271,9 @@ export function ContinuousView() {
           <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
             <div className="flex items-center gap-1.5 mb-1">
               <Brain className="size-3 text-amber-400" />
-              <span className="text-[10px] font-semibold text-amber-400">CONTINUOUS LEARNING</span>
+              <span className="text-[14px] font-semibold text-amber-400">CONTINUOUS LEARNING</span>
             </div>
-            <p className="text-[10px] text-muted-foreground leading-relaxed">
+            <p className="text-[14px] text-muted-foreground leading-relaxed">
               Every confirmed or rejected hypothesis updates Bayesian priors. The system learns which evidence patterns
               are most predictive and adjusts future reasoning. Priors converge toward observed frequencies, weighted
               by provider credibility and sample size.

@@ -103,10 +103,10 @@ export function IntelligenceView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <Brain className="size-4 text-primary" /> Intelligence Engine
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {hypotheses.length} hypotheses · {Object.keys(byObservation).length} observations
             </span>
-            <p className="text-[11px] text-muted-foreground hidden lg:block">
+            <p className="text-[15px] text-muted-foreground hidden lg:block">
               Ranked competing hypotheses · Bayesian reasoning · No legal conclusions
             </p>
           </div>
@@ -151,16 +151,16 @@ export function IntelligenceView() {
                       <div className="w-1 shrink-0 rounded-full" style={{ background: typeColor }} />
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="font-mono text-[10px] text-muted-foreground">#{h.rank}</span>
+                          <span className="font-mono text-[14px] text-muted-foreground">#{h.rank}</span>
                           {h.isPrimary && (
-                            <span className="rounded bg-primary/15 px-1 py-0.5 text-[9px] font-semibold text-primary">PRIMARY</span>
+                            <span className="rounded bg-primary/15 px-1 py-0.5 text-[13px] font-semibold text-primary">PRIMARY</span>
                           )}
-                          <span className="text-[12px] font-medium truncate flex-1">{h.label}</span>
-                          <span className="font-mono text-[12px] font-semibold tnum" style={{ color: typeColor }}>
+                          <span className="text-[16px] font-medium truncate flex-1">{h.label}</span>
+                          <span className="font-mono text-[16px] font-semibold tnum" style={{ color: typeColor }}>
                             {(h.confidence * 100).toFixed(0)}%
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                        <div className="flex items-center gap-3 text-[14px] text-muted-foreground">
                           <span className="flex items-center gap-1"><CheckCircle2 className="size-2.5 text-emerald-400" /> {h.supportingCount} support</span>
                           <span className="flex items-center gap-1"><XCircle className="size-2.5 text-rose-400" /> {h.contradictingCount} contradict</span>
                           <span className="flex items-center gap-1"><HelpCircle className="size-2.5 text-amber-400" /> {h.missingCount} missing</span>
@@ -198,13 +198,13 @@ export function IntelligenceView() {
               {/* hypothesis header */}
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ color: TYPE_COLORS[detail.type], background: `${TYPE_COLORS[detail.type]}1a` }}>
+                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-semibold" style={{ color: TYPE_COLORS[detail.type], background: `${TYPE_COLORS[detail.type]}1a` }}>
                     {detail.type.replace(/_/g, " ")}
                   </span>
-                  {detail.isPrimary && <span className="rounded bg-primary/15 px-1 py-0.5 text-[9px] font-semibold text-primary">PRIMARY</span>}
-                  <span className="font-mono text-[10px] text-muted-foreground">rank #{detail.rank}</span>
+                  {detail.isPrimary && <span className="rounded bg-primary/15 px-1 py-0.5 text-[13px] font-semibold text-primary">PRIMARY</span>}
+                  <span className="font-mono text-[14px] text-muted-foreground">rank #{detail.rank}</span>
                 </div>
-                <h4 className="text-[14px] font-semibold leading-snug">{detail.label}</h4>
+                <h4 className="text-[18px] font-semibold leading-snug">{detail.label}</h4>
               </div>
 
               {/* Bayesian confidence */}
@@ -216,7 +216,7 @@ export function IntelligenceView() {
                   </span>
                 </div>
                 <ConfidenceBar value={detail.confidence} showLabel={false} />
-                <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground pt-1 border-t border-border">
+                <div className="flex items-center justify-between text-[14px] font-mono text-muted-foreground pt-1 border-t border-border">
                   <span>prior: {(detail.prior * 100).toFixed(0)}%</span>
                   <span>→</span>
                   <span>posterior: {(detail.posterior * 100).toFixed(0)}%</span>
@@ -235,15 +235,15 @@ export function IntelligenceView() {
                       <div key={i} className={cn("rounded-md border px-2.5 py-1.5", isSupport ? "border-emerald-500/20 bg-emerald-500/5" : "border-rose-500/20 bg-rose-500/5")}>
                         <div className="flex items-center gap-2">
                           {isSupport ? <CheckCircle2 className="size-3 text-emerald-400" /> : <XCircle className="size-3 text-rose-400" />}
-                          <span className={cn("text-[10px] font-semibold uppercase", isSupport ? "text-emerald-400" : "text-rose-400")}>{e.relationship}</span>
-                          <span className="ml-auto font-mono text-[9px] text-muted-foreground">LR={e.likelihoodRatio.toFixed(2)}</span>
+                          <span className={cn("text-[14px] font-semibold uppercase", isSupport ? "text-emerald-400" : "text-rose-400")}>{e.relationship}</span>
+                          <span className="ml-auto font-mono text-[13px] text-muted-foreground">LR={e.likelihoodRatio.toFixed(2)}</span>
                         </div>
-                        <div className="text-[10px] text-muted-foreground mt-0.5">{e.description}</div>
+                        <div className="text-[14px] text-muted-foreground mt-0.5">{e.description}</div>
                       </div>
                     );
                   })}
                   {detail.evidence?.length === 0 && (
-                    <div className="text-[10px] text-muted-foreground italic px-1">No evidence applied</div>
+                    <div className="text-[14px] text-muted-foreground italic px-1">No evidence applied</div>
                   )}
                 </div>
               </div>
@@ -256,7 +256,7 @@ export function IntelligenceView() {
                   </SectionLabel>
                   <div className="space-y-1">
                     {Array.from({ length: detail.missingCount }).map((_, i) => (
-                      <div key={i} className="rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 text-[10px] text-amber-400/80">
+                      <div key={i} className="rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-1 text-[14px] text-amber-400/80">
                         Verification data not yet available
                       </div>
                     ))}
@@ -270,15 +270,15 @@ export function IntelligenceView() {
                   <GitBranch className="size-3" /> Decision Trace
                 </SectionLabel>
                 {traceLoading ? (
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[15px] text-muted-foreground">
                     <Loader2 className="size-3 animate-spin text-primary" /> Tracing reasoning chain…
                   </div>
                 ) : decisionTrace ? (
-                  <div className="rounded-lg border border-border bg-background/60 p-2 text-[10px] font-mono">
+                  <div className="rounded-lg border border-border bg-background/60 p-2 text-[14px] font-mono">
                     <TraceNode node={decisionTrace} depth={0} />
                   </div>
                 ) : (
-                  <div className="text-[10px] text-muted-foreground italic">Trace unavailable</div>
+                  <div className="text-[14px] text-muted-foreground italic">Trace unavailable</div>
                 )}
               </div>
 
@@ -286,7 +286,7 @@ export function IntelligenceView() {
               <div>
                 <SectionLabel className="mb-2">Reasoning</SectionLabel>
                 <div className="rounded-lg border border-border bg-card/40 p-3">
-                  <pre className="text-[10px] text-foreground/80 leading-relaxed whitespace-pre-wrap font-sans">{detail.reasoning}</pre>
+                  <pre className="text-[14px] text-foreground/80 leading-relaxed whitespace-pre-wrap font-sans">{detail.reasoning}</pre>
                 </div>
               </div>
 
@@ -294,9 +294,9 @@ export function IntelligenceView() {
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Target className="size-3 text-primary" />
-                  <span className="text-[10px] font-semibold text-primary">Recommended Verification</span>
+                  <span className="text-[14px] font-semibold text-primary">Recommended Verification</span>
                 </div>
-                <p className="text-[11px] text-foreground/80 leading-relaxed">{detail.recommendedVerification}</p>
+                <p className="text-[15px] text-foreground/80 leading-relaxed">{detail.recommendedVerification}</p>
               </div>
 
               {/* scenarios */}
@@ -314,8 +314,8 @@ export function IntelligenceView() {
                 </button>
                 {scenarios.map((s) => (
                   <div key={s.id} className="rounded-lg border border-border bg-card/40 p-3 space-y-1.5">
-                    <div className="text-[12px] font-medium">{s.label}</div>
-                    <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                    <div className="text-[16px] font-medium">{s.label}</div>
+                    <div className="grid grid-cols-2 gap-1.5 text-[14px]">
                       <div className="rounded border border-border bg-background/40 px-2 py-1">
                         <div className="text-muted-foreground">Predicted area</div>
                         <div className="font-mono tnum font-semibold">{s.predictedAreaHa.toFixed(0)} ha</div>
@@ -336,11 +336,11 @@ export function IntelligenceView() {
                       </div>
                     </div>
                     {s.expectedSedimentIncrease != null && s.expectedSedimentIncrease > 0 && (
-                      <div className="text-[10px] text-amber-400/80 flex items-center gap-1">
+                      <div className="text-[14px] text-amber-400/80 flex items-center gap-1">
                         <TrendingUp className="size-2.5" /> Expected sediment increase: ~{s.expectedSedimentIncrease.toFixed(0)}%
                       </div>
                     )}
-                    <div className="text-[10px] text-muted-foreground pt-1 border-t border-border">
+                    <div className="text-[14px] text-muted-foreground pt-1 border-t border-border">
                       conf {(s.confidence * 100).toFixed(0)}% · {s.forecastDays}d forecast
                     </div>
                   </div>
@@ -349,7 +349,7 @@ export function IntelligenceView() {
 
               {/* objectivity note */}
               <div className="rounded-lg border border-border bg-foreground/[0.02] p-3">
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                <p className="text-[14px] text-muted-foreground leading-relaxed">
                   This is a ranked hypothesis produced by deterministic rules + Bayesian reasoning. No legal conclusion is asserted. Competing hypotheses are preserved — uncertainty is not prematurely collapsed into a single answer.
                 </p>
               </div>

@@ -346,14 +346,14 @@ export function GraphView() {
           <div className="flex items-center gap-2 rounded-lg border border-border bg-card/85 backdrop-blur px-3 py-1.5">
             <Share2 className="size-4 text-primary" />
             <span className="text-xs font-semibold">Knowledge Graph</span>
-            <span className="text-[10px] text-muted-foreground font-mono tnum">
+            <span className="text-[14px] text-muted-foreground font-mono tnum">
               {layout
                 ? `${nodes.length} / ${layout.totalCount} nodes · ${edges.length} / ${layout.totalEdges} edges`
                 : "…"}
             </span>
           </div>
           {layout && layout.totalCount > MAX_NODES && (
-            <span className="rounded-md border border-border bg-card/85 backdrop-blur px-2 py-1 text-[10px] text-muted-foreground">
+            <span className="rounded-md border border-border bg-card/85 backdrop-blur px-2 py-1 text-[14px] text-muted-foreground">
               showing top <span className="font-mono tnum text-foreground">{MAX_NODES}</span> by degree
             </span>
           )}
@@ -362,7 +362,7 @@ export function GraphView() {
         {/* legend */}
         <div className="absolute right-3 top-3 w-[180px] rounded-lg border border-border bg-card/85 backdrop-blur p-2.5">
           <SectionLabel className="mb-2">Node Kinds</SectionLabel>
-          <div className="space-y-1 text-[10px]">
+          <div className="space-y-1 text-[14px]">
             {legendKinds.map((k) => (
               <div key={k.kind} className="flex items-center gap-2">
                 <span
@@ -405,7 +405,7 @@ export function GraphView() {
           <h3 className="flex items-center gap-2 text-xs font-semibold">
             <Eye className="size-3.5 text-primary" /> Relationships
           </h3>
-          <p className="mt-1 text-[10px] text-muted-foreground">
+          <p className="mt-1 text-[14px] text-muted-foreground">
             Hover or select a node to inspect its connections
           </p>
         </div>
@@ -429,15 +429,15 @@ export function GraphView() {
                       key={rel}
                       className="flex items-center justify-between rounded-md border border-border bg-background/40 px-2.5 py-1.5"
                     >
-                      <span className="font-mono text-[10px] text-foreground/80">{rel}</span>
-                      <span className="font-mono text-[10px] tnum text-muted-foreground">{count}</span>
+                      <span className="font-mono text-[14px] text-foreground/80">{rel}</span>
+                      <span className="font-mono text-[14px] tnum text-muted-foreground">{count}</span>
                     </div>
                   ))}
                 {edges.length === 0 && (
-                  <div className="text-[10px] text-muted-foreground italic">No relationships in current view.</div>
+                  <div className="text-[14px] text-muted-foreground italic">No relationships in current view.</div>
                 )}
               </div>
-              <div className="rounded-lg border border-border bg-background/40 p-3 text-[11px] text-muted-foreground leading-relaxed">
+              <div className="rounded-lg border border-border bg-background/40 p-3 text-[15px] text-muted-foreground leading-relaxed">
                 The knowledge graph connects every Entity through typed spatial, hydrological, and source-inferred
                 relationships. It supports cross-graph reasoning for downstream intelligence systems.
               </div>
@@ -468,10 +468,10 @@ function NodeInspector({
       <div className="rounded-lg border border-border bg-background/40 p-3">
         <div className="flex items-center gap-2 mb-1">
           <span className="size-2.5 rounded-full" style={{ background: col }} />
-          <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{kindLabel}</span>
+          <span className="text-[14px] uppercase tracking-wider text-muted-foreground">{kindLabel}</span>
         </div>
-        <div className="text-[13px] font-semibold leading-snug">{node.label}</div>
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground font-mono">
+        <div className="text-[17px] font-semibold leading-snug">{node.label}</div>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[14px] text-muted-foreground font-mono">
           <span>deg: <span className="tnum text-foreground/80">{node.degree}</span></span>
           {node.regionId && <span>region: <span className="text-foreground/80">{node.regionId}</span></span>}
           <span className="truncate">
@@ -495,8 +495,8 @@ function NodeInspector({
               >
                 <span className="size-2 rounded-full shrink-0" style={{ background: cColor }} />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] truncate">{n.label}</div>
-                  <div className="text-[9px] font-mono text-muted-foreground">
+                  <div className="text-[15px] truncate">{n.label}</div>
+                  <div className="text-[13px] font-mono text-muted-foreground">
                     {c.dir === "out" ? "→" : "←"} {c.relation}
                     {c.inferredBy && c.inferredBy !== "spatial" && (
                       <span className="ml-1 opacity-70">· {c.inferredBy}</span>
@@ -507,7 +507,7 @@ function NodeInspector({
             );
           })}
           {connections.length === 0 && (
-            <div className="text-[10px] text-muted-foreground italic">No direct relationships in current view.</div>
+            <div className="text-[14px] text-muted-foreground italic">No direct relationships in current view.</div>
           )}
         </div>
       </div>

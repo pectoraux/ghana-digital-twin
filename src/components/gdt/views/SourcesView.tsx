@@ -173,7 +173,7 @@ export function SourcesView() {
                 </button>
                 <Badge variant="outline" className="gap-1.5">
                   <span className="size-1.5 rounded-full bg-emerald-400 gdt-blink" />
-                  <span className="font-mono tnum text-[10px]">LIVE</span>
+                  <span className="font-mono tnum text-[14px]">LIVE</span>
                 </Badge>
               </div>
             </div>
@@ -210,7 +210,7 @@ export function SourcesView() {
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <SectionLabel>Connectors</SectionLabel>
-              <span className="text-[10px] text-muted-foreground font-mono tnum">
+              <span className="text-[14px] text-muted-foreground font-mono tnum">
                 {sources.length} active
               </span>
             </div>
@@ -262,7 +262,7 @@ export function SourcesView() {
             ) : (
               <div className="flex items-end justify-between gap-2 h-24 mt-2">
                 {statusCounts.length === 0 && (
-                  <div className="flex-1 text-center text-[10px] text-muted-foreground italic self-center">
+                  <div className="flex-1 text-center text-[14px] text-muted-foreground italic self-center">
                     No sources
                   </div>
                 )}
@@ -271,7 +271,7 @@ export function SourcesView() {
                   const h = totalSources ? Math.max(6, (count / totalSources) * 100) : 0;
                   return (
                     <div key={status} className="flex-1 flex flex-col items-center gap-1.5">
-                      <div className="text-[10px] font-mono tnum" style={{ color }}>
+                      <div className="text-[14px] font-mono tnum" style={{ color }}>
                         {count}
                       </div>
                       <div className="w-full flex items-end h-14">
@@ -284,7 +284,7 @@ export function SourcesView() {
                           }}
                         />
                       </div>
-                      <div className="text-[9px] uppercase tracking-wider text-muted-foreground">
+                      <div className="text-[13px] uppercase tracking-wider text-muted-foreground">
                         {statusLabel(status)}
                       </div>
                     </div>
@@ -294,8 +294,8 @@ export function SourcesView() {
             )}
             <div className="mt-3 pt-3 border-t border-border flex items-center justify-between">
               <div className="flex flex-col">
-                <span className="text-[10px] text-muted-foreground">Ingest throughput</span>
-                <span className="text-[11px] font-mono tnum text-foreground">
+                <span className="text-[14px] text-muted-foreground">Ingest throughput</span>
+                <span className="text-[15px] font-mono tnum text-foreground">
                   {recentEvents.length} ev / 24h
                 </span>
               </div>
@@ -315,7 +315,7 @@ export function SourcesView() {
             right={
               <button
                 onClick={refreshHealth}
-                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors font-mono tnum"
+                className="text-[14px] text-muted-foreground hover:text-foreground transition-colors font-mono tnum"
                 title="Refresh"
               >
                 {recentEvents.length} events
@@ -325,15 +325,15 @@ export function SourcesView() {
             <div className="relative mt-2 pl-4 max-h-72 overflow-y-auto gdt-scroll pr-1">
               <div className="absolute left-[5px] top-1 bottom-1 w-px bg-border" />
               {healthLoading && (
-                <div className="flex items-center gap-2 py-4 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-2 py-4 text-[14px] text-muted-foreground">
                   <Loader2 className="size-3 animate-spin" /> loading…
                 </div>
               )}
               {healthError && !healthLoading && (
-                <div className="text-[10px] text-rose-400 py-2">Failed to load: {healthError}</div>
+                <div className="text-[14px] text-rose-400 py-2">Failed to load: {healthError}</div>
               )}
               {!healthLoading && !healthError && recentEvents.length === 0 && (
-                <div className="text-[10px] text-muted-foreground italic py-2">
+                <div className="text-[14px] text-muted-foreground italic py-2">
                   No recent ingestion events. Run a sync to populate.
                 </div>
               )}
@@ -351,18 +351,18 @@ export function SourcesView() {
                         style={{ background: color }}
                       />
                       <div className="flex items-baseline justify-between gap-2">
-                        <span className="text-[11px] font-medium text-foreground truncate">
+                        <span className="text-[15px] font-medium text-foreground truncate">
                           {sourceName ?? ev.type}
                         </span>
-                        <span className="text-[10px] text-muted-foreground font-mono tnum shrink-0">
+                        <span className="text-[14px] text-muted-foreground font-mono tnum shrink-0">
                           {timeAgo(ev.createdAt)}
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <Icon className="size-3 shrink-0" style={{ color }} />
-                        <span className="text-[10px] text-muted-foreground font-mono">{ev.type}</span>
+                        <span className="text-[14px] text-muted-foreground font-mono">{ev.type}</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground/80 mt-0.5 leading-snug">
+                      <p className="text-[14px] text-muted-foreground/80 mt-0.5 leading-snug">
                         {ev.message}
                       </p>
                     </div>
@@ -408,16 +408,16 @@ export function SourcesView() {
 
             <div className="mt-3 pt-3 border-t border-border">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <span className="text-[14px] uppercase tracking-wider text-muted-foreground">
                   Live feed
                 </span>
-                <span className="text-[10px] text-muted-foreground font-mono tnum">
+                <span className="text-[14px] text-muted-foreground font-mono tnum">
                   {feed.length}
                 </span>
               </div>
               <div className="flex flex-col gap-1.5 max-h-28 overflow-y-auto gdt-scroll pr-1">
                 {feed.length === 0 && (
-                  <span className="text-[10px] text-muted-foreground/60 italic">
+                  <span className="text-[14px] text-muted-foreground/60 italic">
                     No recent events
                   </span>
                 )}
@@ -429,7 +429,7 @@ export function SourcesView() {
                         ? "#fbbf24"
                         : "#34d399";
                   return (
-                    <div key={f.id} className="flex items-start gap-1.5 text-[10px]">
+                    <div key={f.id} className="flex items-start gap-1.5 text-[14px]">
                       <span
                         className="size-1.5 rounded-full mt-1 shrink-0"
                         style={{ background: color }}
@@ -507,8 +507,8 @@ function ConnectorCard({
               <span className="relative inline-flex size-2 rounded-full" style={{ background: color }} />
             </span>
             <div className="min-w-0">
-              <div className="text-[13px] font-medium text-foreground truncate">{src.name}</div>
-              <div className="text-[10px] text-muted-foreground truncate">{src.provider}</div>
+              <div className="text-[17px] font-medium text-foreground truncate">{src.name}</div>
+              <div className="text-[14px] text-muted-foreground truncate">{src.provider}</div>
             </div>
           </div>
           <StatusIcon
@@ -519,15 +519,15 @@ function ConnectorCard({
 
         {/* Badges */}
         <div className="flex items-center gap-1.5 flex-wrap">
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 capitalize">
+          <Badge variant="outline" className="text-[14px] px-1.5 py-0 h-4 capitalize">
             {src.category}
           </Badge>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 font-mono tnum">
+          <Badge variant="outline" className="text-[14px] px-1.5 py-0 h-4 font-mono tnum">
             {src.resolution}
           </Badge>
           <Badge
             variant="outline"
-            className="text-[10px] px-1.5 py-0 h-4 font-mono tnum gap-1"
+            className="text-[14px] px-1.5 py-0 h-4 font-mono tnum gap-1"
             style={{
               color: src.live ? "#34d399" : "#a1a1aa",
               borderColor: src.live ? "#34d39944" : "#a1a1aa44",
@@ -543,7 +543,7 @@ function ConnectorCard({
         </div>
 
         {/* Sync info */}
-        <div className="flex items-center justify-between text-[10px]">
+        <div className="flex items-center justify-between text-[14px]">
           <span className="text-muted-foreground flex items-center gap-1">
             <Clock className="size-2.5" />
             <span className="font-mono tnum">
@@ -556,7 +556,7 @@ function ConnectorCard({
         {/* Freshness progress (live sources only) */}
         {src.live ? (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-[10px]">
+            <div className="flex items-center justify-between text-[14px]">
               <span className="text-muted-foreground">Freshness</span>
               <span className="font-mono tnum" style={{ color }}>
                 {fill}%
@@ -573,7 +573,7 @@ function ConnectorCard({
             />
           </div>
         ) : (
-          <div className="rounded-md border border-dashed border-border bg-foreground/[0.02] px-2 py-1.5 text-[10px] text-muted-foreground italic leading-snug">
+          <div className="rounded-md border border-dashed border-border bg-foreground/[0.02] px-2 py-1.5 text-[14px] text-muted-foreground italic leading-snug">
             metadata only — bulk ingest required
           </div>
         )}
@@ -581,21 +581,21 @@ function ConnectorCard({
         {/* Stats row */}
         <div className="flex items-center justify-between pt-1 border-t border-border/60">
           <div className="flex flex-col">
-            <span className="text-[9px] uppercase tracking-wider text-muted-foreground">Records</span>
-            <span className="text-[11px] font-mono tnum text-foreground">
+            <span className="text-[13px] uppercase tracking-wider text-muted-foreground">Records</span>
+            <span className="text-[15px] font-mono tnum text-foreground">
               {fmtRecords(src.recordCount)}
             </span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-[9px] uppercase tracking-wider text-muted-foreground">Storage</span>
-            <span className="text-[11px] font-mono tnum text-foreground capitalize">
+            <span className="text-[13px] uppercase tracking-wider text-muted-foreground">Storage</span>
+            <span className="text-[15px] font-mono tnum text-foreground capitalize">
               {src.storageType}
             </span>
           </div>
         </div>
 
         {/* Coverage + license */}
-        <div className="text-[10px] text-muted-foreground/80 leading-snug">
+        <div className="text-[14px] text-muted-foreground/80 leading-snug">
           {src.coverage} · {src.license}
         </div>
 
@@ -604,7 +604,7 @@ function ConnectorCard({
           <button
             onClick={handleSync}
             disabled={isSyncing}
-            className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-background/40 px-2.5 h-7 text-[11px] text-foreground/90 hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center justify-center gap-1.5 rounded-md border border-border bg-background/40 px-2.5 h-7 text-[15px] text-foreground/90 hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSyncing ? (
               <>
@@ -638,7 +638,7 @@ function Panel({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           {icon}
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-foreground">
+          <span className="text-[15px] font-semibold uppercase tracking-wider text-foreground">
             {title}
           </span>
         </div>
@@ -666,11 +666,11 @@ function VitalRow({
     <div className="flex items-center justify-between gap-2 rounded-md hover:bg-foreground/5 px-1.5 py-1 transition-colors">
       <div className="flex items-center gap-2 min-w-0">
         {icon}
-        <span className="text-[11px] text-muted-foreground truncate">{label}</span>
+        <span className="text-[15px] text-muted-foreground truncate">{label}</span>
       </div>
       <div className="flex items-center gap-2">
         {spark && sparkColor && <Sparkline data={spark} color={sparkColor} width={50} height={16} />}
-        <span className="text-[11px] font-mono tnum text-foreground">{value}</span>
+        <span className="text-[15px] font-mono tnum text-foreground">{value}</span>
       </div>
     </div>
   );

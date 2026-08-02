@@ -771,8 +771,8 @@ function MethodBadge({
       className={cn(
         "inline-flex items-center justify-center font-mono font-bold rounded shrink-0",
         size === "lg"
-          ? "px-2 py-1 text-[11px] min-w-[54px]"
-          : "px-1.5 py-0.5 text-[10px] min-w-[40px]",
+          ? "px-2 py-1 text-[15px] min-w-[54px]"
+          : "px-1.5 py-0.5 text-[14px] min-w-[40px]",
       )}
       style={{
         color,
@@ -817,7 +817,7 @@ function CopyButton({
       aria-label={label ? `Copy ${label}` : "Copy to clipboard"}
     >
       {label && (
-        <span className="text-[11px] font-mono text-muted-foreground">
+        <span className="text-[15px] font-mono text-muted-foreground">
           {label}
         </span>
       )}
@@ -867,7 +867,7 @@ export function ApiView() {
       <aside className="w-full lg:w-[300px] lg:border-r border-border lg:h-full max-h-[38vh] lg:max-h-none overflow-y-auto gdt-scroll p-3 shrink-0">
         <div className="flex items-center justify-between mb-3">
           <SectionLabel>Endpoints</SectionLabel>
-          <span className="text-[10px] font-mono text-muted-foreground tabular-nums">
+          <span className="text-[14px] font-mono text-muted-foreground tabular-nums">
             {ENDPOINTS.length}
           </span>
         </div>
@@ -879,7 +879,7 @@ export function ApiView() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter endpoints…"
-            className="w-full pl-7 pr-2 py-1.5 text-[11px] rounded-md bg-foreground/5 border border-border focus:outline-none focus:ring-1 focus:ring-primary/40 placeholder:text-muted-foreground/60"
+            className="w-full pl-7 pr-2 py-1.5 text-[15px] rounded-md bg-foreground/5 border border-border focus:outline-none focus:ring-1 focus:ring-primary/40 placeholder:text-muted-foreground/60"
             aria-label="Filter endpoints"
           />
         </div>
@@ -891,7 +891,7 @@ export function ApiView() {
             if (items.length === 0) return null;
             return (
               <div key={g}>
-                <div className="px-2 mb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+                <div className="px-2 mb-1 text-[14px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
                   {g}
                 </div>
                 <div className="space-y-0.5">
@@ -909,10 +909,10 @@ export function ApiView() {
                       >
                         <MethodBadge method={item.method} />
                         <span className="flex-1 min-w-0">
-                          <span className="block font-mono text-[11px] truncate text-foreground/90">
+                          <span className="block font-mono text-[15px] truncate text-foreground/90">
                             {item.path}
                           </span>
-                          <span className="block text-[10px] text-muted-foreground truncate">
+                          <span className="block text-[14px] text-muted-foreground truncate">
                             {item.label}
                           </span>
                         </span>
@@ -925,7 +925,7 @@ export function ApiView() {
           })}
 
           {filtered.length === 0 && (
-            <div className="px-2 py-4 text-[11px] text-muted-foreground italic">
+            <div className="px-2 py-4 text-[15px] text-muted-foreground italic">
               No endpoints match &quot;{query}&quot;.
             </div>
           )}
@@ -938,7 +938,7 @@ export function ApiView() {
         <div className="flex items-center justify-between gap-3 mb-5">
           <SectionLabel>API Reference</SectionLabel>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70">
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground/70">
               Base URL
             </span>
             <CopyButton value={BASE_URL} label={BASE_URL} />
@@ -952,7 +952,7 @@ export function ApiView() {
             <div className="font-mono text-sm sm:text-base break-all text-foreground">
               {ep.path}
             </div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">
+            <div className="text-[15px] text-muted-foreground mt-0.5">
               {ep.label}
             </div>
           </div>
@@ -973,7 +973,7 @@ export function ApiView() {
         </div>
 
         {/* description */}
-        <p className="text-[12px] leading-relaxed text-muted-foreground mb-6 max-w-3xl">
+        <p className="text-[16px] leading-relaxed text-muted-foreground mb-6 max-w-3xl">
           {ep.description}
         </p>
 
@@ -981,15 +981,15 @@ export function ApiView() {
         <section className="mb-6">
           <SectionLabel className="mb-2">Parameters</SectionLabel>
           {ep.params.length === 0 ? (
-            <div className="rounded-lg border border-border bg-card/40 px-3 py-2 text-[11px] italic text-muted-foreground">
+            <div className="rounded-lg border border-border bg-card/40 px-3 py-2 text-[15px] italic text-muted-foreground">
               No parameters.
             </div>
           ) : (
             <div className="rounded-lg border border-border overflow-hidden">
               <div className="overflow-x-auto gdt-scroll">
-                <table className="w-full min-w-[560px] text-[11px] border-collapse">
+                <table className="w-full min-w-[560px] text-[15px] border-collapse">
                   <thead>
-                    <tr className="bg-foreground/5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
+                    <tr className="bg-foreground/5 text-[14px] font-semibold uppercase tracking-wider text-muted-foreground text-left">
                       <th className="px-3 py-2 font-semibold">Name</th>
                       <th className="px-3 py-2 font-semibold">Type</th>
                       <th className="px-3 py-2 font-semibold">Required</th>
@@ -1014,13 +1014,13 @@ export function ApiView() {
                         <td className="px-3 py-2 align-top">
                           {p.required ? (
                             <span
-                              className="text-[10px] font-semibold"
+                              className="text-[14px] font-semibold"
                               style={{ color: METHOD_COLORS.POST }}
                             >
                               required
                             </span>
                           ) : (
-                            <span className="text-[10px] text-muted-foreground/60">
+                            <span className="text-[14px] text-muted-foreground/60">
                               optional
                             </span>
                           )}
@@ -1040,7 +1040,7 @@ export function ApiView() {
         {/* example request */}
         <section className="mb-6">
           <SectionLabel className="mb-2">Example Request</SectionLabel>
-          <pre className="rounded-lg border border-border bg-background/60 p-3 text-[11px] font-mono overflow-x-auto gdt-scroll leading-relaxed">
+          <pre className="rounded-lg border border-border bg-background/60 p-3 text-[15px] font-mono overflow-x-auto gdt-scroll leading-relaxed">
             {curl}
           </pre>
         </section>
@@ -1048,7 +1048,7 @@ export function ApiView() {
         {/* example response */}
         <section className="mb-6">
           <SectionLabel className="mb-2">Example Response</SectionLabel>
-          <pre className="rounded-lg border border-border bg-background/60 p-3 text-[11px] font-mono overflow-x-auto gdt-scroll leading-relaxed">
+          <pre className="rounded-lg border border-border bg-background/60 p-3 text-[15px] font-mono overflow-x-auto gdt-scroll leading-relaxed">
             {responseJson}
           </pre>
         </section>
@@ -1060,7 +1060,7 @@ export function ApiView() {
             {ep.responseSchema.map((f) => (
               <div
                 key={f.field}
-                className="grid grid-cols-[minmax(140px,1.3fr)_1.7fr] gap-2 px-3 py-1.5 text-[11px] font-mono"
+                className="grid grid-cols-[minmax(140px,1.3fr)_1.7fr] gap-2 px-3 py-1.5 text-[15px] font-mono"
               >
                 <div className="text-foreground/90 truncate">{f.field}</div>
                 <div className="text-muted-foreground truncate">{f.type}</div>
@@ -1070,7 +1070,7 @@ export function ApiView() {
         </section>
 
         {/* footer note */}
-        <div className="mt-8 pt-4 border-t border-border/50 text-[10px] text-muted-foreground/60 max-w-3xl leading-relaxed">
+        <div className="mt-8 pt-4 border-t border-border/50 text-[14px] text-muted-foreground/60 max-w-3xl leading-relaxed">
           The Ghana Digital Twin API exposes observed geospatial primitives
           only. Responses describe physical-world state and change; they do
           not constitute legal findings, attribution, or enforcement

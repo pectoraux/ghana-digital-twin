@@ -98,10 +98,10 @@ export function CivicTrustView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Network className="size-4 text-primary" /> Civic Trust Graph
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: civic-trust-graph
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Trust propagates from verified reality through the graph · Sybil resistance · Identity vouching
           </p>
           <PackageBadge />
@@ -139,7 +139,7 @@ function PackageBadge() {
   useEffect(() => { api("/api/civic-trust").then((d) => setPackages(d.packages)).catch(() => {}); }, []);
   if (packages.length === 0) return null;
   return (
-    <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="ml-auto hidden md:flex items-center gap-2 text-[14px] text-muted-foreground">
       <ShieldCheck className="size-3 text-emerald-400" />
       <span className="font-mono">v{packages[0].version}</span>
       <span>·</span>
@@ -194,7 +194,7 @@ function OverviewTab() {
             {o.graph.nodeTypes.map((nt: any) => {
               const meta = NODE_TYPE_META[nt.nodeType] ?? { color: "#a1a1aa", icon: "•" };
               return (
-                <div key={nt.nodeType} className="flex items-center gap-2 text-[11px]">
+                <div key={nt.nodeType} className="flex items-center gap-2 text-[15px]">
                   <span className="size-2 rounded-full" style={{ background: meta.color }} />
                   <span className="flex-1 capitalize">{nt.nodeType}</span>
                   <span className="font-mono font-semibold">{nt._count}</span>
@@ -212,7 +212,7 @@ function OverviewTab() {
               return (
                 <div key={tier} className="rounded-md border border-border bg-card/30 py-2">
                   <div className="text-[18px] font-bold font-mono" style={{ color: meta.color }}>{count}</div>
-                  <div className="text-[9px] text-muted-foreground">{meta.label}</div>
+                  <div className="text-[13px] text-muted-foreground">{meta.label}</div>
                 </div>
               );
             })}
@@ -227,15 +227,15 @@ function OverviewTab() {
           {o.topCitizens.map((c: any, i: number) => {
             const tier = TRUST_TIER_META[c.trustTier] ?? TRUST_TIER_META.unproven;
             return (
-              <div key={c.citizenId} className="flex items-center gap-2 text-[11px] py-1">
-                <span className="font-mono text-[14px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
+              <div key={c.citizenId} className="flex items-center gap-2 text-[15px] py-1">
+                <span className="font-mono text-[18px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
                 <span className="flex-1 font-medium">{c.handle ?? c.citizenId}</span>
-                <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
-                <span className="font-mono text-[14px] font-bold" style={{ color: tier.color }}>{c.trust.toFixed(1)}</span>
+                <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
+                <span className="font-mono text-[18px] font-bold" style={{ color: tier.color }}>{c.trust.toFixed(1)}</span>
               </div>
             );
           })}
-          {o.topCitizens.length === 0 && <div className="text-[11px] text-muted-foreground">No trust scores yet — run propagation</div>}
+          {o.topCitizens.length === 0 && <div className="text-[15px] text-muted-foreground">No trust scores yet — run propagation</div>}
         </div>
       </div>
 
@@ -243,21 +243,21 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Network className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">CIVIC TRUST GRAPH vs CIVIC SCORE</span>
+          <span className="text-[15px] font-semibold text-primary">CIVIC TRUST GRAPH vs CIVIC SCORE</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">CivicScore (8.5)</div>
-            <div className="text-[11px] font-medium">"Is this person usually right?"</div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">Prediction accuracy — historical confirmed/false reports</div>
+            <div className="text-[14px] uppercase tracking-wider text-muted-foreground mb-1">CivicScore (8.5)</div>
+            <div className="text-[15px] font-medium">"Is this person usually right?"</div>
+            <div className="text-[14px] text-muted-foreground mt-0.5">Prediction accuracy — historical confirmed/false reports</div>
           </div>
           <div className="rounded border border-primary/30 bg-primary/5 p-2.5">
-            <div className="text-[10px] uppercase tracking-wider text-primary mb-1">TrustScore (8.6)</div>
-            <div className="text-[11px] font-medium">"How connected is this person to verified reality?"</div>
-            <div className="text-[10px] text-muted-foreground mt-0.5">Graph centrality — trust propagated from confirmed outcomes through witnesses to reporters</div>
+            <div className="text-[14px] uppercase tracking-wider text-primary mb-1">TrustScore (8.6)</div>
+            <div className="text-[15px] font-medium">"How connected is this person to verified reality?"</div>
+            <div className="text-[14px] text-muted-foreground mt-0.5">Graph centrality — trust propagated from confirmed outcomes through witnesses to reporters</div>
           </div>
         </div>
-        <p className="text-[11px] text-foreground/80 leading-relaxed">
+        <p className="text-[15px] text-foreground/80 leading-relaxed">
           Trust flows backward from verified reality: a confirmed outcome seeds trust (1.0), which propagates to the event, then to the witnesses who confirmed it, then to the reporter.
           A citizen connected to many verified outcomes accumulates trust. A citizen connected to false positives loses it. Vouching and identity verification add independent trust signals.
           Sybil resistance (behavior analysis + flags) protects against gaming now that rewards exist.
@@ -313,10 +313,10 @@ function GraphTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <GitBranch className="size-4 text-violet-400" />
         <span className="text-xs font-semibold">Trust Graph</span>
-        <span className="text-[11px] text-muted-foreground">— {graph.nodes.length} nodes · {graph.edges.length} edges · trust flows from verified reality inward</span>
+        <span className="text-[15px] text-muted-foreground">— {graph.nodes.length} nodes · {graph.edges.length} edges · trust flows from verified reality inward</span>
         <div className="ml-auto flex items-center gap-2 flex-wrap">
           {Object.entries(NODE_TYPE_META).filter(([t]) => nodesByType[t]).map(([type, meta]) => (
-            <span key={type} className="flex items-center gap-1 text-[9px] text-muted-foreground">
+            <span key={type} className="flex items-center gap-1 text-[13px] text-muted-foreground">
               <span className="size-2 rounded-full" style={{ background: meta.color }} />
               <span className="capitalize">{type}</span>
             </span>
@@ -364,13 +364,13 @@ function GraphTab() {
           {graph.nodes.slice(0, 15).map((n) => {
             const meta = NODE_TYPE_META[n.type] ?? { color: "#a1a1aa", icon: "•" };
             return (
-              <div key={n.id} className="rounded border border-border bg-card/30 px-2 py-1.5 text-[10px]">
+              <div key={n.id} className="rounded border border-border bg-card/30 px-2 py-1.5 text-[14px]">
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="size-2 rounded-full" style={{ background: meta.color }} />
                   <span className="font-medium truncate flex-1">{n.label}</span>
                   <span className="font-mono text-muted-foreground">{n.type}</span>
                 </div>
-                <div className="flex items-center gap-3 text-[9px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
                   <span>trust <span className="font-mono font-semibold" style={{ color: meta.color }}>{n.trust.toFixed(2)}</span></span>
                   <span>in {n.inDegree} · out {n.outDegree}</span>
                 </div>
@@ -400,8 +400,8 @@ function ScoresTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <TrendingUp className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">Trust Scores vs Civic Scores</span>
-        <span className="text-[11px] text-muted-foreground">— trust = graph connectivity to verified reality; civic = prediction accuracy</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{scores.length} citizens</span>
+        <span className="text-[15px] text-muted-foreground">— trust = graph connectivity to verified reality; civic = prediction accuracy</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{scores.length} citizens</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -411,19 +411,19 @@ function ScoresTab() {
           return (
             <div key={s.citizenId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-[14px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
+                <span className="font-mono text-[18px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[12px] font-medium truncate">{s.handle ?? s.citizenId}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
+                    <span className="text-[16px] font-medium truncate">{s.handle ?? s.citizenId}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
                     {s.trendDelta !== null && s.trendDelta !== undefined && (
-                      <span className={cn("text-[9px] flex items-center gap-0.5", s.trendDelta >= 0 ? "text-emerald-400" : "text-rose-400")}>
+                      <span className={cn("text-[13px] flex items-center gap-0.5", s.trendDelta >= 0 ? "text-emerald-400" : "text-rose-400")}>
                         <TrendingUp className={cn("size-2.5", s.trendDelta < 0 && "rotate-180")} />
                         {s.trendDelta >= 0 ? "+" : ""}{s.trendDelta.toFixed(1)}
                       </span>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 text-[9px]">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 text-[13px]">
                     <div className="rounded bg-card/30 px-1.5 py-0.5">
                       <span className="text-muted-foreground">Centrality</span>
                       <span className="ml-1 font-mono font-semibold">{(s.graphCentrality * 100).toFixed(0)}%</span>
@@ -445,15 +445,15 @@ function ScoresTab() {
                 {/* Trust vs Civic comparison */}
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="text-center">
-                    <div className="text-[9px] text-muted-foreground">Civic</div>
+                    <div className="text-[13px] text-muted-foreground">Civic</div>
                     <div className="text-[18px] font-bold font-mono text-amber-400">{s.civicScore ?? "—"}</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-[9px] text-muted-foreground">Trust</div>
+                    <div className="text-[13px] text-muted-foreground">Trust</div>
                     <div className="text-[22px] font-bold font-mono" style={{ color: tier.color }}>{s.propagatedTrust.toFixed(1)}</div>
                   </div>
                   {Math.abs(trustDiff) > 5 && (
-                    <div className="text-[9px] text-muted-foreground text-center" title="Trust minus Civic">
+                    <div className="text-[13px] text-muted-foreground text-center" title="Trust minus Civic">
                       <div>Δ</div>
                       <div className={cn("font-mono font-semibold", trustDiff > 0 ? "text-emerald-400" : "text-rose-400")}>
                         {trustDiff > 0 ? "+" : ""}{trustDiff.toFixed(0)}
@@ -497,9 +497,9 @@ function SybilTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <ShieldAlert className="size-4 text-rose-400" />
         <span className="text-xs font-semibold">Sybil Resistance</span>
-        <span className="text-[11px] text-muted-foreground">— anti-gaming now that rewards exist</span>
+        <span className="text-[15px] text-muted-foreground">— anti-gaming now that rewards exist</span>
         <button onClick={handleAnalyze} disabled={analyzing}
-          className="ml-auto flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] text-primary hover:bg-primary/15 disabled:opacity-50">
+          className="ml-auto flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2 py-1 text-[14px] text-primary hover:bg-primary/15 disabled:opacity-50">
           {analyzing ? <Loader2 className="size-3 animate-spin" /> : <RefreshCw className="size-3" />}
           Run Analysis
         </button>
@@ -511,17 +511,17 @@ function SybilTab() {
           return (
             <div key={f.flagId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5" style={{ borderLeftColor: sev.color, borderLeftWidth: 3 }}>
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground">{f.flagId}</span>
-                <span className="rounded px-1 py-0.5 text-[9px] font-semibold uppercase" style={{ color: sev.color, background: `${sev.color}1a` }}>{sev.label}</span>
-                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[9px] font-mono">{f.flagType}</span>
-                <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium",
+                <span className="font-mono text-[14px] font-semibold text-muted-foreground">{f.flagId}</span>
+                <span className="rounded px-1 py-0.5 text-[13px] font-semibold uppercase" style={{ color: sev.color, background: `${sev.color}1a` }}>{sev.label}</span>
+                <span className="rounded bg-foreground/5 px-1 py-0.5 text-[13px] font-mono">{f.flagType}</span>
+                <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium",
                   f.status === "open" ? "bg-amber-500/10 text-amber-300" : f.status === "confirmed" ? "bg-rose-500/10 text-rose-300" : "bg-emerald-500/10 text-emerald-300")}>
                   {f.status}
                 </span>
-                <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(f.detectedAt)}</span>
+                <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(f.detectedAt)}</span>
               </div>
-              <div className="text-[12px] mb-1">{f.description}</div>
-              <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+              <div className="text-[16px] mb-1">{f.description}</div>
+              <div className="flex items-center gap-3 text-[14px] text-muted-foreground">
                 <span>citizen: <span className="font-mono">{f.citizenId}</span></span>
                 {f.autoDetected && <span className="text-cyan-400 flex items-center gap-1"><Zap className="size-2.5" /> auto-detected</span>}
                 <span>trust penalty: <span className="font-mono text-rose-400">-{(f.trustPenalty * 100).toFixed(0)}%</span></span>
@@ -539,7 +539,7 @@ function SybilTab() {
         {/* Detection patterns explainer */}
         <div className="rounded-lg border border-border bg-card/30 p-3 mt-2">
           <SectionLabel className="mb-2 flex items-center gap-1.5"><ShieldAlert className="size-3" /> Detection Patterns</SectionLabel>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-[10px]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 text-[14px]">
             {[
               { type: "burst_reporting", desc: "Many reports in a single hour (≥3 warn, ≥5 critical)" },
               { type: "location_clustering", desc: "All reports from the same GPS location (≥90% clustering)" },
@@ -591,10 +591,10 @@ function IdentityTab() {
                   <span className="size-6 rounded-md flex items-center justify-center" style={{ color: level.color, background: `${level.color}1a` }}>
                     <Fingerprint className="size-3.5" />
                   </span>
-                  <span className="font-mono text-[10px] flex-1 truncate">{idv.citizenId}</span>
-                  <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: level.color, background: `${level.color}1a` }}>{level.label}</span>
+                  <span className="font-mono text-[14px] flex-1 truncate">{idv.citizenId}</span>
+                  <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: level.color, background: `${level.color}1a` }}>{level.label}</span>
                 </div>
-                <div className="flex items-center gap-2 text-[9px] mb-1.5">
+                <div className="flex items-center gap-2 text-[13px] mb-1.5">
                   <span className={cn("flex items-center gap-0.5", idv.phoneVerified ? "text-emerald-400" : "text-muted-foreground/50")}>
                     {idv.phoneVerified ? <CheckCircle2 className="size-2.5" /> : "○"} Phone
                   </span>
@@ -608,7 +608,7 @@ function IdentityTab() {
                     {idv.vouchVerified ? <CheckCircle2 className="size-2.5" /> : "○"} Vouched
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-[9px] text-muted-foreground">
+                <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
                   <span>vouches: <span className="font-mono">{idv.vouchCount}/{idv.vouchThreshold}</span></span>
                   <span>·</span>
                   <span>trust seed bonus: <span className="font-mono text-emerald-400">+{(idv.trustSeedBonus * 100).toFixed(0)}%</span></span>
@@ -626,17 +626,17 @@ function IdentityTab() {
           {vouches.map((v) => (
             <div key={v.id} className="rounded-lg border border-border bg-card/40 px-3 py-2 flex items-center gap-3">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="font-mono text-[10px] truncate">{v.voucherId}</span>
+                <span className="font-mono text-[14px] truncate">{v.voucherId}</span>
                 <Link2 className="size-3 text-violet-400 shrink-0" />
-                <span className="font-mono text-[10px] truncate">{v.vouchedForId}</span>
+                <span className="font-mono text-[14px] truncate">{v.vouchedForId}</span>
               </div>
-              <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[9px] text-violet-300 capitalize">{v.relationship}</span>
-              <span className="text-[9px] text-muted-foreground">stake <span className="font-mono font-semibold text-violet-300">{(v.stake * 100).toFixed(0)}%</span></span>
-              <span className={cn("rounded px-1 py-0.5 text-[9px]", v.status === "active" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300")}>{v.status}</span>
-              {v.note && <span className="text-[10px] text-muted-foreground italic hidden lg:block truncate max-w-[200px]">"{v.note}"</span>}
+              <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[13px] text-violet-300 capitalize">{v.relationship}</span>
+              <span className="text-[13px] text-muted-foreground">stake <span className="font-mono font-semibold text-violet-300">{(v.stake * 100).toFixed(0)}%</span></span>
+              <span className={cn("rounded px-1 py-0.5 text-[13px]", v.status === "active" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300")}>{v.status}</span>
+              {v.note && <span className="text-[14px] text-muted-foreground italic hidden lg:block truncate max-w-[200px]">"{v.note}"</span>}
             </div>
           ))}
-          {vouches.length === 0 && !loading && <div className="text-[11px] text-muted-foreground italic">No vouching relationships yet</div>}
+          {vouches.length === 0 && !loading && <div className="text-[15px] text-muted-foreground italic">No vouching relationships yet</div>}
         </div>
       </div>
 
@@ -644,9 +644,9 @@ function IdentityTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5">
         <div className="flex items-center gap-2 mb-2">
           <Fingerprint className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">WHY IDENTITY + VOUCHING?</span>
+          <span className="text-[15px] font-semibold text-primary">WHY IDENTITY + VOUCHING?</span>
         </div>
-        <p className="text-[11px] text-foreground/80 leading-relaxed">
+        <p className="text-[15px] text-foreground/80 leading-relaxed">
           Now that rewards exist, Sybil attacks (creating fake accounts to farm bounties) become economically motivated.
           Identity verification raises the cost of creating accounts. Vouching creates a <span className="text-primary font-medium">staked web of trust</span>:
           if a vouched-for citizen turns out to be a Sybil, the voucher's trust drops too. This makes reputation expensive to forge.
@@ -684,9 +684,9 @@ function RunsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Activity className="size-4 text-cyan-400" />
         <span className="text-xs font-semibold">Propagation Runs</span>
-        <span className="text-[11px] text-muted-foreground">— audit trail of trust computation</span>
+        <span className="text-[15px] text-muted-foreground">— audit trail of trust computation</span>
         <button onClick={handlePropagate} disabled={propagating}
-          className="ml-auto flex items-center gap-1.5 rounded border border-primary/30 bg-primary/10 px-2.5 py-1 text-[10px] text-primary hover:bg-primary/15 disabled:opacity-50">
+          className="ml-auto flex items-center gap-1.5 rounded border border-primary/30 bg-primary/10 px-2.5 py-1 text-[14px] text-primary hover:bg-primary/15 disabled:opacity-50">
           {propagating ? <Loader2 className="size-3.5 animate-spin" /> : <Zap className="size-3.5" />}
           Run Propagation
         </button>
@@ -696,12 +696,12 @@ function RunsTab() {
         {runs.map((r) => (
           <div key={r.runId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="font-mono text-[10px] font-semibold text-cyan-300">{r.runId}</span>
-              <span className="rounded bg-cyan-500/10 px-1 py-0.5 text-[9px] font-mono text-cyan-300">{r.algorithm}</span>
-              <span className="text-[10px] text-muted-foreground">{r.iterations} iterations · damping {r.dampingFactor}</span>
-              <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(r.startedAt)}</span>
+              <span className="font-mono text-[14px] font-semibold text-cyan-300">{r.runId}</span>
+              <span className="rounded bg-cyan-500/10 px-1 py-0.5 text-[13px] font-mono text-cyan-300">{r.algorithm}</span>
+              <span className="text-[14px] text-muted-foreground">{r.iterations} iterations · damping {r.dampingFactor}</span>
+              <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(r.startedAt)}</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 text-[9px]">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 text-[13px]">
               <div className="rounded bg-card/30 px-1.5 py-1">
                 <div className="text-muted-foreground">Nodes</div>
                 <div className="font-mono font-semibold">{r.nodesProcessed}</div>
@@ -723,7 +723,7 @@ function RunsTab() {
                 <div className="font-mono font-semibold text-amber-400">{r.maxTrustChange.toFixed(3)}</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[9px] text-muted-foreground">
+            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
               <span>convergence: <span className="font-mono">{r.convergenceDelta.toFixed(4)}</span></span>
               <span>citizens updated: <span className="font-mono">{r.citizensUpdated}</span></span>
               {r.durationMs && <span>duration: <span className="font-mono">{(r.durationMs / 1000).toFixed(1)}s</span></span>}

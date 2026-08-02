@@ -88,7 +88,7 @@ export function MultiModalView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <Layers3 className="size-4 text-primary" /> Multi-Modal Evidence Fusion
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {modStats?.total ?? 0} modalities · {featStats?.totalVectors ?? 0} feature vectors
             </span>
             <button
@@ -120,17 +120,17 @@ export function MultiModalView() {
                   <div key={m.modalityId} className={cn("rounded-lg border px-3 py-2", m.status === "active" ? "border-emerald-500/20 bg-emerald-500/5" : "border-border bg-card/40")}>
                     <div className="flex items-center gap-2 mb-0.5">
                       <Icon className="size-3.5" style={{ color }} />
-                      <span className="text-[11px] font-medium truncate flex-1">{m.name}</span>
+                      <span className="text-[15px] font-medium truncate flex-1">{m.name}</span>
                       <StatusDot color={m.status === "active" ? "#34d399" : "#71717a"} pulse={m.status === "active"} />
                     </div>
-                    <div className="text-[9px] text-muted-foreground flex items-center gap-2">
+                    <div className="text-[13px] text-muted-foreground flex items-center gap-2">
                       <span>{m.resolution}</span>
                       <span>·</span>
                       <span>{m.cadence}</span>
                       <span>·</span>
                       <span>{m.featuresProvided.length} features</span>
                     </div>
-                    <div className="text-[9px] text-muted-foreground/70 mt-0.5 line-clamp-1">{m.description}</div>
+                    <div className="text-[13px] text-muted-foreground/70 mt-0.5 line-clamp-1">{m.description}</div>
                   </div>
                 );
               })}
@@ -151,11 +151,11 @@ export function MultiModalView() {
                       className="group flex w-full items-center gap-2 rounded-md border border-border bg-card/30 px-2.5 py-1.5 text-left hover:border-primary/30 hover:bg-card/50"
                     >
                       <span className="size-2 rounded-full" style={{ background: riskColor }} />
-                      <span className="font-mono text-[10px] text-muted-foreground truncate flex-1">{s.tileId}</span>
-                      <span className="text-[9px]" style={{ color: riskColor }}>{s.riskLevel}</span>
-                      <span className="font-mono text-[9px] text-muted-foreground">risk {(s.riskScore * 100).toFixed(0)}%</span>
-                      <span className="text-[9px] text-muted-foreground">{s.observationCount} obs</span>
-                      <span className="text-[9px] text-muted-foreground capitalize">{s.season}</span>
+                      <span className="font-mono text-[14px] text-muted-foreground truncate flex-1">{s.tileId}</span>
+                      <span className="text-[13px]" style={{ color: riskColor }}>{s.riskLevel}</span>
+                      <span className="font-mono text-[13px] text-muted-foreground">risk {(s.riskScore * 100).toFixed(0)}%</span>
+                      <span className="text-[13px] text-muted-foreground">{s.observationCount} obs</span>
+                      <span className="text-[13px] text-muted-foreground capitalize">{s.season}</span>
                     </button>
                   );
                 })}
@@ -174,9 +174,9 @@ export function MultiModalView() {
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5">
             <div className="flex items-center gap-2 mb-2">
               <Layers3 className="size-4 text-primary" />
-              <span className="text-[11px] font-semibold text-primary">UNIFIED EVIDENCE SPACE</span>
+              <span className="text-[15px] font-semibold text-primary">UNIFIED EVIDENCE SPACE</span>
             </div>
-            <p className="text-[12px] text-foreground/80 leading-relaxed">
+            <p className="text-[16px] text-foreground/80 leading-relaxed">
               Instead of reasoning from optical imagery alone, the platform fuses evidence from ALL sensing modalities:
               optical (Sentinel-2), SAR (Sentinel-1), thermal (Landsat), weather (CHIRPS/ERA5), DEM (SRTM), hydrology,
               and human activity (night lights, population). SAR sees through clouds. Rainfall explains river color.
@@ -203,8 +203,8 @@ export function MultiModalView() {
             <div className="space-y-4">
               {/* assessment header */}
               <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                <div className="text-[10px] font-semibold text-primary mb-1">FUSED ASSESSMENT</div>
-                <p className="text-[11px] text-foreground/90 leading-relaxed">{fusion.assessment}</p>
+                <div className="text-[14px] font-semibold text-primary mb-1">FUSED ASSESSMENT</div>
+                <p className="text-[15px] text-foreground/90 leading-relaxed">{fusion.assessment}</p>
               </div>
 
               {/* fusion metrics */}
@@ -226,10 +226,10 @@ export function MultiModalView() {
                       <div key={i} className="rounded-md border border-border bg-card/40 p-2">
                         <div className="flex items-center gap-2 mb-0.5">
                           <Icon className="size-3" style={{ color }} />
-                          <span className="text-[10px] font-medium">{e.feature}</span>
-                          <span className="ml-auto font-mono text-[9px] text-muted-foreground">signal {(e.signal * 100).toFixed(0)}%</span>
+                          <span className="text-[14px] font-medium">{e.feature}</span>
+                          <span className="ml-auto font-mono text-[13px] text-muted-foreground">signal {(e.signal * 100).toFixed(0)}%</span>
                         </div>
-                        <div className="text-[9px] text-muted-foreground">{e.description}</div>
+                        <div className="text-[13px] text-muted-foreground">{e.description}</div>
                         {/* signal bar */}
                         <div className="mt-1 h-0.5 rounded-full bg-foreground/8 overflow-hidden">
                           <div className="h-full rounded-full" style={{ width: `${e.signal * 100}%`, background: color }} />
@@ -251,7 +251,7 @@ export function MultiModalView() {
 
               {/* explanation */}
               <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                <p className="text-[14px] text-muted-foreground leading-relaxed">
                   Multi-modal fusion combines evidence from ALL sensing modalities. Each modality compensates for the
                   others' limitations: SAR sees through clouds, weather explains seasonal patterns, DEM predicts erosion risk.
                   Cross-modal agreement strengthens confidence; disagreement flags uncertainty.

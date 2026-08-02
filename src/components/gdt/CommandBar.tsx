@@ -75,11 +75,11 @@ export function CommandBar() {
         <div className="flex flex-col leading-tight min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-semibold truncate">{meta.title}</h1>
-            <Badge variant="outline" className="h-4 px-1 text-[9px] font-mono text-muted-foreground border-border">
+            <Badge variant="outline" className="h-4 px-1 text-[13px] font-mono text-muted-foreground border-border">
               v4.2.0
             </Badge>
           </div>
-          <span className="text-[11px] text-muted-foreground truncate">{meta.sub}</span>
+          <span className="text-[15px] text-muted-foreground truncate">{meta.sub}</span>
         </div>
       </div>
 
@@ -90,14 +90,14 @@ export function CommandBar() {
       >
         <Search className="size-4" />
         <span className="text-xs">Search entities, observations, regions…</span>
-        <kbd className="ml-auto text-[9px] font-mono border border-border rounded px-1 py-0.5">⌘K</kbd>
+        <kbd className="ml-auto text-[13px] font-mono border border-border rounded px-1 py-0.5">⌘K</kbd>
       </button>
 
       <div className="ml-auto flex items-center gap-2">
         {/* Active observations indicator */}
         <div className="hidden lg:flex items-center gap-2 rounded-lg border border-border bg-background/40 px-2.5 h-9">
           <StatusDot color="#f43f5e" pulse />
-          <span className="text-[11px] text-muted-foreground">Active</span>
+          <span className="text-[15px] text-muted-foreground">Active</span>
           <span className="text-xs font-semibold tnum text-foreground">{activeCount}</span>
         </div>
 
@@ -142,12 +142,12 @@ export function CommandBar() {
 
         {/* User */}
         <div className="flex items-center gap-2 rounded-lg border border-border bg-background/40 pl-1.5 pr-2.5 h-9">
-          <div className="flex size-6 items-center justify-center rounded-md bg-primary/20 text-primary text-[10px] font-semibold">
+          <div className="flex size-6 items-center justify-center rounded-md bg-primary/20 text-primary text-[14px] font-semibold">
             {initials}
           </div>
           <div className="hidden xl:flex flex-col leading-tight">
-            <span className="text-[11px] font-medium">{userName}</span>
-            <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+            <span className="text-[15px] font-medium">{userName}</span>
+            <span className="text-[13px] text-muted-foreground flex items-center gap-1">
               <ShieldCheck className="size-2.5" /> {userRole.replace(/_/g, " ").toLowerCase()}
             </span>
           </div>

@@ -106,10 +106,10 @@ export function MissionsView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <Crosshair className="size-4 text-primary" /> Mission Planning
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {stats?.total ?? 0} missions · {stats?.urgent ?? 0} urgent
             </span>
-            <p className="text-[11px] text-muted-foreground hidden lg:block">
+            <p className="text-[15px] text-muted-foreground hidden lg:block">
               Autonomous evidence acquisition · EVI-optimized
             </p>
             <div className="ml-auto flex gap-2">
@@ -161,25 +161,25 @@ export function MissionsView() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
                     <Icon className="size-3.5" style={{ color }} />
-                    <span className="text-[12px] font-medium truncate flex-1">{m.title}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: priColor, background: `${priColor}1a` }}>
+                    <span className="text-[16px] font-medium truncate flex-1">{m.title}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: priColor, background: `${priColor}1a` }}>
                       {m.priority}
                     </span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-medium text-muted-foreground bg-foreground/5">
+                    <span className="rounded px-1 py-0.5 text-[13px] font-medium text-muted-foreground bg-foreground/5">
                       {m.status}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-1">
+                  <div className="flex items-center gap-3 text-[14px] text-muted-foreground mb-1">
                     <span className="flex items-center gap-1"><TrendingUp className="size-2.5" /> info gain {(m.informationGain * 100).toFixed(0)}%</span>
                     <span className="flex items-center gap-1"><DollarSign className="size-2.5" /> {m.cost === 0 ? "free" : `$${m.cost}`}</span>
                     <span className="flex items-center gap-1 font-mono font-semibold" style={{ color }}>EVI {m.evi > 1 ? m.evi.toFixed(1) : m.evi.toFixed(3)}</span>
                     <span className="flex items-center gap-1"><Clock className="size-2.5" /> {timeAgo(m.createdAt)}</span>
                   </div>
-                  <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2">{m.reasoning}</p>
+                  <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2">{m.reasoning}</p>
                   {m.status === "planned" && (
                     <button
                       onClick={() => handleComplete(m.id)}
-                      className="mt-1.5 flex items-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[10px] text-emerald-400 hover:bg-emerald-500/10"
+                      className="mt-1.5 flex items-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[14px] text-emerald-400 hover:bg-emerald-500/10"
                     >
                       <CheckCircle2 className="size-3" /> Mark Complete
                     </button>
@@ -211,12 +211,12 @@ export function MissionsView() {
                   <div key={t.type} className="rounded-md border border-border bg-card/40 px-2.5 py-1.5">
                     <div className="flex items-center gap-2 mb-0.5">
                       <Icon className="size-3" style={{ color }} />
-                      <span className="text-[11px] font-medium">{t.label}</span>
-                      <span className="ml-auto font-mono text-[9px] font-semibold" style={{ color }}>
+                      <span className="text-[15px] font-medium">{t.label}</span>
+                      <span className="ml-auto font-mono text-[13px] font-semibold" style={{ color }}>
                         EVI {evi > 1 ? evi.toFixed(1) : evi.toFixed(3)}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-[9px] text-muted-foreground">
+                    <div className="flex items-center gap-3 text-[13px] text-muted-foreground">
                       <span>gain {(t.baseInfoGain * 100).toFixed(0)}%</span>
                       <span>{t.baseCost === 0 ? "free" : `$${t.baseCost}`}</span>
                       <span>{t.estimatedTime}</span>
@@ -235,7 +235,7 @@ export function MissionsView() {
                 {schedule.slice(0, 10).map((s) => {
                   const tierColor = s.tier === "high" ? "#f43f5e" : s.tier === "medium" ? "#fbbf24" : "#34d399";
                   return (
-                    <div key={s.tileId} className="flex items-center gap-2 rounded-md border border-border bg-card/30 px-2 py-1 text-[10px]">
+                    <div key={s.tileId} className="flex items-center gap-2 rounded-md border border-border bg-card/30 px-2 py-1 text-[14px]">
                       <span className="size-2 rounded-full" style={{ background: tierColor }} />
                       <span className="font-mono text-muted-foreground truncate flex-1">{s.tileId}</span>
                       <span style={{ color: tierColor }}>{s.tier}</span>
@@ -251,9 +251,9 @@ export function MissionsView() {
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5">
             <div className="flex items-center gap-2 mb-2">
               <Crosshair className="size-4 text-primary" />
-              <span className="text-[11px] font-semibold text-primary">AUTONOMOUS INTELLIGENCE LOOP</span>
+              <span className="text-[15px] font-semibold text-primary">AUTONOMOUS INTELLIGENCE LOOP</span>
             </div>
-            <p className="text-[12px] text-foreground/80 leading-relaxed">
+            <p className="text-[16px] text-foreground/80 leading-relaxed">
               The platform actively decides what evidence it needs next. For each uncertain hypothesis,
               it identifies missing evidence and creates missions ranked by Expected Value of Information
               (EVI = information gain ÷ cost). The loop closes: observe → reason → plan → collect → re-observe.

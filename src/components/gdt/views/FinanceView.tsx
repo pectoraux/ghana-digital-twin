@@ -90,10 +90,10 @@ export function FinanceView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Coins className="size-4 text-primary" /> Intelligence Finance
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: intelligence-finance
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Credits · Licensing · Lineage royalties · Producer scores · Agent economy · Insurance
           </p>
           <PackageBadge />
@@ -132,7 +132,7 @@ function PackageBadge() {
   useEffect(() => { api("/api/finance").then((d) => setPackages(d.packages)).catch(() => {}); }, []);
   if (packages.length === 0) return null;
   return (
-    <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="ml-auto hidden md:flex items-center gap-2 text-[14px] text-muted-foreground">
       <ShieldCheck className="size-3 text-emerald-400" />
       <span className="font-mono">v{packages[0].version}</span>
       <span>·</span>
@@ -177,12 +177,12 @@ function OverviewTab() {
               const tier = TIER_META[p.marketTier] ?? TIER_META.amateur;
               const Icon = PRODUCER_TYPE_ICON[p.producerType] ?? Users;
               return (
-                <div key={p.producerId} className="flex items-center gap-2 text-[11px] py-1">
-                  <span className="font-mono text-[14px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
+                <div key={p.producerId} className="flex items-center gap-2 text-[15px] py-1">
+                  <span className="font-mono text-[18px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
                   <Icon className="size-3" style={{ color: tier.color }} />
                   <span className="flex-1 truncate">{p.producerName}</span>
-                  <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
-                  <span className="font-mono text-[14px] font-bold" style={{ color: tier.color }}>{p.marketScore.toFixed(0)}</span>
+                  <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
+                  <span className="font-mono text-[18px] font-bold" style={{ color: tier.color }}>{p.marketScore.toFixed(0)}</span>
                 </div>
               );
             })}
@@ -191,7 +191,7 @@ function OverviewTab() {
 
         <div className="rounded-lg border border-border bg-card/40 p-4">
           <SectionLabel className="mb-2">Finance Components</SectionLabel>
-          <div className="grid grid-cols-2 gap-2 text-[10px]">
+          <div className="grid grid-cols-2 gap-2 text-[14px]">
             {[
               { label: "Credit Accounts", value: o.counts.accounts, icon: DollarSign, color: "#fbbf24" },
               { label: "Transactions", value: o.counts.transactions, icon: ArrowRight, color: "#22d3ee" },
@@ -218,9 +218,9 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Coins className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">INTELLIGENCE FINANCE PROTOCOL</span>
+          <span className="text-[15px] font-semibold text-primary">INTELLIGENCE FINANCE PROTOCOL</span>
         </div>
-        <p className="text-[11px] text-foreground/80 leading-relaxed">
+        <p className="text-[15px] text-foreground/80 leading-relaxed">
           Intelligence Credits are a <span className="text-primary font-medium">non-speculative accounting unit</span> — not cryptocurrency.
           Consumers deposit credits (budget), producers earn them (rewards/royalties/sales). Every asset has a <span className="text-primary font-medium">license</span> defining
           ownership and usage terms. When intelligence is derived from other intelligence (asset lineage), <span className="text-primary font-medium">royalties</span> flow
@@ -252,7 +252,7 @@ function CreditsTab() {
         <div className="px-4 py-2 border-b border-border flex items-center gap-2">
           <DollarSign className="size-4 text-amber-400" />
           <span className="text-xs font-semibold">Credit Accounts</span>
-          <span className="text-[11px] text-muted-foreground">— Intelligence Credits (IC) balances</span>
+          <span className="text-[15px] text-muted-foreground">— Intelligence Credits (IC) balances</span>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
           {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -265,12 +265,12 @@ function CreditsTab() {
                 {a.ownerType === "organization" ? <ShieldCheck className="size-4" /> : a.ownerType === "agent" ? <Bot className="size-4" /> : <Users className="size-4" />}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-medium truncate">{a.ownerName}</div>
-                <div className="text-[9px] text-muted-foreground">{a.ownerType} · {a.accountId}</div>
+                <div className="text-[16px] font-medium truncate">{a.ownerName}</div>
+                <div className="text-[13px] text-muted-foreground">{a.ownerType} · {a.accountId}</div>
               </div>
               <div className="text-right shrink-0">
-                <div className="text-[16px] font-bold font-mono text-amber-400">{a.balance.toLocaleString()} <span className="text-[9px] text-muted-foreground">IC</span></div>
-                <div className="text-[9px] text-muted-foreground">
+                <div className="text-[16px] font-bold font-mono text-amber-400">{a.balance.toLocaleString()} <span className="text-[13px] text-muted-foreground">IC</span></div>
+                <div className="text-[13px] text-muted-foreground">
                   earned {a.totalEarned.toFixed(0)} · spent {a.totalSpent.toFixed(0)} · deposited {a.totalDeposited.toFixed(0)}
                 </div>
               </div>
@@ -290,17 +290,17 @@ function CreditsTab() {
               <div key={t.transactionId} className="rounded border border-border bg-card/30 px-2 py-1.5">
                 <div className="flex items-center gap-2 mb-0.5">
                   <Icon className="size-3" style={{ color: meta.color }} />
-                  <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{t.type}</span>
-                  <span className="ml-auto font-mono text-[12px] font-bold" style={{ color: meta.color }}>+{t.amount.toFixed(0)} IC</span>
+                  <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{t.type}</span>
+                  <span className="ml-auto font-mono text-[16px] font-bold" style={{ color: meta.color }}>+{t.amount.toFixed(0)} IC</span>
                 </div>
-                <div className="text-[10px] text-foreground/70">{t.description}</div>
-                <div className="text-[9px] text-muted-foreground mt-0.5">
+                <div className="text-[14px] text-foreground/70">{t.description}</div>
+                <div className="text-[13px] text-muted-foreground mt-0.5">
                   {t.fromOwnerName ?? "platform"} → {t.toOwnerName ?? "platform"}
                 </div>
               </div>
             );
           })}
-          {data.transactions.length === 0 && <div className="text-[11px] text-muted-foreground italic">No transactions yet</div>}
+          {data.transactions.length === 0 && <div className="text-[15px] text-muted-foreground italic">No transactions yet</div>}
         </div>
       </div>
     </div>
@@ -324,8 +324,8 @@ function LicensingTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <FileBadge className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">Intelligence Licensing</span>
-        <span className="text-[11px] text-muted-foreground">— ownership + usage terms per asset</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{licenses.length} licenses</span>
+        <span className="text-[15px] text-muted-foreground">— ownership + usage terms per asset</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{licenses.length} licenses</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -334,13 +334,13 @@ function LicensingTab() {
           return (
             <div key={l.licenseId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground">{l.licenseId}</span>
-                <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{meta.label}</span>
-                <span className="text-[10px] text-muted-foreground">asset: <span className="font-mono">{l.assetId}</span></span>
-                <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(l.issuedAt)}</span>
+                <span className="font-mono text-[14px] font-semibold text-muted-foreground">{l.licenseId}</span>
+                <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{meta.label}</span>
+                <span className="text-[14px] text-muted-foreground">asset: <span className="font-mono">{l.assetId}</span></span>
+                <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(l.issuedAt)}</span>
               </div>
-              <div className="text-[11px] mb-1.5">Owner: <span className="font-medium">{l.ownerName}</span></div>
-              <div className="flex items-center gap-2 text-[9px] flex-wrap mb-1.5">
+              <div className="text-[15px] mb-1.5">Owner: <span className="font-medium">{l.ownerName}</span></div>
+              <div className="flex items-center gap-2 text-[13px] flex-wrap mb-1.5">
                 <span className={cn("rounded px-1 py-0.5", l.commercialUse ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300")}>
                   {l.commercialUse ? "✓" : "✗"} Commercial
                 </span>
@@ -354,7 +354,7 @@ function LicensingTab() {
                   {l.attributionRequired ? "✓" : "✗"} Attribution
                 </span>
               </div>
-              <div className="flex items-center gap-2 text-[10px]">
+              <div className="flex items-center gap-2 text-[14px]">
                 <span className="text-muted-foreground">Royalty rate:</span>
                 <span className="font-mono font-semibold text-violet-400">{(l.royaltyRate * 100).toFixed(0)}%</span>
                 <span className="text-muted-foreground">of downstream value</span>
@@ -392,16 +392,16 @@ function LineageTab() {
           {lineages.map((l) => (
             <div key={l.lineageId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
               <div className="flex items-center gap-2 mb-2">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground">{l.lineageId}</span>
-                <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[9px] text-violet-300">{l.derivationType}</span>
-                <span className="text-[10px] text-muted-foreground">depth {l.depth}</span>
-                <span className="ml-auto text-[10px]">Asset: <span className="font-mono">{l.assetId}</span></span>
+                <span className="font-mono text-[14px] font-semibold text-muted-foreground">{l.lineageId}</span>
+                <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[13px] text-violet-300">{l.derivationType}</span>
+                <span className="text-[14px] text-muted-foreground">depth {l.depth}</span>
+                <span className="ml-auto text-[14px]">Asset: <span className="font-mono">{l.assetId}</span></span>
               </div>
               {/* Lineage chain visualization */}
               <div className="flex items-center gap-1 flex-wrap">
                 {l.lineageChain.map((node: any, i: number) => (
                   <div key={i} className="flex items-center gap-1">
-                    <div className={cn("rounded px-1.5 py-0.5 text-[9px] border",
+                    <div className={cn("rounded px-1.5 py-0.5 text-[13px] border",
                       node.role === "self" ? "border-primary/30 bg-primary/10 text-primary" : "border-border bg-card/30 text-muted-foreground")}>
                       {node.role === "self" ? "→ " : ""}{node.assetId.slice(0, 12)}
                       <span className="text-muted-foreground/60 ml-1">d{node.depth}</span>
@@ -422,25 +422,25 @@ function LineageTab() {
           {royalties.map((r) => (
             <div key={r.royaltyId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
               <div className="flex items-center gap-2 mb-1.5">
-                <span className="font-mono text-[10px] font-semibold text-violet-300">{r.royaltyId}</span>
-                <span className="text-[10px] text-muted-foreground">from asset: <span className="font-mono">{r.sourceAssetId}</span></span>
-                <span className="ml-auto font-mono text-[14px] font-bold text-violet-400">{r.totalRoyaltyAmount.toFixed(2)} IC</span>
+                <span className="font-mono text-[14px] font-semibold text-violet-300">{r.royaltyId}</span>
+                <span className="text-[14px] text-muted-foreground">from asset: <span className="font-mono">{r.sourceAssetId}</span></span>
+                <span className="ml-auto font-mono text-[18px] font-bold text-violet-400">{r.totalRoyaltyAmount.toFixed(2)} IC</span>
               </div>
               <div className="space-y-0.5">
                 {r.royaltyRecipients.map((rec: any, i: number) => (
-                  <div key={i} className="flex items-center gap-2 text-[10px] rounded border border-border/60 bg-card/20 px-2 py-0.5">
-                    <span className="font-mono text-[9px] text-muted-foreground truncate flex-1">{rec.producerId}</span>
+                  <div key={i} className="flex items-center gap-2 text-[14px] rounded border border-border/60 bg-card/20 px-2 py-0.5">
+                    <span className="font-mono text-[13px] text-muted-foreground truncate flex-1">{rec.producerId}</span>
                     <span className="text-muted-foreground">depth {rec.depth}</span>
                     <span className="text-muted-foreground">rate {(rec.royaltyRate * 100).toFixed(0)}%</span>
                     <span className="font-mono font-semibold text-violet-400">{rec.amount.toFixed(2)} IC</span>
                   </div>
                 ))}
               </div>
-              {r.royaltyRecipients.length === 0 && <div className="text-[10px] text-muted-foreground italic">No recipients</div>}
+              {r.royaltyRecipients.length === 0 && <div className="text-[14px] text-muted-foreground italic">No recipients</div>}
             </div>
           ))}
           {royalties.length === 0 && !loading && (
-            <div className="text-[11px] text-muted-foreground italic py-2">No royalty distributions yet — royalties flow when derivative assets generate value</div>
+            <div className="text-[15px] text-muted-foreground italic py-2">No royalty distributions yet — royalties flow when derivative assets generate value</div>
           )}
         </div>
       </div>
@@ -465,8 +465,8 @@ function ProducersTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <TrendingUp className="size-4 text-amber-400" />
         <span className="text-xs font-semibold">Producer Market Scores</span>
-        <span className="text-[11px] text-muted-foreground">— composite: trust + civic + IQS + value created</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{scores.length} producers</span>
+        <span className="text-[15px] text-muted-foreground">— composite: trust + civic + IQS + value created</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{scores.length} producers</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -476,16 +476,16 @@ function ProducersTab() {
           return (
             <div key={s.producerId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
               <div className="flex items-center gap-3">
-                <span className="font-mono text-[14px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
+                <span className="font-mono text-[18px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
                 <div className={cn("size-8 rounded-md flex items-center justify-center shrink-0")} style={{ color: tier.color, background: `${tier.color}1a` }}>
                   <Icon className="size-4" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-[12px] font-medium truncate">{s.producerName}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
+                    <span className="text-[16px] font-medium truncate">{s.producerName}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: tier.color, background: `${tier.color}1a` }}>{tier.label}</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-1 text-[9px]">
+                  <div className="grid grid-cols-4 gap-1 text-[13px]">
                     <div className="rounded bg-card/30 px-1.5 py-0.5"><span className="text-muted-foreground">Trust</span> <span className="font-mono font-semibold">{s.trustScore.toFixed(0)}</span></div>
                     <div className="rounded bg-card/30 px-1.5 py-0.5"><span className="text-muted-foreground">Civic</span> <span className="font-mono font-semibold">{s.civicScore.toFixed(0)}</span></div>
                     <div className="rounded bg-card/30 px-1.5 py-0.5"><span className="text-muted-foreground">IQS</span> <span className="font-mono font-semibold">{s.iqsContribution.toFixed(0)}</span></div>
@@ -494,7 +494,7 @@ function ProducersTab() {
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-[22px] font-bold font-mono" style={{ color: tier.color }}>{s.marketScore.toFixed(0)}</div>
-                  <div className="text-[9px] text-muted-foreground">market score</div>
+                  <div className="text-[13px] text-muted-foreground">market score</div>
                 </div>
               </div>
             </div>
@@ -522,8 +522,8 @@ function AgentsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Bot className="size-4 text-violet-400" />
         <span className="text-xs font-semibold">Agent Economy</span>
-        <span className="text-[11px] text-muted-foreground">— agents as economic actors earning revenue</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{agents.length} agents</span>
+        <span className="text-[15px] text-muted-foreground">— agents as economic actors earning revenue</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{agents.length} agents</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -531,13 +531,13 @@ function AgentsTab() {
           <div key={a.agentId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
             <div className="flex items-center gap-2 mb-2">
               <Bot className="size-4 text-violet-400" />
-              <span className="text-[12px] font-medium">{a.agentName}</span>
-              <span className="font-mono text-[10px] text-muted-foreground">{a.agentId}</span>
-              <span className="ml-auto text-[18px] font-bold font-mono text-amber-400">{a.totalRevenue.toFixed(0)} <span className="text-[9px] text-muted-foreground">IC</span></span>
+              <span className="text-[16px] font-medium">{a.agentName}</span>
+              <span className="font-mono text-[14px] text-muted-foreground">{a.agentId}</span>
+              <span className="ml-auto text-[18px] font-bold font-mono text-amber-400">{a.totalRevenue.toFixed(0)} <span className="text-[13px] text-muted-foreground">IC</span></span>
             </div>
             {/* Revenue allocation */}
             <div className="mb-2">
-              <div className="text-[9px] text-muted-foreground mb-1">Revenue Allocation (total {a.totalRevenue.toFixed(0)} IC)</div>
+              <div className="text-[13px] text-muted-foreground mb-1">Revenue Allocation (total {a.totalRevenue.toFixed(0)} IC)</div>
               <div className="flex h-2 rounded-full overflow-hidden bg-foreground/10">
                 <div className="h-full bg-violet-400" style={{ width: `${a.developerShare * 100}%` }} title={`Developer ${(a.developerShare * 100).toFixed(0)}%`} />
                 <div className="h-full bg-cyan-400" style={{ width: `${a.trainingDataShare * 100}%` }} title={`Training Data ${(a.trainingDataShare * 100).toFixed(0)}%`} />
@@ -545,7 +545,7 @@ function AgentsTab() {
                 <div className="h-full bg-rose-400" style={{ width: `${a.platformShare * 100}%` }} title={`Platform ${(a.platformShare * 100).toFixed(0)}%`} />
               </div>
             </div>
-            <div className="grid grid-cols-4 gap-1 text-[9px]">
+            <div className="grid grid-cols-4 gap-1 text-[13px]">
               <div className="rounded bg-violet-500/10 px-1.5 py-1 text-center">
                 <div className="text-muted-foreground">Developer {(a.developerShare * 100).toFixed(0)}%</div>
                 <div className="font-mono font-semibold text-violet-300">{a.developerPaid.toFixed(0)} IC</div>
@@ -563,7 +563,7 @@ function AgentsTab() {
                 <div className="font-mono font-semibold text-rose-300">{a.platformPaid.toFixed(0)} IC</div>
               </div>
             </div>
-            <div className="flex items-center gap-3 mt-1.5 text-[9px] text-muted-foreground">
+            <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
               <span>{a.totalOutputs} outputs</span>
               <span>{a.totalConsumers} consumers</span>
               {a.lastEarnedAt && <span className="flex items-center gap-1"><Clock className="size-2.5" /> last earned {timeAgo(a.lastEarnedAt)}</span>}
@@ -609,7 +609,7 @@ function InsuranceTab() {
         <div className="px-4 py-2 border-b border-border flex items-center gap-2">
           <Umbrella className="size-4 text-cyan-400" />
           <span className="text-xs font-semibold">Intelligence Insurance</span>
-          <span className="text-[11px] text-muted-foreground">— prediction markets with accuracy-based payouts</span>
+          <span className="text-[15px] text-muted-foreground">— prediction markets with accuracy-based payouts</span>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
           {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -620,15 +620,15 @@ function InsuranceTab() {
                 className={cn("w-full text-left rounded-lg border px-3 py-2.5 transition-all",
                   active ? "border-primary/40 bg-primary/10" : "border-border bg-card/40 hover:bg-card/60")}>
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="font-mono text-[10px] font-semibold text-muted-foreground">{p.policyId}</span>
-                  <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium",
+                  <span className="font-mono text-[14px] font-semibold text-muted-foreground">{p.policyId}</span>
+                  <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium",
                     p.status === "open" ? "bg-emerald-500/10 text-emerald-300" :
                     p.status === "resolved" ? "bg-cyan-500/10 text-cyan-300" : "bg-amber-500/10 text-amber-300")}>{p.status}</span>
-                  {p.outcome && <span className="rounded bg-foreground/10 px-1 py-0.5 text-[9px] font-semibold capitalize">{p.outcome}</span>}
-                  <span className="ml-auto font-mono text-[14px] font-bold text-amber-400">{p.totalPayout} IC</span>
+                  {p.outcome && <span className="rounded bg-foreground/10 px-1 py-0.5 text-[13px] font-semibold capitalize">{p.outcome}</span>}
+                  <span className="ml-auto font-mono text-[18px] font-bold text-amber-400">{p.totalPayout} IC</span>
                 </div>
-                <div className="text-[12px] font-medium mb-0.5">{p.title}</div>
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                <div className="text-[16px] font-medium mb-0.5">{p.title}</div>
+                <div className="flex items-center gap-3 text-[14px] text-muted-foreground">
                   <span>{p.insurerName}</span>
                   <span>· {p.category}</span>
                   <span>· {p.predictionCount} predictions</span>
@@ -646,31 +646,31 @@ function InsuranceTab() {
           {predictions.map((p) => (
             <div key={p.predictionId} className="rounded-lg border border-border bg-card/40 p-2.5">
               <div className="flex items-center gap-2 mb-1">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground">{p.predictionId}</span>
-                <span className={cn("rounded px-1 py-0.5 text-[9px] font-semibold capitalize",
+                <span className="font-mono text-[14px] font-semibold text-muted-foreground">{p.predictionId}</span>
+                <span className={cn("rounded px-1 py-0.5 text-[13px] font-semibold capitalize",
                   p.predictedOutcome === "confirmed" ? "bg-emerald-500/10 text-emerald-300" :
                   p.predictedOutcome === "denied" ? "bg-rose-500/10 text-rose-300" : "bg-amber-500/10 text-amber-300")}>
                   {p.predictedOutcome}
                 </span>
-                <span className="text-[10px] flex-1 truncate">{p.predictorName}</span>
+                <span className="text-[14px] flex-1 truncate">{p.predictorName}</span>
               </div>
-              <div className="flex items-center gap-2 text-[9px] text-muted-foreground mb-1">
+              <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-1">
                 <span>confidence {(p.confidence * 100).toFixed(0)}%</span>
                 <span>trust {(p.trustScore * 100).toFixed(0)}%</span>
               </div>
-              {p.reasoning && <div className="text-[10px] text-foreground/70 italic mb-1">{p.reasoning}</div>}
+              {p.reasoning && <div className="text-[14px] text-foreground/70 italic mb-1">{p.reasoning}</div>}
               {p.accuracyScore !== null && p.accuracyScore !== undefined && (
                 <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[9px] text-muted-foreground">accuracy:</span>
-                  <span className="font-mono text-[10px] font-bold" style={{ color: p.accuracyScore >= 0.8 ? "#34d399" : p.accuracyScore >= 0.5 ? "#fbbf24" : "#f43f5e" }}>
+                  <span className="text-[13px] text-muted-foreground">accuracy:</span>
+                  <span className="font-mono text-[14px] font-bold" style={{ color: p.accuracyScore >= 0.8 ? "#34d399" : p.accuracyScore >= 0.5 ? "#fbbf24" : "#f43f5e" }}>
                     {(p.accuracyScore * 100).toFixed(0)}%
                   </span>
-                  <span className="ml-auto font-mono text-[12px] font-bold text-amber-400">+{p.payoutAmount.toFixed(0)} IC</span>
+                  <span className="ml-auto font-mono text-[16px] font-bold text-amber-400">+{p.payoutAmount.toFixed(0)} IC</span>
                 </div>
               )}
             </div>
           ))}
-          {predictions.length === 0 && <div className="text-[11px] text-muted-foreground italic">No predictions yet for this policy</div>}
+          {predictions.length === 0 && <div className="text-[15px] text-muted-foreground italic">No predictions yet for this policy</div>}
         </div>
       </div>
     </div>

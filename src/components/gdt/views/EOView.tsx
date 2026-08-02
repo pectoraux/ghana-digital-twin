@@ -125,13 +125,13 @@ export function EOView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <Satellite className="size-4 text-primary" /> Earth Observation
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {totalScenes} Sentinel-2 scenes
             </span>
             <div className="ml-auto flex items-center gap-2">
               <div className="flex items-center gap-1.5 rounded-md border border-border bg-background/40 px-2.5 h-8">
                 <Cloud className="size-3.5 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">max cloud</span>
+                <span className="text-[14px] text-muted-foreground">max cloud</span>
                 <input
                   type="range"
                   min={5}
@@ -141,7 +141,7 @@ export function EOView() {
                   onChange={(e) => setMaxCloud(parseInt(e.target.value))}
                   className="w-20 accent-primary"
                 />
-                <span className="text-[10px] font-mono tnum w-7">{maxCloud}%</span>
+                <span className="text-[14px] font-mono tnum w-7">{maxCloud}%</span>
               </div>
               <button
                 onClick={refreshScenes}
@@ -174,11 +174,11 @@ export function EOView() {
               inspectPoint={inspectPoint}
               onPick={(lng, lat) => setInspectPoint({ lng, lat })}
             />
-            <div className="absolute left-3 top-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] font-mono text-emerald-400 backdrop-blur">
+            <div className="absolute left-3 top-3 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[14px] font-mono text-emerald-400 backdrop-blur">
               {scenes.length} SCENE FOOTPRINTS · CLICK TO INSPECT
             </div>
             {inspectPoint && (
-              <div className="absolute left-3 bottom-3 rounded-md border border-border bg-card/85 px-2 py-1.5 text-[10px] font-mono backdrop-blur">
+              <div className="absolute left-3 bottom-3 rounded-md border border-border bg-card/85 px-2 py-1.5 text-[14px] font-mono backdrop-blur">
                 <div className="text-muted-foreground">PIXEL INSPECTOR</div>
                 <div className="text-foreground">{formatCoord([inspectPoint.lng, inspectPoint.lat])}</div>
               </div>
@@ -191,7 +191,7 @@ export function EOView() {
               <Activity className="size-3.5 text-primary" />
               <span className="text-xs font-semibold">Temporal Index Series</span>
               {selectedIdx && (
-                <span className="text-[10px] font-mono text-muted-foreground ml-auto">{selectedIdx.name}: {selectedIdx.formula}</span>
+                <span className="text-[14px] font-mono text-muted-foreground ml-auto">{selectedIdx.name}: {selectedIdx.formula}</span>
               )}
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3">
@@ -199,7 +199,7 @@ export function EOView() {
                 <div className="flex h-full flex-col items-center justify-center gap-2 text-muted-foreground">
                   <Crosshair className="size-8 opacity-30" />
                   <span className="text-xs">Click the map to inspect a pixel</span>
-                  <span className="text-[10px]">Real NDVI/NDWI/NBR values computed from Sentinel-2 COGs</span>
+                  <span className="text-[14px]">Real NDVI/NDWI/NBR values computed from Sentinel-2 COGs</span>
                 </div>
               ) : tsLoading ? (
                 <div className="flex h-full items-center justify-center">
@@ -220,7 +220,7 @@ export function EOView() {
                   {detecting ? <Loader2 className="size-3.5 animate-spin" /> : <Zap className="size-3.5" />}
                   Detect {selectedIndex} changes
                 </button>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[14px] text-muted-foreground">
                   Emits factual observations (Δ ≥ 0.15). No legal conclusions.
                 </span>
               </div>
@@ -256,11 +256,11 @@ export function EOView() {
                     <span className="mt-0.5 size-2.5 rounded-full" style={{ background: col, boxShadow: active ? `0 0 8px ${col}` : "none" }} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className={cn("text-[12px] font-semibold", active && "text-primary")}>{idx.name}</span>
-                        <span className="text-[9px] font-mono text-muted-foreground">[{idx.range[0]}, {idx.range[1]}]</span>
+                        <span className={cn("text-[16px] font-semibold", active && "text-primary")}>{idx.name}</span>
+                        <span className="text-[13px] font-mono text-muted-foreground">[{idx.range[0]}, {idx.range[1]}]</span>
                       </div>
-                      <div className="text-[10px] text-muted-foreground truncate">{idx.formula}</div>
-                      <div className="text-[9px] text-muted-foreground/70 mt-0.5 line-clamp-2">{idx.description}</div>
+                      <div className="text-[14px] text-muted-foreground truncate">{idx.formula}</div>
+                      <div className="text-[13px] text-muted-foreground/70 mt-0.5 line-clamp-2">{idx.description}</div>
                     </div>
                   </button>
                 );
@@ -274,7 +274,7 @@ export function EOView() {
               <Zap className="size-3" /> Factual Observations ({observations.length})
             </SectionLabel>
             {observations.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-[11px] text-muted-foreground">
+              <div className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-[15px] text-muted-foreground">
                 No observations yet. Pick a pixel and run detection.
               </div>
             ) : (
@@ -286,19 +286,19 @@ export function EOView() {
                     <div key={o.id} className="rounded-md border border-border bg-card/40 px-2.5 py-1.5">
                       <div className="flex items-center gap-1.5">
                         <span className="size-2 rounded-full" style={{ background: col }} />
-                        <span className="text-[10px] font-mono text-muted-foreground">{o.indexName}</span>
+                        <span className="text-[14px] font-mono text-muted-foreground">{o.indexName}</span>
                         {isDrop ? (
                           <TrendingDown className="size-3 text-rose-400" />
                         ) : (
                           <TrendingUp className="size-3 text-emerald-400" />
                         )}
-                        <span className={cn("text-[10px] font-mono tnum", isDrop ? "text-rose-400" : "text-emerald-400")}>
+                        <span className={cn("text-[14px] font-mono tnum", isDrop ? "text-rose-400" : "text-emerald-400")}>
                           {(o.delta ?? 0) >= 0 ? "+" : ""}{(o.delta ?? 0).toFixed(3)}
                         </span>
-                        <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(o.createdAt)}</span>
+                        <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(o.createdAt)}</span>
                       </div>
-                      <div className="mt-1 text-[10px] text-foreground/80 leading-snug line-clamp-3">{o.summary}</div>
-                      <div className="mt-1 flex items-center gap-2 text-[9px] text-muted-foreground font-mono">
+                      <div className="mt-1 text-[14px] text-foreground/80 leading-snug line-clamp-3">{o.summary}</div>
+                      <div className="mt-1 flex items-center gap-2 text-[13px] text-muted-foreground font-mono">
                         <span>{(o.beforeValue ?? 0).toFixed(3)} → {(o.afterValue ?? 0).toFixed(3)}</span>
                         <span>·</span>
                         <span>{new Date(o.afterDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
@@ -410,7 +410,7 @@ function TimeSeriesChart({
 }) {
   if (points.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-[11px] text-muted-foreground">
+      <div className="flex h-full items-center justify-center text-[15px] text-muted-foreground">
         No cloud-free scenes at this point in the selected range.
       </div>
     );
@@ -419,7 +419,7 @@ function TimeSeriesChart({
   const values = valid.map((p) => p.value as number);
   if (values.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-[11px] text-muted-foreground">
+      <div className="flex h-full items-center justify-center text-[15px] text-muted-foreground">
         No valid {indexName} values (all scenes cloud-covered or nodata at this point).
       </div>
     );
@@ -447,7 +447,7 @@ function TimeSeriesChart({
 
   return (
     <div>
-      <div className="mb-2 flex items-center gap-3 text-[10px] font-mono">
+      <div className="mb-2 flex items-center gap-3 text-[14px] font-mono">
         <span className="text-muted-foreground">{indexName} @ pixel</span>
         <span style={{ color }}>min {min.toFixed(3)}</span>
         <span style={{ color }}>max {max.toFixed(3)}</span>
@@ -502,11 +502,11 @@ function TimeSeriesChart({
       {/* scene list */}
       <div className="mt-3 space-y-0.5 max-h-40 overflow-y-auto gdt-scroll">
         {points.map((p, i) => (
-          <div key={i} className="flex items-center gap-2 text-[10px] py-0.5 px-1 rounded hover:bg-accent">
+          <div key={i} className="flex items-center gap-2 text-[14px] py-0.5 px-1 rounded hover:bg-accent">
             <span className="text-muted-foreground font-mono w-20">{new Date(p.datetime).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })}</span>
             <Cloud className="size-2.5 text-muted-foreground" />
             <span className="font-mono tnum text-muted-foreground w-12">{(p.cloudCover ?? 0).toFixed(1)}%</span>
-            <span className="font-mono text-[9px] text-muted-foreground/60 truncate flex-1">{p.stacId}</span>
+            <span className="font-mono text-[13px] text-muted-foreground/60 truncate flex-1">{p.stacId}</span>
             <span className="font-mono tnum font-semibold w-14 text-right" style={{ color: p.value != null ? color : "#71717a" }}>
               {p.value != null ? (p.value as number).toFixed(3) : "—"}
             </span>

@@ -90,10 +90,10 @@ export function MarketplaceView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Store className="size-4 text-primary" /> Intelligence Marketplace
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: intelligence-marketplace
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Intelligence demand + supply + matching + value attribution + bounties
           </p>
           <PackageBadge />
@@ -131,7 +131,7 @@ function PackageBadge() {
   useEffect(() => { api("/api/marketplace").then((d) => setPackages(d.packages)).catch(() => {}); }, []);
   if (packages.length === 0) return null;
   return (
-    <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="ml-auto hidden md:flex items-center gap-2 text-[14px] text-muted-foreground">
       <ShieldCheck className="size-3 text-emerald-400" />
       <span className="font-mono">v{packages[0].version}</span>
       <span>·</span>
@@ -177,7 +177,7 @@ function OverviewTab() {
             {o.assetsByCategory.map((c: any) => {
               const meta = CATEGORY_META[c.category] ?? { color: "#a1a1aa" };
               return (
-                <div key={c.category} className="flex items-center gap-2 text-[11px]">
+                <div key={c.category} className="flex items-center gap-2 text-[15px]">
                   <span className="size-2 rounded-full" style={{ background: meta.color }} />
                   <span className="flex-1">{meta.label ?? c.category}</span>
                   <span className="font-mono font-semibold">{c._count}</span>
@@ -192,7 +192,7 @@ function OverviewTab() {
             {o.requestsByType.map((r: any) => {
               const meta = REQUESTER_TYPE_META[r.requesterType] ?? { color: "#a1a1aa" };
               return (
-                <div key={r.requesterType} className="flex items-center gap-2 text-[11px]">
+                <div key={r.requesterType} className="flex items-center gap-2 text-[15px]">
                   <span className="size-2 rounded-full" style={{ background: meta.color }} />
                   <span className="flex-1">{meta.label ?? r.requesterType}</span>
                   <span className="font-mono font-semibold">{r._count}</span>
@@ -212,8 +212,8 @@ function OverviewTab() {
               const meta = PRODUCER_TYPE_META[a.producerType] ?? PRODUCER_TYPE_META.citizen;
               const Icon = meta.icon;
               return (
-                <div key={a.assetId} className="flex items-center gap-2 text-[11px] py-1">
-                  <span className="font-mono text-[14px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
+                <div key={a.assetId} className="flex items-center gap-2 text-[15px] py-1">
+                  <span className="font-mono text-[18px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
                   <Icon className="size-3" style={{ color: meta.color }} />
                   <span className="flex-1 truncate">{a.title}</span>
                   <span className="font-mono font-semibold" style={{ color: meta.color }}>{(a.iqs * 100).toFixed(0)}%</span>
@@ -227,7 +227,7 @@ function OverviewTab() {
           <SectionLabel className="mb-2 flex items-center gap-1.5"><Target className="size-3" /> Recent Bounties</SectionLabel>
           <div className="space-y-1">
             {o.recentBounties.map((b: any) => (
-              <div key={b.bountyId} className="flex items-center gap-2 text-[11px] py-1">
+              <div key={b.bountyId} className="flex items-center gap-2 text-[15px] py-1">
                 <Target className="size-3 text-amber-400" />
                 <span className="flex-1 truncate">{b.title}</span>
                 <span className="font-mono font-semibold text-amber-400">${b.totalBudget}</span>
@@ -241,16 +241,16 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Store className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">INTELLIGENCE MARKETPLACE</span>
+          <span className="text-[15px] font-semibold text-primary">INTELLIGENCE MARKETPLACE</span>
         </div>
-        <p className="text-[11px] text-foreground/80 leading-relaxed">
+        <p className="text-[15px] text-foreground/80 leading-relaxed">
           The marketplace turns intelligence into a tradable asset. Organizations post <span className="text-primary font-medium">requests</span> (demand) —
           what intelligence they need and their budget. Producers publish <span className="text-primary font-medium">assets</span> (supply) — citizen reports,
           agent outputs, satellite feeds. The matching engine connects them. <span className="text-primary font-medium">Value attribution</span> splits rewards
           across all contributors: satellite 30% + citizen 25% + witnesses 20% + agent 15% + field 10%. <span className="text-primary font-medium">Bounties</span>
           enable active production — an org posts a problem, producers submit intelligence, rewards are distributed on verification.
         </p>
-        <div className="mt-2 flex items-center gap-2 flex-wrap text-[10px]">
+        <div className="mt-2 flex items-center gap-2 flex-wrap text-[14px]">
           <span className="rounded bg-violet-500/10 px-1.5 py-0.5 text-violet-300">Intelligence Quality Score = trust + accuracy + evidence + freshness + cost</span>
         </div>
       </div>
@@ -275,8 +275,8 @@ function DemandTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Megaphone className="size-4 text-rose-400" />
         <span className="text-xs font-semibold">Intelligence Demand</span>
-        <span className="text-[11px] text-muted-foreground">— organizations post what intelligence they need</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{requests.length} requests</span>
+        <span className="text-[15px] text-muted-foreground">— organizations post what intelligence they need</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{requests.length} requests</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -289,15 +289,15 @@ function DemandTab() {
                 <div className="w-1 shrink-0 rounded-full" style={{ background: catMeta.color }} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-mono text-[10px] font-semibold text-muted-foreground">{r.requestId}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: typeMeta.color, background: `${typeMeta.color}1a` }}>{typeMeta.label}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: catMeta.color, background: `${catMeta.color}1a` }}>{catMeta.label ?? r.category}</span>
-                    <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium", r.status === "open" ? "bg-emerald-500/10 text-emerald-300" : "bg-foreground/10 text-muted-foreground")}>{r.status}</span>
-                    <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(r.createdAt)}</span>
+                    <span className="font-mono text-[14px] font-semibold text-muted-foreground">{r.requestId}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: typeMeta.color, background: `${typeMeta.color}1a` }}>{typeMeta.label}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: catMeta.color, background: `${catMeta.color}1a` }}>{catMeta.label ?? r.category}</span>
+                    <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium", r.status === "open" ? "bg-emerald-500/10 text-emerald-300" : "bg-foreground/10 text-muted-foreground")}>{r.status}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(r.createdAt)}</span>
                   </div>
-                  <div className="text-[12px] font-medium mb-0.5">{r.title}</div>
-                  <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{r.description}</p>
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+                  <div className="text-[16px] font-medium mb-0.5">{r.title}</div>
+                  <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{r.description}</p>
+                  <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1"><MapPin className="size-2.5" /> {r.geography}</span>
                     <span className="flex items-center gap-1"><Clock className="size-2.5" /> {r.timeframe}</span>
                     <span>min conf <span className="font-mono font-semibold">{(r.minConfidence * 100).toFixed(0)}%</span></span>
@@ -346,8 +346,8 @@ function SupplyTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Package className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">Intelligence Assets</span>
-        <span className="text-[11px] text-muted-foreground">— ranked by Intelligence Quality Score (IQS)</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{assets.length} assets</span>
+        <span className="text-[15px] text-muted-foreground">— ranked by Intelligence Quality Score (IQS)</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{assets.length} assets</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -361,20 +361,20 @@ function SupplyTab() {
                 <div className="w-1 shrink-0 rounded-full" style={{ background: meta.color }} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-mono text-[14px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
+                    <span className="font-mono text-[18px] font-bold w-6 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
                     <Icon className="size-3.5" style={{ color: meta.color }} />
-                    <span className="font-mono text-[10px] font-semibold text-muted-foreground">{a.assetId}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{meta.label}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: catMeta.color, background: `${catMeta.color}1a` }}>{catMeta.label ?? a.category}</span>
+                    <span className="font-mono text-[14px] font-semibold text-muted-foreground">{a.assetId}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{meta.label}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: catMeta.color, background: `${catMeta.color}1a` }}>{catMeta.label ?? a.category}</span>
                     {/* IQS badge */}
-                    <span className="rounded px-1.5 py-0.5 text-[10px] font-bold font-mono" style={{ color: a.iqs >= 0.8 ? "#34d399" : a.iqs >= 0.6 ? "#fbbf24" : "#fb923c", background: `${a.iqs >= 0.8 ? "#34d399" : a.iqs >= 0.6 ? "#fbbf24" : "#fb923c"}1a` }}>
+                    <span className="rounded px-1.5 py-0.5 text-[14px] font-bold font-mono" style={{ color: a.iqs >= 0.8 ? "#34d399" : a.iqs >= 0.6 ? "#fbbf24" : "#fb923c", background: `${a.iqs >= 0.8 ? "#34d399" : a.iqs >= 0.6 ? "#fbbf24" : "#fb923c"}1a` }}>
                       IQS {(a.iqs * 100).toFixed(0)}
                     </span>
-                    <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(a.publishedAt)}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(a.publishedAt)}</span>
                   </div>
-                  <div className="text-[12px] font-medium mb-0.5">{a.title}</div>
-                  <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{a.description}</p>
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap mb-1.5">
+                  <div className="text-[16px] font-medium mb-0.5">{a.title}</div>
+                  <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{a.description}</p>
+                  <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap mb-1.5">
                     <span className="flex items-center gap-1"><MapPin className="size-2.5" /> {a.geography}</span>
                     <span>by <span className="font-medium" style={{ color: meta.color }}>{a.producerName}</span></span>
                     <span>conf <span className="font-mono font-semibold">{(a.confidence * 100).toFixed(0)}%</span></span>
@@ -384,12 +384,12 @@ function SupplyTab() {
                     {a.purchaseCount > 0 && <span className="text-cyan-400">{a.purchaseCount} purchases</span>}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[14px] font-bold font-mono" style={{ color: a.price === 0 ? "#34d399" : "#fbbf24" }}>
+                    <span className="text-[18px] font-bold font-mono" style={{ color: a.price === 0 ? "#34d399" : "#fbbf24" }}>
                       {a.price === 0 ? "FREE" : `$${a.price}`}
                     </span>
-                    <span className="text-[9px] text-muted-foreground">{a.pricingModel}</span>
+                    <span className="text-[13px] text-muted-foreground">{a.pricingModel}</span>
                     <button onClick={() => handlePurchase(a.assetId)} disabled={busy === a.assetId}
-                      className="ml-auto flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] text-primary hover:bg-primary/15 disabled:opacity-50">
+                      className="ml-auto flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2 py-1 text-[14px] text-primary hover:bg-primary/15 disabled:opacity-50">
                       {busy === a.assetId ? <Loader2 className="size-3 animate-spin" /> : <DollarSign className="size-3" />}
                       {a.price === 0 ? "Acquire" : "Purchase"}
                     </button>
@@ -461,7 +461,7 @@ function BountiesTab() {
         <div className="px-4 py-2 border-b border-border flex items-center gap-2">
           <Target className="size-4 text-amber-400" />
           <span className="text-xs font-semibold">Intelligence Bounties</span>
-          <span className="text-[11px] text-muted-foreground">— active production: problem → submissions → rewards</span>
+          <span className="text-[15px] text-muted-foreground">— active production: problem → submissions → rewards</span>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
           {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -478,14 +478,14 @@ function BountiesTab() {
                   <div className="w-1 shrink-0 rounded-full" style={{ background: catMeta.color }} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-mono text-[10px] font-semibold text-muted-foreground">{b.bountyId}</span>
-                      <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: typeMeta.color, background: `${typeMeta.color}1a` }}>{b.sponsorName}</span>
-                      <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: catMeta.color, background: `${catMeta.color}1a` }}>{catMeta.label ?? b.category}</span>
-                      <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium", b.status === "accepting" ? "bg-emerald-500/10 text-emerald-300" : "bg-foreground/10 text-muted-foreground")}>{b.status}</span>
+                      <span className="font-mono text-[14px] font-semibold text-muted-foreground">{b.bountyId}</span>
+                      <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: typeMeta.color, background: `${typeMeta.color}1a` }}>{b.sponsorName}</span>
+                      <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: catMeta.color, background: `${catMeta.color}1a` }}>{catMeta.label ?? b.category}</span>
+                      <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium", b.status === "accepting" ? "bg-emerald-500/10 text-emerald-300" : "bg-foreground/10 text-muted-foreground")}>{b.status}</span>
                     </div>
-                    <div className="text-[12px] font-medium mb-0.5">{b.title}</div>
-                    <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{b.description}</p>
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap mb-1.5">
+                    <div className="text-[16px] font-medium mb-0.5">{b.title}</div>
+                    <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{b.description}</p>
+                    <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap mb-1.5">
                       <span className="flex items-center gap-1"><MapPin className="size-2.5" /> {b.geography}</span>
                       <span className="flex items-center gap-1 text-amber-400"><DollarSign className="size-2.5" /> ${b.totalBudget} budget</span>
                       <span className="text-amber-400">${b.rewardPerSubmission}/submission</span>
@@ -514,12 +514,12 @@ function BountiesTab() {
             return (
               <div key={s.submissionId} className="rounded-lg border border-border bg-card/40 p-2.5">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-mono text-[10px] font-semibold text-muted-foreground">{s.submissionId}</span>
-                  <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{meta.label}</span>
-                  <span className="text-[10px] flex-1 truncate">{s.producerName}</span>
-                  <span className="font-mono text-[10px] font-semibold" style={{ color: s.iqs >= 0.7 ? "#34d399" : "#fbbf24" }}>IQS {(s.iqs * 100).toFixed(0)}</span>
+                  <span className="font-mono text-[14px] font-semibold text-muted-foreground">{s.submissionId}</span>
+                  <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: meta.color, background: `${meta.color}1a` }}>{meta.label}</span>
+                  <span className="text-[14px] flex-1 truncate">{s.producerName}</span>
+                  <span className="font-mono text-[14px] font-semibold" style={{ color: s.iqs >= 0.7 ? "#34d399" : "#fbbf24" }}>IQS {(s.iqs * 100).toFixed(0)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-[9px] text-muted-foreground mb-1.5">
+                <div className="flex items-center gap-2 text-[13px] text-muted-foreground mb-1.5">
                   <span>conf {(s.confidence * 100).toFixed(0)}%</span>
                   <span>trust {(s.trustScore * 100).toFixed(0)}%</span>
                   <span className={cn("ml-auto rounded px-1 py-0.5 font-medium",
@@ -529,24 +529,24 @@ function BountiesTab() {
                     {s.status}
                   </span>
                 </div>
-                {s.rewardAmount > 0 && <div className="text-[10px] text-amber-400 mb-1">Reward: ${s.rewardAmount.toFixed(2)}</div>}
+                {s.rewardAmount > 0 && <div className="text-[14px] text-amber-400 mb-1">Reward: ${s.rewardAmount.toFixed(2)}</div>}
                 {s.status === "pending" && (
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => handleAccept(s.submissionId)} disabled={!!busy}
-                      className="flex items-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[10px] text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50">
+                      className="flex items-center gap-1 rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-0.5 text-[14px] text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-50">
                       {busy === s.submissionId ? <Loader2 className="size-3 animate-spin" /> : <CheckCircle2 className="size-3" />} Accept
                     </button>
                     <button onClick={() => handleReject(s.submissionId)} disabled={!!busy}
-                      className="flex items-center gap-1 rounded border border-rose-500/20 bg-rose-500/5 px-2 py-0.5 text-[10px] text-rose-400 hover:bg-rose-500/10 disabled:opacity-50">
+                      className="flex items-center gap-1 rounded border border-rose-500/20 bg-rose-500/5 px-2 py-0.5 text-[14px] text-rose-400 hover:bg-rose-500/10 disabled:opacity-50">
                       <XCircle className="size-3" /> Reject
                     </button>
                   </div>
                 )}
-                {s.reviewNote && <div className="text-[9px] text-muted-foreground mt-1 italic">{s.reviewNote}</div>}
+                {s.reviewNote && <div className="text-[13px] text-muted-foreground mt-1 italic">{s.reviewNote}</div>}
               </div>
             );
           })}
-          {submissions.length === 0 && <div className="text-[11px] text-muted-foreground italic">No submissions yet for this bounty</div>}
+          {submissions.length === 0 && <div className="text-[15px] text-muted-foreground italic">No submissions yet for this bounty</div>}
         </div>
       </div>
     </div>
@@ -570,8 +570,8 @@ function AttributionTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <DollarSign className="size-4 text-violet-400" />
         <span className="text-xs font-semibold">Value Attribution</span>
-        <span className="text-[11px] text-muted-foreground">— multi-source contribution splitting</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{attributions.length} attributions</span>
+        <span className="text-[15px] text-muted-foreground">— multi-source contribution splitting</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{attributions.length} attributions</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-2">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -591,8 +591,8 @@ function AttributionTab() {
               return (
                 <div key={key} className="rounded border border-border bg-card/40 px-2 py-1.5 text-center">
                   <Icon className="size-3 mx-auto mb-0.5" style={{ color: meta.color }} />
-                  <div className="text-[9px] text-muted-foreground">{meta.label}</div>
-                  <div className="text-[14px] font-bold font-mono" style={{ color: meta.color }}>{(share * 100).toFixed(0)}%</div>
+                  <div className="text-[13px] text-muted-foreground">{meta.label}</div>
+                  <div className="text-[18px] font-bold font-mono" style={{ color: meta.color }}>{(share * 100).toFixed(0)}%</div>
                 </div>
               );
             })}
@@ -602,24 +602,24 @@ function AttributionTab() {
         {attributions.map((a) => (
           <div key={a.attributionId} className="rounded-lg border border-border bg-card/40 p-3">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="font-mono text-[10px] font-semibold text-violet-300">{a.attributionId}</span>
+              <span className="font-mono text-[14px] font-semibold text-violet-300">{a.attributionId}</span>
               <span className="text-[16px] font-bold font-mono text-amber-400">${a.totalAmount.toFixed(2)}</span>
-              {a.bountyId && <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[9px] text-amber-300">bounty: {a.bountyId}</span>}
-              {a.citizenEventId && <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] text-emerald-300">event: {a.citizenEventId}</span>}
-              {a.transactionId && <span className="rounded bg-cyan-500/10 px-1 py-0.5 text-[9px] text-cyan-300">tx: {a.transactionId}</span>}
-              <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(a.attributedAt)}</span>
+              {a.bountyId && <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[13px] text-amber-300">bounty: {a.bountyId}</span>}
+              {a.citizenEventId && <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] text-emerald-300">event: {a.citizenEventId}</span>}
+              {a.transactionId && <span className="rounded bg-cyan-500/10 px-1 py-0.5 text-[13px] text-cyan-300">tx: {a.transactionId}</span>}
+              <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(a.attributedAt)}</span>
             </div>
             {/* Recipients */}
             <div className="space-y-1">
               {Object.entries(a.recipients).map(([recipientId, info]: [string, any]) => {
                 const meta = SHARE_META[info.role] ?? { color: "#a1a1aa", label: info.role };
                 return (
-                  <div key={recipientId} className="flex items-center gap-2 text-[10px] rounded border border-border/60 bg-card/20 px-2 py-1">
+                  <div key={recipientId} className="flex items-center gap-2 text-[14px] rounded border border-border/60 bg-card/20 px-2 py-1">
                     <span className="size-2 rounded-full" style={{ background: meta.color }} />
-                    <span className="font-mono text-[9px] text-muted-foreground truncate flex-1">{recipientId}</span>
+                    <span className="font-mono text-[13px] text-muted-foreground truncate flex-1">{recipientId}</span>
                     <span className="text-muted-foreground">{meta.label}</span>
                     <span className="font-mono font-semibold" style={{ color: meta.color }}>${info.amount.toFixed(2)}</span>
-                    <span className="text-muted-foreground text-[9px]">{(info.share * 100).toFixed(0)}%</span>
+                    <span className="text-muted-foreground text-[13px]">{(info.share * 100).toFixed(0)}%</span>
                   </div>
                 );
               })}
@@ -654,27 +654,27 @@ function TransactionsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Activity className="size-4 text-cyan-400" />
         <span className="text-xs font-semibold">Transactions</span>
-        <span className="text-[11px] text-muted-foreground">— marketplace purchase history</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{transactions.length} transactions</span>
+        <span className="text-[15px] text-muted-foreground">— marketplace purchase history</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{transactions.length} transactions</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
         {transactions.map((t) => (
           <div key={t.transactionId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="font-mono text-[10px] font-semibold text-cyan-300">{t.transactionId}</span>
-              <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium",
+              <span className="font-mono text-[14px] font-semibold text-cyan-300">{t.transactionId}</span>
+              <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium",
                 t.status === "completed" ? "bg-emerald-500/10 text-emerald-300" : "bg-amber-500/10 text-amber-300")}>{t.status}</span>
               <span className="ml-auto text-[16px] font-bold font-mono text-amber-400">${t.amount.toFixed(2)}</span>
             </div>
-            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
               <span>buyer: <span className="font-medium text-foreground">{t.buyerName}</span></span>
               <ArrowRight className="size-2.5" />
               <span>seller: <span className="font-medium text-foreground">{t.sellerName}</span></span>
               {t.assetId && <span>· asset: <span className="font-mono">{t.assetId}</span></span>}
               {t.requestId && <span>· request: <span className="font-mono">{t.requestId}</span></span>}
             </div>
-            {t.attributionId && <div className="text-[9px] text-violet-400 mt-1">attribution: <span className="font-mono">{t.attributionId}</span></div>}
+            {t.attributionId && <div className="text-[13px] text-violet-400 mt-1">attribution: <span className="font-mono">{t.attributionId}</span></div>}
           </div>
         ))}
         {transactions.length === 0 && !loading && (

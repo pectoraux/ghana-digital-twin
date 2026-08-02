@@ -101,7 +101,7 @@ export function CommandPalette() {
               >
                 <Icon className="size-4" />
                 <span>{v.label}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground">{v.hint}</span>
+                <span className="ml-auto text-[14px] text-muted-foreground">{v.hint}</span>
               </CommandItem>
             );
           })}
@@ -119,7 +119,7 @@ export function CommandPalette() {
           >
             <Radio className="size-4 text-emerald-400" />
             <span>Switch to Live mode</span>
-            {temporalMode === "live" && <span className="ml-auto text-[10px] text-primary">active</span>}
+            {temporalMode === "live" && <span className="ml-auto text-[14px] text-primary">active</span>}
           </CommandItem>
           <CommandItem
             value="historical mode time travel"
@@ -130,7 +130,7 @@ export function CommandPalette() {
           >
             <Clock className="size-4 text-amber-400" />
             <span>Switch to Historical mode</span>
-            {temporalMode === "historical" && <span className="ml-auto text-[10px] text-primary">active</span>}
+            {temporalMode === "historical" && <span className="ml-auto text-[14px] text-primary">active</span>}
           </CommandItem>
         </CommandGroup>
 
@@ -149,7 +149,7 @@ export function CommandPalette() {
             >
               <span className="size-2 rounded-full" style={{ background: obsColor(o.type) }} />
               <span className="flex-1 truncate">{o.title}</span>
-              <span className="font-mono text-[10px] text-muted-foreground">{o.id}</span>
+              <span className="font-mono text-[14px] text-muted-foreground">{o.id}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -169,7 +169,7 @@ export function CommandPalette() {
             >
               <span className="size-2 rounded-full" style={{ background: entityColor(e.kind) }} />
               <span className="flex-1 truncate">{e.name}</span>
-              <span className="text-[10px] text-muted-foreground">{ENTITY_META[e.kind].label}</span>
+              <span className="text-[14px] text-muted-foreground">{ENTITY_META[e.kind].label}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -188,7 +188,7 @@ export function CommandPalette() {
             >
               <MapIcon className="size-4" />
               <span>{r.name}</span>
-              <span className="ml-auto text-[10px] text-muted-foreground">capital: {r.capital}</span>
+              <span className="ml-auto text-[14px] text-muted-foreground">capital: {r.capital}</span>
             </CommandItem>
           ))}
         </CommandGroup>

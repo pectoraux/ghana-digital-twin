@@ -37,7 +37,7 @@ export function Inspector() {
           <div className="flex h-full w-[336px] flex-col">
             {/* header */}
             <div className="flex h-9 shrink-0 items-center justify-between border-b border-border px-3">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-[15px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {selectedObservationId ? "Observation" : selectedEntityId ? "Entity" : "Overview"}
               </span>
               <button
@@ -96,9 +96,9 @@ function Overview({
       <div className="rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 to-transparent p-3.5">
         <div className="flex items-center gap-2 mb-2">
           <StatusDot color="#34d399" pulse />
-          <span className="text-[11px] font-semibold text-primary">WORLD MODEL · LIVE</span>
+          <span className="text-[15px] font-semibold text-primary">WORLD MODEL · LIVE</span>
         </div>
-        <p className="text-[12px] text-foreground/80 leading-relaxed">
+        <p className="text-[16px] text-foreground/80 leading-relaxed">
           Continuously ingesting authoritative datasets and maintaining a versioned spatial model across{" "}
           <span className="font-medium text-foreground">{REGIONS.length} regions</span> of Ghana. Every entity has provenance.
         </p>
@@ -142,15 +142,15 @@ function Overview({
                   color={f.level === "crit" ? "#f43f5e" : f.level === "warn" ? "#fbbf24" : "#34d399"}
                   pulse={f.level === "crit"}
                 />
-                <span className="flex items-center gap-1 text-[11px] font-medium text-foreground/90 flex-1 truncate">
+                <span className="flex items-center gap-1 text-[15px] font-medium text-foreground/90 flex-1 truncate">
                   {f.kind === "observation" && <Zap className="size-3 text-rose-400" />}
                   {f.kind === "ingest" && <Database className="size-3 text-amber-400" />}
                   {f.kind === "inference" && <Radio className="size-3 text-emerald-400" />}
                   {f.text}
                 </span>
-                <span className="text-[9px] text-muted-foreground font-mono">{timeAgo(new Date(f.time).toISOString())}</span>
+                <span className="text-[13px] text-muted-foreground font-mono">{timeAgo(new Date(f.time).toISOString())}</span>
               </div>
-              {f.detail && <div className="text-[10px] text-muted-foreground mt-0.5 pl-5">{f.detail}</div>}
+              {f.detail && <div className="text-[14px] text-muted-foreground mt-0.5 pl-5">{f.detail}</div>}
             </button>
           ))}
         </div>
@@ -179,8 +179,8 @@ function QuickNav({
         <Icon className="size-4" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[12px] font-medium">{label}</div>
-        <div className="text-[10px] text-muted-foreground truncate">{sub}</div>
+        <div className="text-[16px] font-medium">{label}</div>
+        <div className="text-[14px] text-muted-foreground truncate">{sub}</div>
       </div>
       <ChevronRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
     </button>

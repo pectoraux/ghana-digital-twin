@@ -103,10 +103,10 @@ export function CommandCenterView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <RadioTower className="size-4 text-primary" /> National Intelligence Command Center
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: national-command-center
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Intelligence → Assessment → Decision → Workflow → Action → Outcome → Learning
           </p>
           <PackageBadge />
@@ -156,7 +156,7 @@ function PackageBadge() {
   }, []);
   if (!pkg) return null;
   return (
-    <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="ml-auto hidden md:flex items-center gap-2 text-[14px] text-muted-foreground">
       <ShieldCheck className="size-3 text-emerald-400" />
       <span className="font-mono">v{pkg.version}</span>
       <span>·</span>
@@ -231,7 +231,7 @@ function OverviewTab() {
             </div>
             <div>
               <div className="text-2xl font-semibold" style={{ color: risk.color }}>{risk.label}</div>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-[15px] text-muted-foreground">
                 {inc.bySeverity.critical ?? 0} critical · {inc.bySeverity.high ?? 0} high active
               </div>
             </div>
@@ -244,7 +244,7 @@ function OverviewTab() {
             {Object.entries(inc.byType).sort((a: any, b: any) => b[1] - a[1]).map(([type, count]: any) => {
               const meta = TYPE_META[type] ?? { label: type, color: "#a1a1aa" };
               return (
-                <div key={type} className="flex items-center gap-2 text-[11px]">
+                <div key={type} className="flex items-center gap-2 text-[15px]">
                   <span className="size-2 rounded-full" style={{ background: meta.color }} />
                   <span className="flex-1 truncate">{meta.label}</span>
                   <span className="font-mono font-semibold">{count}</span>
@@ -254,7 +254,7 @@ function OverviewTab() {
                 </div>
               );
             })}
-            {Object.keys(inc.byType).length === 0 && <div className="text-[11px] text-muted-foreground">No active incidents</div>}
+            {Object.keys(inc.byType).length === 0 && <div className="text-[15px] text-muted-foreground">No active incidents</div>}
           </div>
         </div>
 
@@ -266,8 +266,8 @@ function OverviewTab() {
               const meta = STATUS_META[s] ?? { color: "#a1a1aa" };
               return (
                 <div key={s} className="flex-1 text-center" title={`${STATUS_META[s]?.label ?? s}: ${count}`}>
-                  <div className="text-[10px] text-muted-foreground mb-1">{STATUS_META[s]?.label ?? s}</div>
-                  <div className="rounded-md py-1 text-[11px] font-mono font-semibold" style={{ color: meta.color, background: `${meta.color}14` }}>
+                  <div className="text-[14px] text-muted-foreground mb-1">{STATUS_META[s]?.label ?? s}</div>
+                  <div className="rounded-md py-1 text-[15px] font-mono font-semibold" style={{ color: meta.color, background: `${meta.color}14` }}>
                     {count}
                   </div>
                 </div>
@@ -283,7 +283,7 @@ function OverviewTab() {
           <SectionLabel className="mb-2">Active Incidents by Region</SectionLabel>
           <div className="space-y-1.5">
             {Object.entries(inc.byRegion).sort((a: any, b: any) => b[1] - a[1]).map(([region, count]: any) => (
-              <div key={region} className="flex items-center gap-2 text-[11px]">
+              <div key={region} className="flex items-center gap-2 text-[15px]">
                 <MapPin className="size-3 text-muted-foreground" />
                 <span className="flex-1 font-mono uppercase">{region}</span>
                 <div className="h-2 w-32 rounded-full bg-foreground/10 overflow-hidden">
@@ -292,7 +292,7 @@ function OverviewTab() {
                 <span className="font-mono font-semibold w-6 text-right">{count}</span>
               </div>
             ))}
-            {Object.keys(inc.byRegion).length === 0 && <div className="text-[11px] text-muted-foreground">No active incidents</div>}
+            {Object.keys(inc.byRegion).length === 0 && <div className="text-[15px] text-muted-foreground">No active incidents</div>}
           </div>
         </div>
 
@@ -302,17 +302,17 @@ function OverviewTab() {
             {data.recentEvents.map((e: any) => {
               const color = e.severity === "crit" ? "#f43f5e" : e.severity === "warn" ? "#fb923c" : "#34d399";
               return (
-                <div key={e.eventId} className="flex items-start gap-2 text-[11px] py-1 border-b border-border/40 last:border-0">
+                <div key={e.eventId} className="flex items-start gap-2 text-[15px] py-1 border-b border-border/40 last:border-0">
                   <StatusDot color={color} pulse={e.severity === "crit"} />
                   <span className="font-mono text-muted-foreground w-12 shrink-0">{new Date(e.occurredAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</span>
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{e.title}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">{e.detail}</div>
+                    <div className="text-[14px] text-muted-foreground truncate">{e.detail}</div>
                   </div>
                 </div>
               );
             })}
-            {data.recentEvents.length === 0 && <div className="text-[11px] text-muted-foreground">No recent events</div>}
+            {data.recentEvents.length === 0 && <div className="text-[15px] text-muted-foreground">No recent events</div>}
           </div>
         </div>
       </div>
@@ -321,14 +321,14 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <RadioTower className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">INTELLIGENCE → OPERATIONS PIPELINE</span>
-          <span className="text-[10px] text-muted-foreground ml-auto">The loop that turns intelligence into outcomes</span>
+          <span className="text-[15px] font-semibold text-primary">INTELLIGENCE → OPERATIONS PIPELINE</span>
+          <span className="text-[14px] text-muted-foreground ml-auto">The loop that turns intelligence into outcomes</span>
         </div>
         <div className="flex items-center gap-1 overflow-x-auto pb-1">
           {["Agents", "Assessment", "Incident", "Workflow", "Decision", "Action", "Outcome", "Learning"].map((step, i, arr) => (
             <div key={step} className="flex items-center gap-1 shrink-0">
               <span className={cn(
-                "rounded-md px-2 py-1 text-[10px] font-medium border",
+                "rounded-md px-2 py-1 text-[14px] font-medium border",
                 i < 2 ? "bg-violet-500/10 border-violet-500/20 text-violet-300" :
                 i < 4 ? "bg-amber-500/10 border-amber-500/20 text-amber-300" :
                 "bg-emerald-500/10 border-emerald-500/20 text-emerald-300"
@@ -336,9 +336,9 @@ function OverviewTab() {
               {i < arr.length - 1 && <ArrowRight className="size-3 text-muted-foreground shrink-0" />}
             </div>
           ))}
-          <span className="text-[10px] text-muted-foreground ml-2">↺ feeds back</span>
+          <span className="text-[14px] text-muted-foreground ml-2">↺ feeds back</span>
         </div>
-        <p className="text-[11px] text-foreground/70 mt-2 leading-relaxed">
+        <p className="text-[15px] text-foreground/70 mt-2 leading-relaxed">
           The Command Center is a <span className="text-primary font-medium">package</span>, not a kernel feature. It consumes intelligence
           (observations, hypotheses, agent reasoning, arbitration) and produces operational state. Every step — from satellite pixel to
           field action to learning feedback — is an immutable artifact with full provenance. This is what governments buy: fewer incidents,
@@ -382,8 +382,8 @@ function SituationTab() {
     <div className="h-full flex flex-col">
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <span className="flex items-center gap-1.5 text-xs font-semibold"><Activity className="size-3.5 text-emerald-400" /> LIVE</span>
-        <span className="text-[11px] text-muted-foreground">Real-time operational event stream · auto-refresh 15s</span>
-        <button onClick={load} className="ml-auto flex items-center gap-1 rounded border border-border px-2 py-1 text-[10px] text-muted-foreground hover:text-foreground">
+        <span className="text-[15px] text-muted-foreground">Real-time operational event stream · auto-refresh 15s</span>
+        <button onClick={load} className="ml-auto flex items-center gap-1 rounded border border-border px-2 py-1 text-[14px] text-muted-foreground hover:text-foreground">
           <RefreshCw className={cn("size-3", loading && "animate-spin")} /> Refresh
         </button>
       </div>
@@ -401,14 +401,14 @@ function SituationTab() {
               <Icon className="size-3.5 shrink-0 mt-0.5" style={{ color }} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[12px] font-medium truncate flex-1">{e.title}</span>
-                  <span className="font-mono text-[9px] text-muted-foreground shrink-0">{new Date(e.occurredAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+                  <span className="text-[16px] font-medium truncate flex-1">{e.title}</span>
+                  <span className="font-mono text-[13px] text-muted-foreground shrink-0">{new Date(e.occurredAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">{e.detail}</div>
+                <div className="text-[15px] text-muted-foreground mt-0.5">{e.detail}</div>
                 <div className="flex items-center gap-2 mt-1">
-                  {e.regionId && <span className="text-[9px] font-mono uppercase text-muted-foreground">{e.regionId}</span>}
-                  {e.incidentId && <span className="text-[9px] font-mono text-primary/70">{e.incidentId}</span>}
-                  {e.artifactHash && <span className="text-[9px] font-mono text-muted-foreground/70">{e.artifactHash}</span>}
+                  {e.regionId && <span className="text-[13px] font-mono uppercase text-muted-foreground">{e.regionId}</span>}
+                  {e.incidentId && <span className="text-[13px] font-mono text-primary/70">{e.incidentId}</span>}
+                  {e.artifactHash && <span className="text-[13px] font-mono text-muted-foreground/70">{e.artifactHash}</span>}
                 </div>
               </div>
             </div>
@@ -482,13 +482,13 @@ function IncidentsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2 flex-wrap">
         <span className="text-xs font-semibold">{incidents.length} incidents</span>
         <div className="flex items-center gap-1 ml-2">
-          <span className="text-[10px] text-muted-foreground">Status:</span>
+          <span className="text-[14px] text-muted-foreground">Status:</span>
           {["", "detected", "reviewed", "assigned", "investigated", "resolved", "closed", "learned"].map((s) => (
             <button
               key={s || "all"}
               onClick={() => setFilter((f) => ({ ...f, status: s || undefined }))}
               className={cn(
-                "rounded px-1.5 py-0.5 text-[10px] font-medium capitalize transition-colors",
+                "rounded px-1.5 py-0.5 text-[14px] font-medium capitalize transition-colors",
                 (filter.status ?? "") === s ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent"
               )}
             >
@@ -497,13 +497,13 @@ function IncidentsTab() {
           ))}
         </div>
         <div className="flex items-center gap-1 ml-2">
-          <span className="text-[10px] text-muted-foreground">Severity:</span>
+          <span className="text-[14px] text-muted-foreground">Severity:</span>
           {["", "low", "moderate", "high", "critical"].map((s) => (
             <button
               key={s || "all"}
               onClick={() => setFilter((f) => ({ ...f, severity: s || undefined }))}
               className={cn(
-                "rounded px-1.5 py-0.5 text-[10px] font-medium capitalize transition-colors",
+                "rounded px-1.5 py-0.5 text-[14px] font-medium capitalize transition-colors",
                 (filter.severity ?? "") === s ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent"
               )}
             >
@@ -525,22 +525,22 @@ function IncidentsTab() {
                 <div className="w-1 shrink-0 rounded-full" style={{ background: tmeta.color }} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-mono text-[10px] font-semibold text-muted-foreground">{inc.incidentId}</span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: tmeta.color, background: `${tmeta.color}1a` }}>
+                    <span className="font-mono text-[14px] font-semibold text-muted-foreground">{inc.incidentId}</span>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: tmeta.color, background: `${tmeta.color}1a` }}>
                       {tmeta.icon} {tmeta.label}
                     </span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-semibold uppercase" style={{ color: smeta.color, background: smeta.bg }}>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-semibold uppercase" style={{ color: smeta.color, background: smeta.bg }}>
                       {inc.severity}
                     </span>
-                    <span className="rounded px-1 py-0.5 text-[9px] font-medium" style={{ color: stmeta.color, background: `${stmeta.color}14` }}>
+                    <span className="rounded px-1 py-0.5 text-[13px] font-medium" style={{ color: stmeta.color, background: `${stmeta.color}14` }}>
                       {stmeta.label}
                     </span>
-                    <span className="ml-auto flex items-center gap-1 text-[9px] text-muted-foreground">
+                    <span className="ml-auto flex items-center gap-1 text-[13px] text-muted-foreground">
                       <Clock className="size-2.5" /> {timeAgo(inc.detectedAt)}
                     </span>
                   </div>
-                  <div className="text-[12px] font-medium mb-1">{inc.title}</div>
-                  <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{inc.summary}</p>
+                  <div className="text-[16px] font-medium mb-1">{inc.title}</div>
+                  <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{inc.summary}</p>
 
                   {/* Lifecycle progress */}
                   <div className="flex items-center gap-0.5 mb-1.5">
@@ -560,7 +560,7 @@ function IncidentsTab() {
                     })}
                   </div>
 
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1"><MapPin className="size-2.5" /> {inc.regionId ?? "—"}</span>
                     <span className="flex items-center gap-1">conf <span className="font-mono font-semibold" style={{ color: tmeta.color }}>{(inc.confidence * 100).toFixed(0)}%</span></span>
                     {inc.areaAffectedHa && <span>{inc.areaAffectedHa.toFixed(1)} ha</span>}
@@ -574,7 +574,7 @@ function IncidentsTab() {
                     <button
                       onClick={() => handleTransition(inc.incidentId, LIFECYCLE[stageIdx + 1])}
                       disabled={busy === inc.incidentId}
-                      className="mt-2 flex items-center gap-1 rounded border border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] text-primary hover:bg-primary/10 disabled:opacity-50"
+                      className="mt-2 flex items-center gap-1 rounded border border-primary/20 bg-primary/5 px-2 py-0.5 text-[14px] text-primary hover:bg-primary/10 disabled:opacity-50"
                     >
                       {busy === inc.incidentId ? <Loader2 className="size-3 animate-spin" /> : <ChevronRight className="size-3" />}
                       Advance to {STATUS_META[LIFECYCLE[stageIdx + 1]]?.label}
@@ -638,11 +638,11 @@ function InvestigationTab() {
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <span className="size-1.5 rounded-full" style={{ background: tmeta.color }} />
-                  <span className="font-mono text-[9px] text-muted-foreground">{inc.incidentId}</span>
-                  <span className="ml-auto text-[9px]" style={{ color: STATUS_META[inc.status]?.color }}>{STATUS_META[inc.status]?.label}</span>
+                  <span className="font-mono text-[13px] text-muted-foreground">{inc.incidentId}</span>
+                  <span className="ml-auto text-[13px]" style={{ color: STATUS_META[inc.status]?.color }}>{STATUS_META[inc.status]?.label}</span>
                 </div>
-                <div className="text-[11px] font-medium truncate">{inc.title}</div>
-                <div className="text-[9px] text-muted-foreground">{tmeta.label} · {(inc.confidence * 100).toFixed(0)}%</div>
+                <div className="text-[15px] font-medium truncate">{inc.title}</div>
+                <div className="text-[13px] text-muted-foreground">{tmeta.label} · {(inc.confidence * 100).toFixed(0)}%</div>
               </button>
             );
           })}
@@ -688,19 +688,19 @@ function EvidenceRoom({ incidentId }: { incidentId: string }) {
         <div className="flex items-center gap-2 flex-wrap">
           <FileSearch className="size-4 text-primary" />
           <span className="font-mono text-xs font-semibold">{incidentId}</span>
-          <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ color: tmeta.color, background: `${tmeta.color}1a` }}>
+          <span className="rounded px-1.5 py-0.5 text-[14px] font-semibold" style={{ color: tmeta.color, background: `${tmeta.color}1a` }}>
             {tmeta.label}
           </span>
-          <span className="text-[11px] text-muted-foreground">·</span>
-          <span className="text-[11px] text-muted-foreground">Fused confidence</span>
-          <span className="font-mono text-[11px] font-semibold" style={{ color: tmeta.color }}>{(room.fusedConfidence * 100).toFixed(0)}%</span>
+          <span className="text-[15px] text-muted-foreground">·</span>
+          <span className="text-[15px] text-muted-foreground">Fused confidence</span>
+          <span className="font-mono text-[15px] font-semibold" style={{ color: tmeta.color }}>{(room.fusedConfidence * 100).toFixed(0)}%</span>
           <div className="ml-auto flex items-center gap-1">
             {(["evidence", "timeline", "decisions", "actions"] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setSubtab(s)}
                 className={cn(
-                  "rounded px-2 py-1 text-[10px] font-medium capitalize transition-colors",
+                  "rounded px-2 py-1 text-[14px] font-medium capitalize transition-colors",
                   subtab === s ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
@@ -712,7 +712,7 @@ function EvidenceRoom({ incidentId }: { incidentId: string }) {
         {room.recommendedAction && (
           <div className="mt-1.5 flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-amber-500/5 px-2 py-1">
             <Zap className="size-3 text-amber-400" />
-            <span className="text-[11px] text-amber-300/90"><span className="font-semibold">Recommended:</span> {room.recommendedAction}</span>
+            <span className="text-[15px] text-amber-300/90"><span className="font-semibold">Recommended:</span> {room.recommendedAction}</span>
           </div>
         )}
       </div>
@@ -737,7 +737,7 @@ function EvidenceTab({ room }: { room: any }) {
           {room.chainSteps.map((s: any, i: number) => (
             <div key={s.step} className="flex items-center gap-1">
               <div
-                className={cn("rounded px-1.5 py-0.5 text-[9px] font-medium border", s.present ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-border bg-card/30 text-muted-foreground line-through opacity-50")}
+                className={cn("rounded px-1.5 py-0.5 text-[13px] font-medium border", s.present ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300" : "border-border bg-card/30 text-muted-foreground line-through opacity-50")}
                 title={s.detail}
               >
                 {s.present ? "✓" : "✗"} {s.step}
@@ -746,7 +746,7 @@ function EvidenceTab({ room }: { room: any }) {
             </div>
           ))}
         </div>
-        <div className="mt-2 text-[10px] text-muted-foreground">
+        <div className="mt-2 text-[14px] text-muted-foreground">
           {room.chainComplete ? "✓ Complete chain — every step from satellite pixel to outcome is traceable" : "Chain incomplete — some evidence steps are missing"}
         </div>
       </div>
@@ -764,17 +764,17 @@ function EvidenceTab({ room }: { room: any }) {
           {room.agentReasoning.map((a: any, i: number) => (
             <div key={i} className="rounded-md border border-border bg-card/30 px-2.5 py-1.5">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-mono text-[10px] font-semibold text-violet-300">{a.agentId}</span>
+                <span className="font-mono text-[14px] font-semibold text-violet-300">{a.agentId}</span>
                 {a.isPrimary && <span className="rounded bg-violet-500/15 px-1 py-0.5 text-[8px] font-semibold text-violet-300">PRIMARY</span>}
-                {a.rank && <span className="text-[9px] text-muted-foreground">rank #{a.rank}</span>}
-                <span className="ml-auto font-mono text-[10px] font-semibold" style={{ color: a.confidence >= 0.7 ? "#34d399" : a.confidence >= 0.5 ? "#fbbf24" : "#fb923c" }}>
+                {a.rank && <span className="text-[13px] text-muted-foreground">rank #{a.rank}</span>}
+                <span className="ml-auto font-mono text-[14px] font-semibold" style={{ color: a.confidence >= 0.7 ? "#34d399" : a.confidence >= 0.5 ? "#fbbf24" : "#fb923c" }}>
                   {(a.confidence * 100).toFixed(0)}%
                 </span>
               </div>
-              <div className="text-[11px] font-medium">{a.position}</div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">{a.reasoning}</div>
+              <div className="text-[15px] font-medium">{a.position}</div>
+              <div className="text-[14px] text-muted-foreground mt-0.5">{a.reasoning}</div>
               {(a.supporting !== undefined || a.contradicting !== undefined) && (
-                <div className="flex items-center gap-3 mt-1 text-[9px]">
+                <div className="flex items-center gap-3 mt-1 text-[13px]">
                   <span className="text-emerald-400">↑ {a.supporting ?? 0} supporting</span>
                   <span className="text-rose-400">↓ {a.contradicting ?? 0} contradicting</span>
                   <span className="text-muted-foreground">? {a.missing ?? 0} missing</span>
@@ -782,7 +782,7 @@ function EvidenceTab({ room }: { room: any }) {
               )}
             </div>
           ))}
-          {room.agentReasoning.length === 0 && <div className="text-[11px] text-muted-foreground">No agent reasoning recorded</div>}
+          {room.agentReasoning.length === 0 && <div className="text-[15px] text-muted-foreground">No agent reasoning recorded</div>}
         </div>
       </div>
 
@@ -790,15 +790,15 @@ function EvidenceTab({ room }: { room: any }) {
       {room.debateSummary.hasDebate && (
         <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 p-3">
           <SectionLabel className="mb-2 flex items-center gap-1.5"><Scale className="size-3 text-violet-300" /> Arbitration Summary</SectionLabel>
-          <div className="text-[11px]">
+          <div className="text-[15px]">
             <div className="mb-1"><span className="text-muted-foreground">Final assessment:</span> <span className="font-medium">{room.debateSummary.finalAssessment ?? "—"}</span></div>
             <div className="mb-1"><span className="text-muted-foreground">Confidence:</span> <span className="font-mono font-semibold">{room.debateSummary.confidence ? `${(room.debateSummary.confidence * 100).toFixed(0)}%` : "—"}</span></div>
             <div className="mb-1"><span className="text-muted-foreground">Outcome:</span> <span className="font-medium">{room.debateSummary.outcome}</span></div>
             {room.debateSummary.claims?.length > 0 && (
               <div className="mt-2">
-                <div className="text-[10px] text-muted-foreground mb-1">Claims weighed:</div>
+                <div className="text-[14px] text-muted-foreground mb-1">Claims weighed:</div>
                 {room.debateSummary.claims.map((c: any, i: number) => (
-                  <div key={i} className="text-[10px] flex items-center gap-2">
+                  <div key={i} className="text-[14px] flex items-center gap-2">
                     <span className="font-mono text-violet-300">{c.agentId}</span>
                     <span className="flex-1 truncate">{c.assessment}</span>
                     <span className="font-mono">{c.confidence ? `${(c.confidence * 100).toFixed(0)}%` : "—"}</span>
@@ -818,7 +818,7 @@ function EvidenceSection({ title, icon: Icon, color, entries }: { title: string;
     <div className="rounded-lg border border-border bg-card/40 p-3">
       <SectionLabel className="mb-2 flex items-center gap-1.5">
         <Icon className="size-3" style={{ color }} /> {title}
-        <span className="ml-auto text-[9px] font-mono text-muted-foreground">{entries.length} items</span>
+        <span className="ml-auto text-[13px] font-mono text-muted-foreground">{entries.length} items</span>
       </SectionLabel>
       <div className="space-y-1">
         {entries.map((e: any, i: number) => (
@@ -826,16 +826,16 @@ function EvidenceSection({ title, icon: Icon, color, entries }: { title: string;
             <CheckCircle2 className="size-3 shrink-0 mt-0.5" style={{ color }} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-medium">{e.source ?? e.type}</span>
-                {e.type && <span className="text-[9px] font-mono text-muted-foreground">{e.type}</span>}
-                <span className="ml-auto font-mono text-[9px] font-semibold" style={{ color }}>{(e.confidence * 100).toFixed(0)}%</span>
+                <span className="text-[15px] font-medium">{e.source ?? e.type}</span>
+                {e.type && <span className="text-[13px] font-mono text-muted-foreground">{e.type}</span>}
+                <span className="ml-auto font-mono text-[13px] font-semibold" style={{ color }}>{(e.confidence * 100).toFixed(0)}%</span>
               </div>
-              <div className="text-[10px] text-foreground/70 mt-0.5">{e.finding}</div>
-              {e.date && <div className="text-[9px] text-muted-foreground mt-0.5">{new Date(e.date).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</div>}
+              <div className="text-[14px] text-foreground/70 mt-0.5">{e.finding}</div>
+              {e.date && <div className="text-[13px] text-muted-foreground mt-0.5">{new Date(e.date).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" })}</div>}
             </div>
           </div>
         ))}
-        {entries.length === 0 && <div className="text-[11px] text-muted-foreground italic">No {title.toLowerCase()} recorded</div>}
+        {entries.length === 0 && <div className="text-[15px] text-muted-foreground italic">No {title.toLowerCase()} recorded</div>}
       </div>
     </div>
   );
@@ -851,14 +851,14 @@ function TimelineTab({ timeline }: { timeline: any[] }) {
           <div key={i} className="relative pb-3">
             <div className="absolute -left-3 top-0.5 size-2 rounded-full bg-primary border-2 border-background" />
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-muted-foreground">{new Date(t.time).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</span>
-              <span className="text-[11px] font-semibold">{t.event}</span>
-              {t.actor && <span className="text-[9px] font-mono text-primary/70">{t.actor}</span>}
+              <span className="text-[14px] font-mono text-muted-foreground">{new Date(t.time).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</span>
+              <span className="text-[15px] font-semibold">{t.event}</span>
+              {t.actor && <span className="text-[13px] font-mono text-primary/70">{t.actor}</span>}
             </div>
-            <div className="text-[10px] text-foreground/70 mt-0.5">{t.detail}</div>
+            <div className="text-[14px] text-foreground/70 mt-0.5">{t.detail}</div>
           </div>
         ))}
-        {timeline.length === 0 && <div className="text-[11px] text-muted-foreground">No timeline events</div>}
+        {timeline.length === 0 && <div className="text-[15px] text-muted-foreground">No timeline events</div>}
       </div>
     </div>
   );
@@ -871,14 +871,14 @@ function DecisionsSubTab({ decisions }: { decisions: any[] }) {
       {decisions.map((d: any) => (
         <div key={d.decisionId} className="rounded-lg border border-border bg-card/40 p-2.5">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[10px] font-semibold text-amber-300">{d.decisionId}</span>
-            <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[9px] font-medium text-amber-300">{d.decisionType}</span>
+            <span className="font-mono text-[14px] font-semibold text-amber-300">{d.decisionId}</span>
+            <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[13px] font-medium text-amber-300">{d.decisionType}</span>
             {d.policyChecked && <CheckCircle2 className="size-3 text-emerald-400" />}
-            <span className="ml-auto text-[9px] text-muted-foreground">{new Date(d.decidedAt).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</span>
+            <span className="ml-auto text-[13px] text-muted-foreground">{new Date(d.decidedAt).toLocaleString("en-GB", { dateStyle: "short", timeStyle: "short" })}</span>
           </div>
-          <div className="text-[11px] font-medium">{d.decision}</div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">{d.rationale}</div>
-          <div className="flex items-center gap-2 mt-1 text-[9px]">
+          <div className="text-[15px] font-medium">{d.decision}</div>
+          <div className="text-[14px] text-muted-foreground mt-0.5">{d.rationale}</div>
+          <div className="flex items-center gap-2 mt-1 text-[13px]">
             <span className="text-muted-foreground">by</span>
             <span className="font-mono text-primary/70">{d.actorRole}</span>
             <span className="font-mono text-muted-foreground">({d.actorId})</span>
@@ -886,7 +886,7 @@ function DecisionsSubTab({ decisions }: { decisions: any[] }) {
           </div>
         </div>
       ))}
-      {decisions.length === 0 && <div className="text-[11px] text-muted-foreground">No decisions recorded</div>}
+      {decisions.length === 0 && <div className="text-[15px] text-muted-foreground">No decisions recorded</div>}
     </div>
   );
 }
@@ -900,29 +900,29 @@ function ActionsSubTab({ actions, outcome }: { actions: any[]; outcome: any }) {
         return (
           <div key={a.actionId} className="rounded-lg border border-border bg-card/40 p-2.5">
             <div className="flex items-center gap-2 mb-1">
-              <span className="font-mono text-[10px] font-semibold text-cyan-300">{a.actionId}</span>
-              <span className="rounded px-1 py-0.5 text-[9px] font-medium" style={{ color, background: `${color}1a` }}>{a.actionType}</span>
-              <span className="rounded px-1 py-0.5 text-[9px] font-medium" style={{ color, background: `${color}14` }}>{a.status}</span>
-              <span className="ml-auto flex items-center gap-1 text-[9px] text-muted-foreground"><DollarSign className="size-2.5" />{a.cost > 0 ? `$${a.cost}` : "free"}</span>
+              <span className="font-mono text-[14px] font-semibold text-cyan-300">{a.actionId}</span>
+              <span className="rounded px-1 py-0.5 text-[13px] font-medium" style={{ color, background: `${color}1a` }}>{a.actionType}</span>
+              <span className="rounded px-1 py-0.5 text-[13px] font-medium" style={{ color, background: `${color}14` }}>{a.status}</span>
+              <span className="ml-auto flex items-center gap-1 text-[13px] text-muted-foreground"><DollarSign className="size-2.5" />{a.cost > 0 ? `$${a.cost}` : "free"}</span>
             </div>
-            <div className="text-[11px]">{a.description}</div>
-            <div className="text-[9px] text-muted-foreground mt-0.5">→ {a.assignedTo} ({a.assignedRole})</div>
-            {a.result && <div className="text-[10px] text-foreground/70 mt-1 rounded bg-card/30 p-1.5 border border-border/50">📋 {a.result}</div>}
+            <div className="text-[15px]">{a.description}</div>
+            <div className="text-[13px] text-muted-foreground mt-0.5">→ {a.assignedTo} ({a.assignedRole})</div>
+            {a.result && <div className="text-[14px] text-foreground/70 mt-1 rounded bg-card/30 p-1.5 border border-border/50">📋 {a.result}</div>}
           </div>
         );
       })}
-      {actions.length === 0 && <div className="text-[11px] text-muted-foreground">No actions dispatched</div>}
+      {actions.length === 0 && <div className="text-[15px] text-muted-foreground">No actions dispatched</div>}
 
       {outcome && (
         <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 mt-2">
           <SectionLabel className="mb-1.5 flex items-center gap-1.5"><Brain className="size-3 text-emerald-400" /> Outcome → Learning Feedback</SectionLabel>
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-[10px] font-semibold text-emerald-300">{outcome.outcomeId}</span>
-            <span className="rounded bg-emerald-500/15 px-1 py-0.5 text-[9px] font-semibold text-emerald-300">{outcome.result}</span>
-            <span className="text-[9px] text-muted-foreground">ground truth: {outcome.groundTruth ? "✓ confirmed" : "✗ false positive"}</span>
+            <span className="font-mono text-[14px] font-semibold text-emerald-300">{outcome.outcomeId}</span>
+            <span className="rounded bg-emerald-500/15 px-1 py-0.5 text-[13px] font-semibold text-emerald-300">{outcome.result}</span>
+            <span className="text-[13px] text-muted-foreground">ground truth: {outcome.groundTruth ? "✓ confirmed" : "✗ false positive"}</span>
           </div>
-          <div className="text-[11px]">{outcome.summary}</div>
-          <div className="flex items-center gap-3 mt-1.5 text-[9px] text-muted-foreground">
+          <div className="text-[15px]">{outcome.summary}</div>
+          <div className="flex items-center gap-3 mt-1.5 text-[13px] text-muted-foreground">
             <span className="flex items-center gap-1"><Clock className="size-2.5" /> {outcome.timeToResolveH}h to resolve</span>
             <span className="flex items-center gap-1"><DollarSign className="size-2.5" /> ${outcome.totalCost}</span>
             <span className="flex items-center gap-1"><ArrowRight className="size-2.5" /> feedback artifact: <span className="font-mono">{outcome.feedbackArtifact}</span></span>
@@ -982,24 +982,24 @@ function WorkflowsTab() {
               <div key={wf.workflowId} className="rounded-lg border border-border bg-card/40 p-2.5">
                 <div className="flex items-center gap-1.5 mb-1">
                   <GitBranch className="size-3 text-primary" />
-                  <span className="text-[11px] font-semibold truncate flex-1">{wf.name}</span>
+                  <span className="text-[15px] font-semibold truncate flex-1">{wf.name}</span>
                 </div>
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: tmeta.color, background: `${tmeta.color}1a` }}>{tmeta.label}</span>
-                  <span className="text-[9px] text-muted-foreground">{wf.steps.length} steps</span>
-                  <span className="text-[9px] text-muted-foreground ml-auto font-mono">v{wf.version}</span>
+                  <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: tmeta.color, background: `${tmeta.color}1a` }}>{tmeta.label}</span>
+                  <span className="text-[13px] text-muted-foreground">{wf.steps.length} steps</span>
+                  <span className="text-[13px] text-muted-foreground ml-auto font-mono">v{wf.version}</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground mb-1.5 leading-snug">{wf.description}</div>
+                <div className="text-[14px] text-muted-foreground mb-1.5 leading-snug">{wf.description}</div>
                 <div className="space-y-0.5">
                   {wf.steps.map((s: any, i: number) => (
-                    <div key={s.id} className="flex items-center gap-1.5 text-[9px]">
+                    <div key={s.id} className="flex items-center gap-1.5 text-[13px]">
                       <span className="size-3.5 rounded-full bg-foreground/10 flex items-center justify-center font-mono font-semibold text-[8px] shrink-0">{i + 1}</span>
                       <span className="flex-1 truncate">{s.name}</span>
                       <span className="text-muted-foreground">{s.sla}</span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-1.5 text-[9px] text-muted-foreground flex items-center gap-1">
+                <div className="mt-1.5 text-[13px] text-muted-foreground flex items-center gap-1">
                   <Users className="size-2.5" /> owns: <span className="font-mono">{wf.owningRole}</span>
                 </div>
               </div>
@@ -1012,7 +1012,7 @@ function WorkflowsTab() {
       <div className="min-w-0 flex-1 flex flex-col">
         <div className="px-3 py-2 border-b border-border flex items-center gap-2">
           <SectionLabel>Active Workflow Executions</SectionLabel>
-          <span className="text-[10px] text-muted-foreground">{executions.length} executions</span>
+          <span className="text-[14px] text-muted-foreground">{executions.length} executions</span>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-2">
           {executions.map((ex) => {
@@ -1021,10 +1021,10 @@ function WorkflowsTab() {
             return (
               <div key={ex.executionId} className="rounded-lg border border-border bg-card/40 p-3">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-mono text-[10px] font-semibold text-primary">{ex.executionId}</span>
-                  <span className="text-[10px] text-muted-foreground">→ {ex.incidentId}</span>
-                  <span className="text-[10px] text-muted-foreground">· {ex.workflowId}</span>
-                  <span className={cn("ml-auto rounded px-1.5 py-0.5 text-[9px] font-semibold", isRunning ? "bg-amber-500/15 text-amber-300" : ex.status === "completed" ? "bg-emerald-500/15 text-emerald-300" : "bg-foreground/10 text-muted-foreground")}>
+                  <span className="font-mono text-[14px] font-semibold text-primary">{ex.executionId}</span>
+                  <span className="text-[14px] text-muted-foreground">→ {ex.incidentId}</span>
+                  <span className="text-[14px] text-muted-foreground">· {ex.workflowId}</span>
+                  <span className={cn("ml-auto rounded px-1.5 py-0.5 text-[13px] font-semibold", isRunning ? "bg-amber-500/15 text-amber-300" : ex.status === "completed" ? "bg-emerald-500/15 text-emerald-300" : "bg-foreground/10 text-muted-foreground")}>
                     {ex.status}
                   </span>
                 </div>
@@ -1033,27 +1033,27 @@ function WorkflowsTab() {
                   {ex.stepStates.map((ss: any, i: number) => {
                     const color = ss.status === "completed" ? "#34d399" : ss.status === "active" ? "#fbbf24" : ss.status === "skipped" ? "#64748b" : "#a1a1aa";
                     return (
-                      <div key={i} className="flex items-center gap-2 text-[10px]">
+                      <div key={i} className="flex items-center gap-2 text-[14px]">
                         <span className="size-3.5 rounded-full flex items-center justify-center shrink-0" style={{ background: `${color}1a`, color }}>
                           {ss.status === "completed" ? "✓" : ss.status === "active" ? "●" : ss.status === "skipped" ? "—" : i + 1}
                         </span>
                         <span className={cn("flex-1 truncate", ss.status === "pending" && "text-muted-foreground", ss.status === "completed" && "text-foreground/80")}>
                           {ss.stepName}
                         </span>
-                        <span className="text-[9px] text-muted-foreground">{ss.requiredRole}</span>
-                        <span className="text-[9px] text-muted-foreground">{ss.sla}</span>
+                        <span className="text-[13px] text-muted-foreground">{ss.requiredRole}</span>
+                        <span className="text-[13px] text-muted-foreground">{ss.sla}</span>
                       </div>
                     );
                   })}
                 </div>
                 {ex.stepStates[ex.currentStep]?.actor && (
-                  <div className="mt-1.5 text-[9px] text-muted-foreground">Current actor: <span className="font-mono">{ex.stepStates[ex.currentStep].actor}</span></div>
+                  <div className="mt-1.5 text-[13px] text-muted-foreground">Current actor: <span className="font-mono">{ex.stepStates[ex.currentStep].actor}</span></div>
                 )}
                 {isRunning && (
                   <button
                     onClick={() => handleAdvance(ex.executionId)}
                     disabled={busy === ex.executionId}
-                    className="mt-2 flex items-center gap-1 rounded border border-primary/20 bg-primary/5 px-2 py-1 text-[10px] text-primary hover:bg-primary/10 disabled:opacity-50"
+                    className="mt-2 flex items-center gap-1 rounded border border-primary/20 bg-primary/5 px-2 py-1 text-[14px] text-primary hover:bg-primary/10 disabled:opacity-50"
                   >
                     {busy === ex.executionId ? <Loader2 className="size-3 animate-spin" /> : <ChevronRight className="size-3" />}
                     Complete Step {ex.currentStep + 1}: {ex.stepStates[ex.currentStep]?.stepName}
@@ -1094,27 +1094,27 @@ function DecisionsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Gavel className="size-4 text-amber-400" />
         <span className="text-xs font-semibold">Decision Provenance</span>
-        <span className="text-[11px] text-muted-foreground">— every human action is an immutable artifact</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{decisions.length} decisions</span>
+        <span className="text-[15px] text-muted-foreground">— every human action is an immutable artifact</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{decisions.length} decisions</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
         {decisions.map((d) => (
           <div key={d.decisionId} className="rounded-lg border border-border bg-card/40 px-3 py-2">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="font-mono text-[10px] font-semibold text-amber-300">{d.decisionId}</span>
-              <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[9px] font-medium text-amber-300">{d.decisionType}</span>
+              <span className="font-mono text-[14px] font-semibold text-amber-300">{d.decisionId}</span>
+              <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[13px] font-medium text-amber-300">{d.decisionType}</span>
               {d.policyChecked ? (
-                <span className="flex items-center gap-1 text-[9px] text-emerald-400"><ShieldCheck className="size-2.5" /> policy ✓</span>
+                <span className="flex items-center gap-1 text-[13px] text-emerald-400"><ShieldCheck className="size-2.5" /> policy ✓</span>
               ) : (
-                <span className="flex items-center gap-1 text-[9px] text-rose-400"><AlertCircle className="size-2.5" /> policy ✗</span>
+                <span className="flex items-center gap-1 text-[13px] text-rose-400"><AlertCircle className="size-2.5" /> policy ✗</span>
               )}
-              {d.incidentId && <span className="text-[9px] font-mono text-primary/70">{d.incidentId}</span>}
-              <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(d.decidedAt)}</span>
+              {d.incidentId && <span className="text-[13px] font-mono text-primary/70">{d.incidentId}</span>}
+              <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(d.decidedAt)}</span>
             </div>
-            <div className="text-[12px] font-medium mb-0.5">{d.decision}</div>
-            <div className="text-[11px] text-foreground/70 leading-snug">{d.rationale}</div>
-            <div className="flex items-center gap-3 mt-1 text-[9px] text-muted-foreground flex-wrap">
+            <div className="text-[16px] font-medium mb-0.5">{d.decision}</div>
+            <div className="text-[15px] text-foreground/70 leading-snug">{d.rationale}</div>
+            <div className="flex items-center gap-3 mt-1 text-[13px] text-muted-foreground flex-wrap">
               <span>by <span className="font-mono text-primary/70">{d.actorRole}</span> ({d.actorId})</span>
               {d.basedOn.length > 0 && <span>· based on {d.basedOn.length} artifact(s)</span>}
               {d.permissionsUsed.length > 0 && <span>· {d.permissionsUsed.length} permission(s) used</span>}
@@ -1163,8 +1163,8 @@ function RolesTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Users className="size-4 text-violet-400" />
         <span className="text-xs font-semibold">Institutional Roles</span>
-        <span className="text-[11px] text-muted-foreground">— governance packages, not hardcoded users</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{roles.length} roles</span>
+        <span className="text-[15px] text-muted-foreground">— governance packages, not hardcoded users</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{roles.length} roles</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 grid grid-cols-1 md:grid-cols-2 gap-2">
         {loading && <div className="flex h-32 items-center justify-center col-span-2"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -1173,27 +1173,27 @@ function RolesTab() {
           return (
             <div key={r.roleId} className="rounded-lg border border-border bg-card/40 p-3">
               <div className="flex items-center gap-2 mb-1">
-                <span className="size-7 rounded-md flex items-center justify-center font-bold text-[11px]" style={{ color, background: `${color}1a`, border: `1px solid ${color}33` }}>
+                <span className="size-7 rounded-md flex items-center justify-center font-bold text-[15px]" style={{ color, background: `${color}1a`, border: `1px solid ${color}33` }}>
                   {r.institution.slice(0, 2).toUpperCase()}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[12px] font-semibold truncate">{r.name}</div>
-                  <div className="text-[9px] font-mono text-muted-foreground">{r.roleId}</div>
+                  <div className="text-[16px] font-semibold truncate">{r.name}</div>
+                  <div className="text-[13px] font-mono text-muted-foreground">{r.roleId}</div>
                 </div>
-                <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color, background: `${color}1a` }}>{r.institution}</span>
+                <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color, background: `${color}1a` }}>{r.institution}</span>
               </div>
-              <p className="text-[10px] text-muted-foreground mb-2 leading-snug">{r.description}</p>
+              <p className="text-[14px] text-muted-foreground mb-2 leading-snug">{r.description}</p>
               <div className="mb-2">
-                <div className="text-[9px] uppercase tracking-wider text-muted-foreground/70 mb-1">Permissions ({r.permissions.length})</div>
+                <div className="text-[13px] uppercase tracking-wider text-muted-foreground/70 mb-1">Permissions ({r.permissions.length})</div>
                 <div className="flex flex-wrap gap-1">
                   {r.permissions.map((p: any) => (
-                    <span key={p.id} className="rounded bg-foreground/5 border border-border px-1.5 py-0.5 text-[9px] font-mono" title={p.name}>
+                    <span key={p.id} className="rounded bg-foreground/5 border border-border px-1.5 py-0.5 text-[13px] font-mono" title={p.name}>
                       {p.id}
                     </span>
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-3 text-[9px] text-muted-foreground border-t border-border/60 pt-1.5">
+              <div className="flex items-center gap-3 text-[13px] text-muted-foreground border-t border-border/60 pt-1.5">
                 <span>max severity: <span className="font-mono" style={{ color: SEVERITY_META[r.maxSeverity]?.color }}>{r.maxSeverity}</span></span>
                 <span className="flex items-center gap-1">{r.canEscalate ? <CheckCircle2 className="size-2.5 text-emerald-400" /> : "—"} can escalate</span>
                 {r.requiresApproval.length > 0 && <span className="text-amber-400">⚠ {r.requiresApproval.length} need approval</span>}

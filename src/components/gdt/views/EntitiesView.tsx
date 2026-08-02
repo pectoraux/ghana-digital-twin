@@ -121,7 +121,7 @@ export function EntitiesView() {
           <h3 className="flex items-center gap-2 text-xs font-semibold">
             <Boxes className="size-3.5 text-primary" /> Entity Registry
           </h3>
-          <p className="mt-1 text-[10px] text-muted-foreground">
+          <p className="mt-1 text-[14px] text-muted-foreground">
             {loading ? "loading…" : (
               <>
                 <span className="font-mono tnum">{entities.length}</span> tracked & versioned
@@ -189,7 +189,7 @@ export function EntitiesView() {
         <div className="border-b border-border px-4 py-3">
           <div className="flex items-center gap-3">
             <h2 className="text-base font-semibold">Entities</h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {loading ? "…" : (
                 <>
                   <span className="tnum">{filtered.length}</span> / <span className="tnum">{entities.length}</span>
@@ -231,7 +231,7 @@ export function EntitiesView() {
           {!loading && !error && (
             <table className="w-full text-sm">
               <thead className="sticky top-0 z-10 bg-card/90 backdrop-blur">
-                <tr className="border-b border-border text-[10px] uppercase tracking-wider text-muted-foreground">
+                <tr className="border-b border-border text-[14px] uppercase tracking-wider text-muted-foreground">
                   <Th onClick={() => toggleSort("name")} active={sort === "name"} dir={sortDir} className="text-left pl-4">Entity</Th>
                   <Th onClick={() => toggleSort("kind")} active={sort === "kind"} dir={sortDir}>Kind</Th>
                   <Th onClick={() => toggleSort("region")} active={sort === "region"} dir={sortDir}>Region</Th>
@@ -268,31 +268,31 @@ export function EntitiesView() {
                             style={{ background: color, boxShadow: `0 0 6px ${color}55` }}
                           />
                           <div className="min-w-0">
-                            <div className="text-[13px] font-medium truncate">{e.name}</div>
-                            <div className="text-[10px] text-muted-foreground font-mono">{e.externalId || e.id}</div>
+                            <div className="text-[17px] font-medium truncate">{e.name}</div>
+                            <div className="text-[14px] text-muted-foreground font-mono">{e.externalId || e.id}</div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <span
-                          className="rounded border border-border bg-foreground/5 px-1.5 py-0.5 text-[10px]"
+                          className="rounded border border-border bg-foreground/5 px-1.5 py-0.5 text-[14px]"
                           style={{ color }}
                         >
                           {meta?.label ?? kindLabel(e.kind)}
                         </span>
                       </td>
-                      <td className="text-[11px] text-muted-foreground">{region?.name ?? "—"}</td>
+                      <td className="text-[15px] text-muted-foreground">{region?.name ?? "—"}</td>
                       <td>
                         <div className="flex items-center gap-2 pr-2">
                           <ConfidenceBar value={e.confidence} showLabel={false} size="sm" />
-                          <span className="font-mono text-[10px] tnum text-muted-foreground w-7 text-right">
+                          <span className="font-mono text-[14px] tnum text-muted-foreground w-7 text-right">
                             {(e.confidence * 100).toFixed(0)}%
                           </span>
                         </div>
                       </td>
-                      <td className="text-right font-mono text-[11px] tnum text-muted-foreground">v{e.currentVersion}</td>
-                      <td className="text-[11px] text-muted-foreground">{timeAgo(e.lastObserved)}</td>
-                      <td className="text-right pr-4 font-mono text-[11px] tnum text-foreground/80">{size}</td>
+                      <td className="text-right font-mono text-[15px] tnum text-muted-foreground">v{e.currentVersion}</td>
+                      <td className="text-[15px] text-muted-foreground">{timeAgo(e.lastObserved)}</td>
+                      <td className="text-right pr-4 font-mono text-[15px] tnum text-foreground/80">{size}</td>
                     </tr>
                   );
                 })}
@@ -356,13 +356,13 @@ function SidebarRow({
     <button
       onClick={onClick}
       className={cn(
-        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11px] transition-colors",
+        "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[15px] transition-colors",
         active ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"
       )}
     >
       {icon ?? (color ? <span className="size-2.5 rounded-full" style={{ background: color }} /> : null)}
       <span className="flex-1 truncate">{label}</span>
-      <span className="font-mono text-[10px] tnum opacity-70">{count}</span>
+      <span className="font-mono text-[14px] tnum opacity-70">{count}</span>
     </button>
   );
 }

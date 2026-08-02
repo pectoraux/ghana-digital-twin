@@ -76,10 +76,10 @@ export function PhenomenaView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <Clock className="size-4 text-primary" /> Phenomena
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {phenomena.length} tracked
             </span>
-            <p className="text-[11px] text-muted-foreground hidden md:block">Evolving events tracked over time — one physical event = one phenomenon</p>
+            <p className="text-[15px] text-muted-foreground hidden md:block">Evolving events tracked over time — one physical event = one phenomenon</p>
             <button
               onClick={handleMerge}
               disabled={merging}
@@ -126,17 +126,17 @@ export function PhenomenaView() {
                 <div className="w-1 shrink-0 rounded-full" style={{ background: typeColor }} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-semibold" style={{ color: typeColor, background: `${typeColor}1a` }}>
+                    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[13px] font-semibold" style={{ color: typeColor, background: `${typeColor}1a` }}>
                       {p.type.replace(/_/g, " ")}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium" style={{ color: statusColor, background: `${statusColor}1a` }}>
+                    <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[13px] font-medium" style={{ color: statusColor, background: `${statusColor}1a` }}>
                       <StatusDot color={statusColor} /> {p.status}
                     </span>
-                    <span className="font-mono text-[10px] text-muted-foreground">{p.uuid.slice(0, 8)}…</span>
-                    <span className="ml-auto text-[10px] text-muted-foreground font-mono">{timeAgo(p.lastObserved)}</span>
+                    <span className="font-mono text-[14px] text-muted-foreground">{p.uuid.slice(0, 8)}…</span>
+                    <span className="ml-auto text-[14px] text-muted-foreground font-mono">{timeAgo(p.lastObserved)}</span>
                   </div>
-                  <div className="text-[13px] font-medium leading-snug truncate">{p.title}</div>
-                  <div className="mt-1 flex items-center gap-3 text-[10px] text-muted-foreground">
+                  <div className="text-[17px] font-medium leading-snug truncate">{p.title}</div>
+                  <div className="mt-1 flex items-center gap-3 text-[14px] text-muted-foreground">
                     <span className="flex items-center gap-1"><Ruler className="size-2.5" /> {fmtArea(p.currentAreaHa * 100)}</span>
                     <span className="flex items-center gap-1"><GitCommit className="size-2.5" /> {p.observationCount} obs</span>
                     {p.growthPct != null && (
@@ -175,15 +175,15 @@ export function PhenomenaView() {
               {/* header */}
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ color: TYPE_COLORS[selected.type], background: `${TYPE_COLORS[selected.type]}1a` }}>
+                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-semibold" style={{ color: TYPE_COLORS[selected.type], background: `${TYPE_COLORS[selected.type]}1a` }}>
                     {selected.type.replace(/_/g, " ")}
                   </span>
-                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ color: STATUS_COLORS[selected.status], background: `${STATUS_COLORS[selected.status]}1a` }}>
+                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-medium" style={{ color: STATUS_COLORS[selected.status], background: `${STATUS_COLORS[selected.status]}1a` }}>
                     {selected.status}
                   </span>
                 </div>
-                <h4 className="text-[14px] font-semibold capitalize leading-snug">{selected.title}</h4>
-                <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <h4 className="text-[18px] font-semibold capitalize leading-snug">{selected.title}</h4>
+                <div className="mt-1 flex items-center gap-1.5 text-[15px] text-muted-foreground">
                   <MapPin className="size-3" /> {selected.centroid[1].toFixed(3)}°N, {selected.centroid[0].toFixed(3)}°W · {selected.mgrsTile ?? "—"}
                 </div>
               </div>
@@ -253,18 +253,18 @@ export function PhenomenaView() {
                             className="block w-full text-left"
                           >
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-mono text-muted-foreground">#{o.sequence}</span>
-                              <span className="text-[10px] text-muted-foreground">{new Date(o.observedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
-                              {isLatest && <span className="text-[9px] font-medium text-primary">latest</span>}
+                              <span className="text-[14px] font-mono text-muted-foreground">#{o.sequence}</span>
+                              <span className="text-[14px] text-muted-foreground">{new Date(o.observedAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
+                              {isLatest && <span className="text-[13px] font-medium text-primary">latest</span>}
                             </div>
-                            <div className="text-[11px] mt-0.5">{fmtArea(o.areaHa * 100)}</div>
+                            <div className="text-[15px] mt-0.5">{fmtArea(o.areaHa * 100)}</div>
                             {o.areaDeltaHa != null && (
-                              <div className="text-[9px] font-mono" style={{ color: o.areaDeltaHa > 0 ? "#fb923c" : "#34d399" }}>
+                              <div className="text-[13px] font-mono" style={{ color: o.areaDeltaHa > 0 ? "#fb923c" : "#34d399" }}>
                                 {o.areaDeltaHa >= 0 ? "+" : ""}{o.areaDeltaHa.toFixed(1)} ha ({o.areaDeltaPct?.toFixed(0)}%)
                               </div>
                             )}
                             {o.centroidShiftKm != null && o.centroidShiftKm > 0.01 && (
-                              <div className="text-[9px] text-muted-foreground font-mono">shift {o.centroidShiftKm.toFixed(2)} km</div>
+                              <div className="text-[13px] text-muted-foreground font-mono">shift {o.centroidShiftKm.toFixed(2)} km</div>
                             )}
                           </button>
                         </div>
@@ -277,12 +277,12 @@ export function PhenomenaView() {
               {/* summary */}
               <div>
                 <SectionLabel className="mb-2">Summary</SectionLabel>
-                <p className="text-[11px] text-foreground/80 leading-relaxed">{selected.summary}</p>
+                <p className="text-[15px] text-foreground/80 leading-relaxed">{selected.summary}</p>
               </div>
 
               {/* objectivity note */}
               <div className="rounded-lg border border-border bg-foreground/[0.02] p-3">
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                <p className="text-[14px] text-muted-foreground leading-relaxed">
                   Phenomena merge observations across time into evolving events. Growth, movement, and persistence are tracked. No legal conclusions.
                 </p>
               </div>

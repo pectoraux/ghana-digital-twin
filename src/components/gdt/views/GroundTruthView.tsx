@@ -200,10 +200,10 @@ export function GroundTruthView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <ShieldCheck className="size-4 text-primary" /> Ground Truth &amp; Active Learning
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {reviewItems.length} in queue
             </span>
-            <p className="text-[11px] text-muted-foreground hidden lg:block">
+            <p className="text-[15px] text-muted-foreground hidden lg:block">
               Human-in-the-loop verification · confidence calibration · drift monitoring
             </p>
           </div>
@@ -256,7 +256,7 @@ export function GroundTruthView() {
               Run Drift Check
             </button>
             {error && (
-              <span className="ml-auto text-[10px] text-rose-400 font-mono">{error}</span>
+              <span className="ml-auto text-[14px] text-rose-400 font-mono">{error}</span>
             )}
           </div>
         </div>
@@ -275,14 +275,14 @@ export function GroundTruthView() {
               <div className="flex items-center gap-2 mb-2">
                 <ListChecks className="size-3.5 text-amber-400" />
                 <SectionLabel>Review Queue · Active Learning Selections</SectionLabel>
-                <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum">
+                <span className="ml-auto text-[14px] text-muted-foreground font-mono tnum">
                   {reviewItems.filter((i) => i.status === "needs_review").length} pending
                 </span>
               </div>
 
               {reviewItems.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-card/20 p-6 text-center">
-                  <p className="text-[12px] text-muted-foreground">
+                  <p className="text-[16px] text-muted-foreground">
                     No items in the review queue. Click <span className="text-primary">Populate Queue</span> to let
                     active learning select the most informative observations.
                   </p>
@@ -300,7 +300,7 @@ export function GroundTruthView() {
                         <div className="flex items-start gap-3">
                           {/* priority badge */}
                           <span
-                            className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                            className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-semibold uppercase tracking-wider"
                             style={{ color: pm.color, background: `${pm.color}1a`, border: `1px solid ${pm.color}33` }}
                           >
                             <StatusDot color={pm.color} pulse={item.priority === "urgent"} />
@@ -311,15 +311,15 @@ export function GroundTruthView() {
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span
-                                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium"
+                                className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-medium"
                                 style={{ color: obsColorStr, background: `${obsColorStr}1a` }}
                               >
                                 {obsTypeLabel(item.observation.type)}
                               </span>
-                              <span className="text-[12px] font-medium truncate">
+                              <span className="text-[16px] font-medium truncate">
                                 {item.observation.title}
                               </span>
-                              <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum shrink-0">
+                              <span className="ml-auto text-[14px] text-muted-foreground font-mono tnum shrink-0">
                                 {timeAgo(item.createdAt)}
                               </span>
                             </div>
@@ -327,11 +327,11 @@ export function GroundTruthView() {
                             {/* confidence + uncertainty */}
                             <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5">
                               <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-muted-foreground w-20 shrink-0">Confidence</span>
+                                <span className="text-[14px] text-muted-foreground w-20 shrink-0">Confidence</span>
                                 <ConfidenceBar value={item.observation.confidence} size="sm" className="flex-1" />
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="text-[10px] text-muted-foreground w-20 shrink-0">Uncertainty</span>
+                                <span className="text-[14px] text-muted-foreground w-20 shrink-0">Uncertainty</span>
                                 <div className="flex-1 h-1.5 rounded-full bg-foreground/10 overflow-hidden">
                                   <div
                                     className="h-full rounded-full"
@@ -342,7 +342,7 @@ export function GroundTruthView() {
                                     }}
                                   />
                                 </div>
-                                <span className="text-[10px] font-mono tnum text-muted-foreground w-9 text-right">
+                                <span className="text-[14px] font-mono tnum text-muted-foreground w-9 text-right">
                                   {(item.uncertaintyScore * 100).toFixed(0)}%
                                 </span>
                               </div>
@@ -350,19 +350,19 @@ export function GroundTruthView() {
 
                             {/* footer row: info gain, actions */}
                             <div className="mt-2 flex items-center gap-2">
-                              <span className="text-[10px] text-muted-foreground">
+                              <span className="text-[14px] text-muted-foreground">
                                 Info gain:{" "}
                                 <span className="font-mono tnum text-teal-400">
                                   {(item.informationGain * 100).toFixed(1)}%
                                 </span>
                               </span>
                               {item.observation.mgrsTile && (
-                                <span className="text-[10px] text-muted-foreground font-mono tnum">
+                                <span className="text-[14px] text-muted-foreground font-mono tnum">
                                   · tile {item.observation.mgrsTile}
                                 </span>
                               )}
                               {item.assignedTo && (
-                                <span className="text-[10px] text-muted-foreground">
+                                <span className="text-[14px] text-muted-foreground">
                                   · assigned to <span className="text-foreground/70">{item.assignedTo}</span>
                                 </span>
                               )}
@@ -371,7 +371,7 @@ export function GroundTruthView() {
                                 <button
                                   onClick={() => handleSubmit(item.id, "confirmed")}
                                   disabled={submittingId === item.id}
-                                  className="flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-400 hover:bg-emerald-500/15 disabled:opacity-50"
+                                  className="flex items-center gap-1 rounded border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[14px] text-emerald-400 hover:bg-emerald-500/15 disabled:opacity-50"
                                 >
                                   {submittingId === item.id ? (
                                     <Loader2 className="size-3 animate-spin" />
@@ -383,7 +383,7 @@ export function GroundTruthView() {
                                 <button
                                   onClick={() => handleSubmit(item.id, "rejected")}
                                   disabled={submittingId === item.id}
-                                  className="flex items-center gap-1 rounded border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-[10px] text-rose-400 hover:bg-rose-500/15 disabled:opacity-50"
+                                  className="flex items-center gap-1 rounded border border-rose-500/30 bg-rose-500/10 px-2 py-1 text-[14px] text-rose-400 hover:bg-rose-500/15 disabled:opacity-50"
                                 >
                                   <XCircle className="size-3" />
                                   Reject
@@ -406,7 +406,7 @@ export function GroundTruthView() {
               <div className="flex items-center gap-2 mb-2">
                 <Gauge className="size-3.5 text-teal-400" />
                 <SectionLabel>Calibration Metrics</SectionLabel>
-                <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum">
+                <span className="ml-auto text-[14px] text-muted-foreground font-mono tnum">
                   n={calibration?.sampleCount ?? 0} samples
                 </span>
               </div>
@@ -448,19 +448,19 @@ export function GroundTruthView() {
               <div className="mt-3 rounded-lg border border-border bg-card/40 p-3">
                 <div className="flex items-center gap-2 mb-3">
                   <BarChart3 className="size-3.5 text-muted-foreground" />
-                  <span className="text-[11px] font-semibold text-muted-foreground">
+                  <span className="text-[15px] font-semibold text-muted-foreground">
                     Reliability Diagram
                   </span>
-                  <span className="text-[10px] text-muted-foreground ml-auto">
+                  <span className="text-[14px] text-muted-foreground ml-auto">
                     confidence bins vs. empirical accuracy
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: "#fbbf24" }} />
-                    <span className="text-[9px] text-muted-foreground">conf</span>
+                    <span className="text-[13px] text-muted-foreground">conf</span>
                   </span>
                   <span className="flex items-center gap-1.5">
                     <span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: "#34d399" }} />
-                    <span className="text-[9px] text-muted-foreground">acc</span>
+                    <span className="text-[13px] text-muted-foreground">acc</span>
                   </span>
                 </div>
 
@@ -500,8 +500,8 @@ export function GroundTruthView() {
                             title={`Empirical accuracy: ${(acc * 100).toFixed(0)}%`}
                           />
                         </div>
-                        <div className="text-[9px] font-mono tnum text-muted-foreground">{bin.bin}</div>
-                        <div className="text-[9px] font-mono tnum text-muted-foreground/70">n={count}</div>
+                        <div className="text-[13px] font-mono tnum text-muted-foreground">{bin.bin}</div>
+                        <div className="text-[13px] font-mono tnum text-muted-foreground/70">n={count}</div>
                       </div>
                     );
                   })}
@@ -516,7 +516,7 @@ export function GroundTruthView() {
                     {calibration.perHypothesis.map((p: any) => {
                       const color = obsColor(p.type);
                       return (
-                        <div key={p.type} className="flex items-center gap-2 text-[11px]">
+                        <div key={p.type} className="flex items-center gap-2 text-[15px]">
                           <span
                             className="size-2 rounded-full shrink-0"
                             style={{ background: color }}
@@ -559,14 +559,14 @@ export function GroundTruthView() {
               <div className="flex items-center gap-2 mb-2">
                 <Bell className="size-3.5 text-rose-400" />
                 <SectionLabel>Drift Alerts</SectionLabel>
-                <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum">
+                <span className="ml-auto text-[14px] text-muted-foreground font-mono tnum">
                   {driftCount} active
                 </span>
               </div>
 
               {driftAlerts.length === 0 ? (
                 <div className="rounded-lg border border-dashed border-border bg-card/20 p-6 text-center">
-                  <p className="text-[12px] text-muted-foreground">
+                  <p className="text-[16px] text-muted-foreground">
                     No active drift alerts. The system&apos;s recent observations are within historical baselines.
                   </p>
                 </div>
@@ -581,22 +581,22 @@ export function GroundTruthView() {
                       <div key={a.id} className="rounded-lg border border-border bg-card/40 p-3">
                         <div className="flex items-center gap-2">
                           <span
-                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider"
+                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[14px] font-semibold uppercase tracking-wider"
                             style={{ color: tm.color, background: `${tm.color}1a`, border: `1px solid ${tm.color}33` }}
                           >
                             {tm.label}
                           </span>
-                          <span className="text-[11px] font-mono tnum text-muted-foreground truncate">
+                          <span className="text-[15px] font-mono tnum text-muted-foreground truncate">
                             {a.metric}
                           </span>
-                          <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum shrink-0">
+                          <span className="ml-auto text-[14px] text-muted-foreground font-mono tnum shrink-0">
                             {timeAgo(a.detectedAt)}
                           </span>
                         </div>
-                        <p className="mt-1.5 text-[11px] text-foreground/80 leading-relaxed">
+                        <p className="mt-1.5 text-[15px] text-foreground/80 leading-relaxed">
                           {a.description}
                         </p>
-                        <div className="mt-2 flex items-center gap-3 text-[10px]">
+                        <div className="mt-2 flex items-center gap-3 text-[14px]">
                           <span className="text-muted-foreground">
                             baseline:{" "}
                             <span className="font-mono tnum text-foreground/70">
@@ -648,7 +648,7 @@ export function GroundTruthView() {
             </SectionLabel>
             {benchmarks.length === 0 ? (
               <div className="rounded-lg border border-dashed border-border bg-card/20 p-4 text-center">
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[15px] text-muted-foreground">
                   No benchmark reports yet. Click <span className="text-violet-400">Generate Benchmark</span> to
                   create one.
                 </p>
@@ -661,12 +661,12 @@ export function GroundTruthView() {
                     className="rounded-lg border border-border bg-card/40 p-2.5"
                   >
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-[11px] font-semibold font-mono tnum">{b.period}</span>
-                      <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum">
+                      <span className="text-[15px] font-semibold font-mono tnum">{b.period}</span>
+                      <span className="ml-auto text-[14px] text-muted-foreground font-mono tnum">
                         {timeAgo(b.createdAt)}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-1.5 text-[10px]">
+                    <div className="grid grid-cols-3 gap-1.5 text-[14px]">
                       <div className="rounded bg-foreground/5 px-1.5 py-1">
                         <div className="text-muted-foreground">F1</div>
                         <div className="font-mono tnum text-emerald-400">
@@ -687,7 +687,7 @@ export function GroundTruthView() {
                       </div>
                     </div>
                     {b.learningImprovement !== undefined && (
-                      <div className="mt-1.5 flex items-center gap-1 text-[10px]">
+                      <div className="mt-1.5 flex items-center gap-1 text-[14px]">
                         <TrendingUp className="size-3 text-emerald-400" />
                         <span className="text-muted-foreground">learning:</span>
                         <span
@@ -709,16 +709,16 @@ export function GroundTruthView() {
           <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3.5">
             <div className="flex items-center gap-2 mb-2">
               <Brain className="size-4 text-amber-400" />
-              <span className="text-[11px] font-semibold text-amber-400">ACTIVE LEARNING</span>
+              <span className="text-[15px] font-semibold text-amber-400">ACTIVE LEARNING</span>
             </div>
-            <p className="text-[11px] text-foreground/80 leading-relaxed">
+            <p className="text-[15px] text-foreground/80 leading-relaxed">
               Instead of reviewing random observations, the system selects samples that maximize information gain.
               Each candidate is scored by <span className="font-semibold text-foreground">uncertainty</span> (predictions
               near 50%), <span className="font-semibold text-foreground">priority</span> (high-impact mining detections),
               and <span className="font-semibold text-foreground">information gain</span> (how much confirming or
               rejecting it would reduce model uncertainty).
             </p>
-            <div className="mt-2.5 grid grid-cols-2 gap-1.5 text-[10px]">
+            <div className="mt-2.5 grid grid-cols-2 gap-1.5 text-[14px]">
               <div className="rounded bg-foreground/5 px-1.5 py-1">
                 <div className="text-muted-foreground">Priority</div>
                 <div className="flex items-center gap-1">
@@ -737,13 +737,13 @@ export function GroundTruthView() {
           <div className="rounded-lg border border-teal-500/20 bg-teal-500/5 p-3.5">
             <div className="flex items-center gap-2 mb-2">
               <Gauge className="size-4 text-teal-400" />
-              <span className="text-[11px] font-semibold text-teal-400">CALIBRATION</span>
+              <span className="text-[15px] font-semibold text-teal-400">CALIBRATION</span>
             </div>
-            <p className="text-[11px] text-foreground/80 leading-relaxed">
+            <p className="text-[15px] text-foreground/80 leading-relaxed">
               A model that says &quot;83% confident&quot; should be right ~83% of the time. Calibration measures this
               alignment between predicted confidence and observed accuracy.
             </p>
-            <ul className="mt-2 space-y-1 text-[10px] text-muted-foreground">
+            <ul className="mt-2 space-y-1 text-[14px] text-muted-foreground">
               <li className="flex items-start gap-1.5">
                 <span className="text-amber-400 mt-0.5">•</span>
                 <span>

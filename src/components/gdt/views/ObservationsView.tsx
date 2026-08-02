@@ -203,11 +203,11 @@ export function ObservationsView() {
                 <Radar className="size-4 text-primary" />
                 Observations
               </h2>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
+              <p className="text-[14px] text-muted-foreground mt-0.5">
                 Fused evidence from multiple raster products — objective, no legal conclusions
               </p>
             </div>
-            <span className="ml-auto rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="ml-auto rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {loading ? (
                 "…"
               ) : (
@@ -264,7 +264,7 @@ export function ObservationsView() {
         <div className="border-b border-border bg-card/20 px-4 py-2.5 space-y-2">
           {/* type chips */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground mr-1">
               Type
             </span>
             <FilterChip
@@ -285,13 +285,13 @@ export function ObservationsView() {
               />
             ))}
             {types.length === 0 && !loading && (
-              <span className="text-[10px] text-muted-foreground italic">no types registered</span>
+              <span className="text-[14px] text-muted-foreground italic">no types registered</span>
             )}
           </div>
 
           {/* severity chips */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground mr-1">
               Severity
             </span>
             <FilterChip
@@ -317,7 +317,7 @@ export function ObservationsView() {
 
           {/* status chips + search */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground mr-1">
+            <span className="text-[14px] uppercase tracking-wider text-muted-foreground mr-1">
               Status
             </span>
             <FilterChip
@@ -352,7 +352,7 @@ export function ObservationsView() {
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1 text-[14px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="size-3" /> Clear
               </button>
@@ -381,7 +381,7 @@ export function ObservationsView() {
                 <div className="text-sm font-medium text-foreground/80">
                   No observations yet
                 </div>
-                <div className="text-[11px] mt-1 max-w-xs">
+                <div className="text-[15px] mt-1 max-w-xs">
                   Run a scan to fuse raster products into observations.
                 </div>
               </div>
@@ -433,7 +433,7 @@ export function ObservationsView() {
                     {/* meta row */}
                     <div className="flex items-center gap-2 mb-0.5">
                       <span
-                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-semibold"
+                        className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[13px] font-semibold"
                         style={{ color: tCol, background: `${tCol}1a` }}
                       >
                         <span
@@ -442,22 +442,22 @@ export function ObservationsView() {
                         />
                         {tLabel}
                       </span>
-                      <span className="font-mono text-[10px] text-muted-foreground">
+                      <span className="font-mono text-[14px] text-muted-foreground">
                         {o.uuid.slice(0, 8)}…
                       </span>
                       {o.mgrsTile && (
-                        <span className="text-[10px] text-muted-foreground font-mono">
+                        <span className="text-[14px] text-muted-foreground font-mono">
                           · {o.mgrsTile}
                         </span>
                       )}
-                      <span className="ml-auto text-[10px] text-muted-foreground font-mono tnum">
+                      <span className="ml-auto text-[14px] text-muted-foreground font-mono tnum">
                         {timeAgo(o.observedAt)}
                       </span>
                     </div>
-                    <div className="text-[13px] font-medium leading-snug truncate">
+                    <div className="text-[17px] font-medium leading-snug truncate">
                       {o.title}
                     </div>
-                    <div className="mt-1 text-[11px] text-foreground/70 leading-snug line-clamp-2">
+                    <div className="mt-1 text-[15px] text-foreground/70 leading-snug line-clamp-2">
                       {o.summary}
                     </div>
                     {/* evidence chips row */}
@@ -466,7 +466,7 @@ export function ObservationsView() {
                         {o.evidence.slice(0, 4).map((e, i) => (
                           <span
                             key={`${o.id}-ev-${i}`}
-                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-[9px] font-mono tnum bg-foreground/5 text-muted-foreground border border-border"
+                            className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-[13px] font-mono tnum bg-foreground/5 text-muted-foreground border border-border"
                             title={e.description}
                           >
                             {e.productType}
@@ -476,7 +476,7 @@ export function ObservationsView() {
                           </span>
                         ))}
                         {o.evidence.length > 4 && (
-                          <span className="text-[9px] text-muted-foreground font-mono tnum">
+                          <span className="text-[13px] text-muted-foreground font-mono tnum">
                             +{o.evidence.length - 4} more
                           </span>
                         )}
@@ -486,10 +486,10 @@ export function ObservationsView() {
                   {/* right side */}
                   <div className="flex shrink-0 flex-col items-end justify-center gap-1.5 w-[110px]">
                     <ConfidencePill value={o.confidence} />
-                    <span className="text-[9px] text-muted-foreground font-mono tnum">
+                    <span className="text-[13px] text-muted-foreground font-mono tnum">
                       {fmtArea(o.areaHa)}
                     </span>
-                    <span className="text-[9px] text-muted-foreground font-mono tnum">
+                    <span className="text-[13px] text-muted-foreground font-mono tnum">
                       {o.evidence.length} evidence
                     </span>
                   </div>
@@ -520,7 +520,7 @@ export function ObservationsView() {
                   const col = typeColor(t);
                   return (
                     <div key={t}>
-                      <div className="flex items-center justify-between text-[10px] mb-0.5">
+                      <div className="flex items-center justify-between text-[14px] mb-0.5">
                         <span className="text-muted-foreground truncate">
                           {typeLabel(t, types)}
                         </span>
@@ -538,7 +538,7 @@ export function ObservationsView() {
                   );
                 })}
               {Object.keys(typeCounts).length === 0 && (
-                <div className="text-[10px] text-muted-foreground italic">no data</div>
+                <div className="text-[14px] text-muted-foreground italic">no data</div>
               )}
             </div>
           </div>
@@ -555,7 +555,7 @@ export function ObservationsView() {
                 const col = severityColor(sev);
                 return (
                   <div key={sev}>
-                    <div className="flex items-center justify-between text-[10px] mb-0.5">
+                    <div className="flex items-center justify-between text-[14px] mb-0.5">
                       <span className="text-muted-foreground capitalize">{sev}</span>
                       <span className="font-mono tnum text-foreground/80">{count}</span>
                     </div>
@@ -602,7 +602,7 @@ export function ObservationsView() {
           </div>
 
           {/* Evidence Fusion explainer */}
-          <div className="rounded-lg border border-border bg-background/40 p-3 text-[11px] text-muted-foreground leading-relaxed">
+          <div className="rounded-lg border border-border bg-background/40 p-3 text-[15px] text-muted-foreground leading-relaxed">
             <div className="flex items-center gap-1.5 mb-1.5">
               <Layers className="size-3.5 text-primary" />
               <span className="text-foreground font-medium">Evidence Fusion</span>
@@ -612,7 +612,7 @@ export function ObservationsView() {
               uncertainty are propagated from all evidence sources. No legal
               conclusions.
             </p>
-            <div className="mt-2 pt-2 border-t border-border text-[10px] italic">
+            <div className="mt-2 pt-2 border-t border-border text-[14px] italic">
               {loading
                 ? "loading types…"
                 : `${types.length} observation types · ${observations.length} active`}
@@ -643,7 +643,7 @@ function FilterChip({
     <button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] transition-all",
+        "flex items-center gap-1 rounded-full border px-2 py-0.5 text-[14px] transition-all",
         on ? "text-foreground" : "text-muted-foreground hover:text-foreground"
       )}
       style={{

@@ -180,7 +180,7 @@ export function EvidencePanel({
           <SyntheticImagery scene={scene} after seed={seed} />
         </Tile>
       </div>
-      <div className="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground font-mono">
+      <div className="mt-1.5 flex items-center justify-between text-[14px] text-muted-foreground font-mono">
         <span>Sentinel-2 L2A · B4/B3/B2</span>
         <span className="text-primary">{changeLabel}</span>
       </div>
@@ -205,14 +205,14 @@ function Tile({
       <div className="absolute left-1.5 top-1.5 flex items-center gap-1">
         <span
           className={cn(
-            "rounded px-1 py-0.5 text-[9px] font-mono font-semibold",
+            "rounded px-1 py-0.5 text-[13px] font-mono font-semibold",
             highlight ? "bg-rose-500/90 text-white" : "bg-black/70 text-foreground/80"
           )}
         >
           {label}
         </span>
       </div>
-      <div className="absolute bottom-1.5 right-1.5 rounded bg-black/70 px-1 py-0.5 text-[9px] font-mono text-foreground/80">
+      <div className="absolute bottom-1.5 right-1.5 rounded bg-black/70 px-1 py-0.5 text-[13px] font-mono text-foreground/80">
         {new Date(date).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}
       </div>
       {highlight && (

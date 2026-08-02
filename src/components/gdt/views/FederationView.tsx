@@ -76,10 +76,10 @@ export function FederationView() {
           <h2 className="text-base font-semibold flex items-center gap-2">
             <Globe className="size-4 text-primary" /> Federated Intelligence Network
           </h2>
-          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[10px] font-mono text-primary">
+          <span className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-0.5 text-[14px] font-mono text-primary">
             package: federated-intelligence
           </span>
-          <p className="text-[11px] text-muted-foreground hidden lg:block">
+          <p className="text-[15px] text-muted-foreground hidden lg:block">
             Multiple intelligence civilizations interoperate without surrendering sovereignty
           </p>
           <PackageBadge />
@@ -118,7 +118,7 @@ function PackageBadge() {
   useEffect(() => { api("/api/federation").then((d) => setPackages(d.packages)).catch(() => {}); }, []);
   if (packages.length === 0) return null;
   return (
-    <div className="ml-auto hidden md:flex items-center gap-2 text-[10px] text-muted-foreground">
+    <div className="ml-auto hidden md:flex items-center gap-2 text-[14px] text-muted-foreground">
       <ShieldCheck className="size-3 text-emerald-400" />
       <span className="font-mono">v{packages[0].version}</span>
       <span>·</span>
@@ -163,12 +163,12 @@ function OverviewTab() {
             {o.nodes.map((n: any) => {
               const meta = NODE_TYPE_META[n.nodeType] ?? NODE_TYPE_META.national;
               return (
-                <div key={n.nodeId} className="flex items-center gap-2 text-[11px] py-1">
+                <div key={n.nodeId} className="flex items-center gap-2 text-[15px] py-1">
                   <span className="size-2 rounded-full" style={{ background: meta.color }} />
                   <span className="font-medium flex-1 truncate">{n.name}</span>
                   <span className="text-muted-foreground">{n.countryCode}</span>
                   <span className="font-mono font-semibold" style={{ color: meta.color }}>{(n.trustScore * 100).toFixed(0)}%</span>
-                  <span className="text-muted-foreground text-[9px]">{n.treatiesCount} treaties</span>
+                  <span className="text-muted-foreground text-[13px]">{n.treatiesCount} treaties</span>
                 </div>
               );
             })}
@@ -178,10 +178,10 @@ function OverviewTab() {
           <SectionLabel className="mb-2 flex items-center gap-1.5"><Package className="size-3" /> Top Federated Assets</SectionLabel>
           <div className="space-y-1">
             {o.topListings.map((l: any) => (
-              <div key={l.listingId} className="flex items-center gap-2 text-[11px] py-1">
+              <div key={l.listingId} className="flex items-center gap-2 text-[15px] py-1">
                 <span className="size-2 rounded-full bg-emerald-400" />
                 <span className="flex-1 truncate">{l.assetTitle}</span>
-                <span className="text-muted-foreground text-[9px]">{l.homeNodeId}</span>
+                <span className="text-muted-foreground text-[13px]">{l.homeNodeId}</span>
                 <span className="font-mono font-semibold text-emerald-400">{(l.iqs * 100).toFixed(0)}%</span>
               </div>
             ))}
@@ -193,24 +193,24 @@ function OverviewTab() {
       <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
         <div className="flex items-center gap-2 mb-2">
           <Globe className="size-4 text-primary" />
-          <span className="text-[11px] font-semibold text-primary">FEDERATION PRINCIPLES</span>
+          <span className="text-[15px] font-semibold text-primary">FEDERATION PRINCIPLES</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-emerald-400 mb-0.5">Data Stays Local</div>
-            <div className="text-[10px] text-muted-foreground">Each node owns its data, citizens, governance, trust graph. Only proofs + asset listings + capabilities are exchanged.</div>
+            <div className="text-[14px] font-medium text-emerald-400 mb-0.5">Data Stays Local</div>
+            <div className="text-[14px] text-muted-foreground">Each node owns its data, citizens, governance, trust graph. Only proofs + asset listings + capabilities are exchanged.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-violet-400 mb-0.5">Trust Never Copied</div>
-            <div className="text-[10px] text-muted-foreground">Only proofs are exchanged. Receiving node sets imported trust (lower). Local evidence updates it over time.</div>
+            <div className="text-[14px] font-medium text-violet-400 mb-0.5">Trust Never Copied</div>
+            <div className="text-[14px] text-muted-foreground">Only proofs are exchanged. Receiving node sets imported trust (lower). Local evidence updates it over time.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-cyan-400 mb-0.5">Capability Negotiation</div>
-            <div className="text-[10px] text-muted-foreground">"Who provides this capability?" not "give me your data." No code changes, no data migration.</div>
+            <div className="text-[14px] font-medium text-cyan-400 mb-0.5">Capability Negotiation</div>
+            <div className="text-[14px] text-muted-foreground">"Who provides this capability?" not "give me your data." No code changes, no data migration.</div>
           </div>
           <div className="rounded border border-border bg-card/40 p-2.5">
-            <div className="text-[10px] font-medium text-amber-400 mb-0.5">Treaty-Governed</div>
-            <div className="text-[10px] text-muted-foreground">Bilateral/multilateral treaties define what can be shared and what's restricted. Governance as a package.</div>
+            <div className="text-[14px] font-medium text-amber-400 mb-0.5">Treaty-Governed</div>
+            <div className="text-[14px] text-muted-foreground">Bilateral/multilateral treaties define what can be shared and what's restricted. Governance as a package.</div>
           </div>
         </div>
       </div>
@@ -242,7 +242,7 @@ function NetworkTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Network className="size-4 text-emerald-400" />
         <span className="text-xs font-semibold">Federation Network Map</span>
-        <span className="text-[11px] text-muted-foreground">— {nodes.length} participating intelligence networks</span>
+        <span className="text-[15px] text-muted-foreground">— {nodes.length} participating intelligence networks</span>
       </div>
       <div className="min-h-0 flex-1 overflow-auto gdt-scroll p-4">
         <svg viewBox="0 0 500 400" className="w-full" style={{ maxHeight: "50vh" }}>
@@ -293,17 +293,17 @@ function NetworkTab() {
               <div key={n.nodeId} className="rounded-lg border border-border bg-card/40 p-3">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="size-3 rounded-full" style={{ background: meta.color }} />
-                  <span className="text-[12px] font-semibold flex-1">{n.name}</span>
-                  <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium",
+                  <span className="text-[16px] font-semibold flex-1">{n.name}</span>
+                  <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium",
                     n.status === "active" ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300")}>{n.status}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-1 text-[9px] mt-1.5">
+                <div className="grid grid-cols-2 gap-1 text-[13px] mt-1.5">
                   <div className="rounded bg-card/30 px-1.5 py-1"><span className="text-muted-foreground">Trust</span> <span className="font-mono font-semibold" style={{ color: meta.color }}>{(n.trustScore * 100).toFixed(0)}%</span></div>
                   <div className="rounded bg-card/30 px-1.5 py-1"><span className="text-muted-foreground">Treaties</span> <span className="font-mono font-semibold">{n.treatiesCount}</span></div>
                   <div className="rounded bg-card/30 px-1.5 py-1"><span className="text-muted-foreground">Shared</span> <span className="font-mono font-semibold">{n.assetsShared}</span></div>
                   <div className="rounded bg-card/30 px-1.5 py-1"><span className="text-muted-foreground">Consumed</span> <span className="font-mono font-semibold">{n.assetsConsumed}</span></div>
                 </div>
-                {n.lastSeenAt && <div className="text-[9px] text-muted-foreground mt-1">Last seen {timeAgo(n.lastSeenAt)}</div>}
+                {n.lastSeenAt && <div className="text-[13px] text-muted-foreground mt-1">Last seen {timeAgo(n.lastSeenAt)}</div>}
               </div>
             );
           })}
@@ -330,27 +330,27 @@ function IdentityTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <FileKey className="size-4 text-violet-400" />
         <span className="text-xs font-semibold">Federated Identity — Trust Proofs</span>
-        <span className="text-[11px] text-muted-foreground">— trust is never copied, only proofs are exchanged</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{proofs.length} proofs</span>
+        <span className="text-[15px] text-muted-foreground">— trust is never copied, only proofs are exchanged</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{proofs.length} proofs</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
         {proofs.map((p) => (
           <div key={p.proofId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="font-mono text-[10px] font-semibold text-muted-foreground">{p.proofId}</span>
-              <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[9px] font-medium text-violet-300 capitalize">{p.subjectType}</span>
+              <span className="font-mono text-[14px] font-semibold text-muted-foreground">{p.proofId}</span>
+              <span className="rounded bg-violet-500/10 px-1 py-0.5 text-[13px] font-medium text-violet-300 capitalize">{p.subjectType}</span>
               {p.status === "active" ? <CheckCircle2 className="size-3 text-emerald-400" /> : <XCircle className="size-3 text-rose-400" />}
-              <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(p.issuedAt)}</span>
+              <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(p.issuedAt)}</span>
             </div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[12px] font-medium">{p.subjectName}</span>
-              <span className="text-[10px] text-muted-foreground">({p.subjectId})</span>
+              <span className="text-[16px] font-medium">{p.subjectName}</span>
+              <span className="text-[14px] text-muted-foreground">({p.subjectId})</span>
             </div>
             {/* Trust flow visualization */}
-            <div className="flex items-center gap-2 mb-1.5 text-[10px]">
+            <div className="flex items-center gap-2 mb-1.5 text-[14px]">
               <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-1 text-center">
-                <div className="text-[9px] text-muted-foreground">{p.issuingNodeName}</div>
+                <div className="text-[13px] text-muted-foreground">{p.issuingNodeName}</div>
                 <div className="font-mono font-bold text-emerald-400">{p.homeTrustScore.toFixed(0)}</div>
                 <div className="text-[8px] text-muted-foreground">home trust</div>
               </div>
@@ -360,11 +360,11 @@ function IdentityTab() {
               </div>
               <ArrowRight className="size-3 text-muted-foreground" />
               <div className="rounded border border-amber-500/20 bg-amber-500/5 px-2 py-1 text-center">
-                <div className="text-[9px] text-muted-foreground">{p.receivingNodeId}</div>
+                <div className="text-[13px] text-muted-foreground">{p.receivingNodeId}</div>
                 <div className="font-mono font-bold text-amber-400">{p.importedTrust.toFixed(0)}</div>
                 <div className="text-[8px] text-muted-foreground">imported trust</div>
               </div>
-              <div className="ml-auto flex flex-col gap-0.5 text-[9px] text-muted-foreground">
+              <div className="ml-auto flex flex-col gap-0.5 text-[13px] text-muted-foreground">
                 <span>{p.confirmedEvents} confirmed events</span>
                 <span>{p.sybilFlags} sybil flags</span>
                 <span className="capitalize">verified: {p.verificationLevel}</span>
@@ -400,8 +400,8 @@ function AssetsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Package className="size-4 text-cyan-400" />
         <span className="text-xs font-semibold">Federated Asset Exchange</span>
-        <span className="text-[11px] text-muted-foreground">— cross-border asset listings (assets stay local)</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{assets.length} listings</span>
+        <span className="text-[15px] text-muted-foreground">— cross-border asset listings (assets stay local)</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{assets.length} listings</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -410,15 +410,15 @@ function AssetsTab() {
           return (
             <div key={a.listingId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground">{a.listingId}</span>
-                <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] font-medium text-emerald-300">from: {a.homeNodeId}</span>
-                <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: licMeta.color, background: `${licMeta.color}1a` }}>{licMeta.label}</span>
-                {a.treatyCompliant && <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] text-emerald-400">✓ treaty compliant</span>}
-                <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(a.listedAt)}</span>
+                <span className="font-mono text-[14px] font-semibold text-muted-foreground">{a.listingId}</span>
+                <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] font-medium text-emerald-300">from: {a.homeNodeId}</span>
+                <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: licMeta.color, background: `${licMeta.color}1a` }}>{licMeta.label}</span>
+                {a.treatyCompliant && <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] text-emerald-400">✓ treaty compliant</span>}
+                <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(a.listedAt)}</span>
               </div>
-              <div className="text-[12px] font-medium mb-0.5">{a.assetTitle}</div>
-              <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{a.assetDescription}</p>
-              <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+              <div className="text-[16px] font-medium mb-0.5">{a.assetTitle}</div>
+              <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{a.assetDescription}</p>
+              <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap">
                 <span>by <span className="font-medium text-foreground">{a.producerName}</span> ({a.producerType})</span>
                 <span>category: {a.category}</span>
                 <span>IQS <span className="font-mono font-semibold text-emerald-400">{(a.iqs * 100).toFixed(0)}%</span></span>
@@ -452,23 +452,23 @@ function MarketsTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <Megaphone className="size-4 text-amber-400" />
         <span className="text-xs font-semibold">Cross-Border Intelligence Markets</span>
-        <span className="text-[11px] text-muted-foreground">— regional intelligence requests across nodes</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{requests.length} requests</span>
+        <span className="text-[15px] text-muted-foreground">— regional intelligence requests across nodes</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{requests.length} requests</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
         {requests.map((r) => (
           <div key={r.requestId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="font-mono text-[10px] font-semibold text-muted-foreground">{r.requestId}</span>
-              <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[9px] font-medium text-amber-300">{r.requesterName}</span>
-              <span className={cn("rounded px-1 py-0.5 text-[9px] font-medium",
+              <span className="font-mono text-[14px] font-semibold text-muted-foreground">{r.requestId}</span>
+              <span className="rounded bg-amber-500/10 px-1 py-0.5 text-[13px] font-medium text-amber-300">{r.requesterName}</span>
+              <span className={cn("rounded px-1 py-0.5 text-[13px] font-medium",
                 r.status === "open" ? "bg-emerald-500/10 text-emerald-300" : "bg-foreground/10 text-muted-foreground")}>{r.status}</span>
-              <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(r.postedAt)}</span>
+              <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(r.postedAt)}</span>
             </div>
-            <div className="text-[12px] font-medium mb-0.5">{r.title}</div>
-            <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{r.description}</p>
-            <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+            <div className="text-[16px] font-medium mb-0.5">{r.title}</div>
+            <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{r.description}</p>
+            <div className="flex items-center gap-3 text-[14px] text-muted-foreground flex-wrap">
               <span className="flex items-center gap-1"><MapPin className="size-2.5" /> {r.geography}</span>
               <span>category: {r.category}</span>
               <span className="flex items-center gap-1 text-amber-400"><DollarSign className="size-2.5" /> {r.budget.toLocaleString()} IC budget</span>
@@ -476,9 +476,9 @@ function MarketsTab() {
             </div>
             {/* Participating nodes */}
             <div className="flex items-center gap-1 mt-1.5">
-              <span className="text-[9px] text-muted-foreground">Participating nodes:</span>
+              <span className="text-[13px] text-muted-foreground">Participating nodes:</span>
               {r.participatingNodes.map((n: string) => (
-                <span key={n} className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] font-medium text-emerald-300">{n}</span>
+                <span key={n} className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] font-medium text-emerald-300">{n}</span>
               ))}
             </div>
           </div>
@@ -505,8 +505,8 @@ function TreatiesTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <ScrollText className="size-4 text-rose-400" />
         <span className="text-xs font-semibold">Intelligence Treaties</span>
-        <span className="text-[11px] text-muted-foreground">— governance as a package: what can be shared, what's restricted</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{treaties.length} treaties</span>
+        <span className="text-[15px] text-muted-foreground">— governance as a package: what can be shared, what's restricted</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{treaties.length} treaties</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -515,23 +515,23 @@ function TreatiesTab() {
           return (
             <div key={t.treatyId} className="rounded-lg border border-border bg-card/40 px-3 py-2.5">
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                <span className="font-mono text-[10px] font-semibold text-muted-foreground">{t.treatyId}</span>
-                <span className="rounded px-1 py-0.5 text-[9px] font-semibold" style={{ color: typeMeta.color, background: `${typeMeta.color}1a` }}>{typeMeta.label}</span>
-                {t.status === "active" && <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] text-emerald-300">✓ active</span>}
-                {t.signedAt && <span className="text-[9px] text-muted-foreground">signed {timeAgo(t.signedAt)}</span>}
+                <span className="font-mono text-[14px] font-semibold text-muted-foreground">{t.treatyId}</span>
+                <span className="rounded px-1 py-0.5 text-[13px] font-semibold" style={{ color: typeMeta.color, background: `${typeMeta.color}1a` }}>{typeMeta.label}</span>
+                {t.status === "active" && <span className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] text-emerald-300">✓ active</span>}
+                {t.signedAt && <span className="text-[13px] text-muted-foreground">signed {timeAgo(t.signedAt)}</span>}
               </div>
-              <div className="text-[12px] font-medium mb-0.5">{t.name}</div>
-              <p className="text-[11px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{t.description}</p>
+              <div className="text-[16px] font-medium mb-0.5">{t.name}</div>
+              <p className="text-[15px] text-foreground/70 leading-snug line-clamp-2 mb-1.5">{t.description}</p>
               {/* Parties */}
               <div className="flex items-center gap-1 mb-1.5">
                 <Handshake className="size-3 text-muted-foreground" />
-                <span className="text-[9px] text-muted-foreground">Parties:</span>
+                <span className="text-[13px] text-muted-foreground">Parties:</span>
                 {t.partyNodeIds.map((p: string) => (
-                  <span key={p} className="rounded bg-emerald-500/10 px-1 py-0.5 text-[9px] font-medium text-emerald-300">{p}</span>
+                  <span key={p} className="rounded bg-emerald-500/10 px-1 py-0.5 text-[13px] font-medium text-emerald-300">{p}</span>
                 ))}
               </div>
               {/* Allowed/restricted categories */}
-              <div className="grid grid-cols-2 gap-2 text-[9px]">
+              <div className="grid grid-cols-2 gap-2 text-[13px]">
                 <div className="rounded border border-emerald-500/20 bg-emerald-500/5 px-2 py-1">
                   <div className="text-emerald-400 font-medium mb-0.5">✓ Allowed</div>
                   <div className="flex flex-wrap gap-0.5">
@@ -550,7 +550,7 @@ function TreatiesTab() {
                 </div>
               </div>
               {/* Sovereignty flags */}
-              <div className="flex items-center gap-2 mt-1.5 text-[9px] flex-wrap">
+              <div className="flex items-center gap-2 mt-1.5 text-[13px] flex-wrap">
                 <span className={cn("rounded px-1 py-0.5", t.onlyProofsExchanged ? "bg-emerald-500/10 text-emerald-300" : "bg-rose-500/10 text-rose-300")}>
                   {t.onlyProofsExchanged ? "✓" : "✗"} Only proofs exchanged
                 </span>
@@ -587,8 +587,8 @@ function SyncTab() {
       <div className="px-4 py-2 border-b border-border flex items-center gap-2">
         <RefreshCw className="size-4 text-cyan-400" />
         <span className="text-xs font-semibold">Federation Sync Protocol</span>
-        <span className="text-[11px] text-muted-foreground">— audit trail of sync runs between nodes</span>
-        <span className="ml-auto text-[10px] text-muted-foreground">{runs.length} runs</span>
+        <span className="text-[15px] text-muted-foreground">— audit trail of sync runs between nodes</span>
+        <span className="ml-auto text-[14px] text-muted-foreground">{runs.length} runs</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-1.5">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-5 animate-spin text-primary" /></div>}
@@ -597,10 +597,10 @@ function SyncTab() {
             <RefreshCw className="size-4 text-cyan-400 shrink-0" />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="font-mono text-[10px] font-semibold text-cyan-300">{r.runId}</span>
-                <span className="rounded bg-cyan-500/10 px-1 py-0.5 text-[9px] text-cyan-300">{r.syncType}</span>
+                <span className="font-mono text-[14px] font-semibold text-cyan-300">{r.runId}</span>
+                <span className="rounded bg-cyan-500/10 px-1 py-0.5 text-[13px] text-cyan-300">{r.syncType}</span>
               </div>
-              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-2 text-[14px] text-muted-foreground">
                 <span className="font-medium text-emerald-400">{r.sourceNodeId}</span>
                 <ArrowRight className="size-2.5" />
                 <span className="font-medium text-amber-400">{r.targetNodeId}</span>
@@ -609,7 +609,7 @@ function SyncTab() {
                 {r.durationMs && <span>· {(r.durationMs / 1000).toFixed(1)}s</span>}
               </div>
             </div>
-            <span className="text-[9px] text-muted-foreground shrink-0">{timeAgo(r.startedAt)}</span>
+            <span className="text-[13px] text-muted-foreground shrink-0">{timeAgo(r.startedAt)}</span>
           </div>
         ))}
         {runs.length === 0 && !loading && (

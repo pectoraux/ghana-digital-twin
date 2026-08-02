@@ -71,7 +71,7 @@ export function ValidationView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <ShieldCheck className="size-4 text-primary" /> Validation & Observability
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {sc.entities ?? 0} entities · {sc.scenes ?? 0} scenes
             </span>
             <div className="ml-auto flex gap-2 flex-wrap">
@@ -112,10 +112,10 @@ export function ValidationView() {
                   <div key={slo.sloId} className="rounded-lg border border-border bg-card/40 p-2.5">
                     <div className="flex items-center gap-2 mb-1">
                       <StatusDot color={color} pulse={slo.status === "violated"} />
-                      <span className="text-[11px] font-medium truncate flex-1">{slo.name}</span>
-                      <span className="text-[9px] font-mono font-semibold" style={{ color }}>{slo.status}</span>
+                      <span className="text-[15px] font-medium truncate flex-1">{slo.name}</span>
+                      <span className="text-[13px] font-mono font-semibold" style={{ color }}>{slo.status}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                    <div className="flex items-center justify-between text-[14px] font-mono text-muted-foreground">
                       <span>target: {slo.targetDisplay}</span>
                       <span style={{ color }}>current: {slo.valueDisplay}</span>
                     </div>
@@ -137,10 +137,10 @@ export function ValidationView() {
                   <div key={slo.sloId} className="rounded-lg border border-border bg-card/40 p-2.5">
                     <div className="flex items-center gap-2 mb-1">
                       <StatusDot color={color} pulse={slo.status === "violated"} />
-                      <span className="text-[11px] font-medium truncate flex-1">{slo.name}</span>
-                      <span className="text-[9px] font-mono font-semibold" style={{ color }}>{slo.status}</span>
+                      <span className="text-[15px] font-medium truncate flex-1">{slo.name}</span>
+                      <span className="text-[13px] font-mono font-semibold" style={{ color }}>{slo.status}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                    <div className="flex items-center justify-between text-[14px] font-mono text-muted-foreground">
                       <span>target: {slo.targetDisplay}</span>
                       <span style={{ color }}>current: {slo.valueDisplay}</span>
                     </div>
@@ -162,20 +162,20 @@ export function ValidationView() {
                     <div className="text-2xl font-bold tnum" style={{ color: sciDashboard.lineage.completenessPct >= 95 ? "#34d399" : "#fbbf24" }}>
                       {sciDashboard.lineage.completenessPct.toFixed(1)}%
                     </div>
-                    <div className="text-[9px] text-muted-foreground">completeness</div>
+                    <div className="text-[13px] text-muted-foreground">completeness</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold tnum text-foreground/80">{sciDashboard.lineage.audited}</div>
-                    <div className="text-[9px] text-muted-foreground">audited</div>
+                    <div className="text-[13px] text-muted-foreground">audited</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold tnum text-emerald-400">{sciDashboard.lineage.complete}</div>
-                    <div className="text-[9px] text-muted-foreground">complete</div>
+                    <div className="text-[13px] text-muted-foreground">complete</div>
                   </div>
                 </div>
                 {sciDashboard.lineage.avgCompletenessPct > 0 && (
                   <div className="mt-2">
-                    <div className="text-[9px] text-muted-foreground mb-0.5">Average completeness: {sciDashboard.lineage.avgCompletenessPct.toFixed(1)}%</div>
+                    <div className="text-[13px] text-muted-foreground mb-0.5">Average completeness: {sciDashboard.lineage.avgCompletenessPct.toFixed(1)}%</div>
                     <div className="h-1.5 rounded-full bg-foreground/8 overflow-hidden">
                       <div className="h-full rounded-full bg-emerald-400" style={{ width: `${sciDashboard.lineage.avgCompletenessPct}%` }} />
                     </div>
@@ -216,11 +216,11 @@ export function ValidationView() {
                 {driftActions.map((a) => (
                   <div key={a.id} className="rounded-md border border-amber-500/20 bg-amber-500/5 px-2.5 py-1.5">
                     <div className="flex items-center gap-2">
-                      <span className={cn("rounded px-1 py-0.5 text-[9px] font-semibold", a.status === "pending" ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400")}>{a.status}</span>
-                      <span className="text-[10px] font-medium">{a.actionType.replace(/_/g, " ")}</span>
-                      <span className="ml-auto text-[9px] text-muted-foreground">{timeAgo(a.createdAt)}</span>
+                      <span className={cn("rounded px-1 py-0.5 text-[13px] font-semibold", a.status === "pending" ? "bg-amber-500/15 text-amber-400" : "bg-emerald-500/15 text-emerald-400")}>{a.status}</span>
+                      <span className="text-[14px] font-medium">{a.actionType.replace(/_/g, " ")}</span>
+                      <span className="ml-auto text-[13px] text-muted-foreground">{timeAgo(a.createdAt)}</span>
                     </div>
-                    <div className="text-[10px] text-muted-foreground mt-0.5">{a.description}</div>
+                    <div className="text-[14px] text-muted-foreground mt-0.5">{a.description}</div>
                   </div>
                 ))}
               </div>
@@ -232,7 +232,7 @@ export function ValidationView() {
             <SectionLabel className="mb-2">Replay History ({replays.length})</SectionLabel>
             <div className="space-y-1">
               {replays.slice(0, 5).map((r) => (
-                <div key={r.id} className="flex items-center gap-2 rounded-md border border-border bg-card/30 px-2.5 py-1.5 text-[10px]">
+                <div key={r.id} className="flex items-center gap-2 rounded-md border border-border bg-card/30 px-2.5 py-1.5 text-[14px]">
                   <StatusDot color={r.status === "success" ? "#34d399" : r.status === "partial" ? "#fbbf24" : "#f43f5e"} />
                   <span className="font-mono text-muted-foreground">{r.scope}</span>
                   <span className="text-muted-foreground">{r.stagesCompleted?.length || 0} stages</span>
@@ -240,7 +240,7 @@ export function ValidationView() {
                   <span className="text-muted-foreground">{timeAgo(r.startedAt)}</span>
                 </div>
               ))}
-              {replays.length === 0 && <div className="text-[10px] text-muted-foreground italic px-1">No replays yet</div>}
+              {replays.length === 0 && <div className="text-[14px] text-muted-foreground italic px-1">No replays yet</div>}
             </div>
           </div>
 
@@ -250,9 +250,9 @@ export function ValidationView() {
           <div className="rounded-lg border border-primary/20 bg-primary/5 p-3.5">
             <div className="flex items-center gap-2 mb-2">
               <ShieldCheck className="size-4 text-primary" />
-              <span className="text-[11px] font-semibold text-primary">VALIDATION GATES</span>
+              <span className="text-[15px] font-semibold text-primary">VALIDATION GATES</span>
             </div>
-            <p className="text-[12px] text-foreground/80 leading-relaxed">
+            <p className="text-[16px] text-foreground/80 leading-relaxed">
               Engineering health (replay success, API latency, cache hits) is tracked separately from scientific validity
               (precision, recall, calibration, lineage completeness). SLOs define measurable production targets.
               Drift detection triggers operational actions (increase review sampling, reduce confidence, prioritize SAR).
@@ -272,7 +272,7 @@ export function ValidationView() {
           {cache && (
             <div>
               <SectionLabel className="mb-2">Cache</SectionLabel>
-              <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+              <div className="grid grid-cols-2 gap-1.5 text-[14px]">
                 <div className="rounded border border-border bg-card/40 px-2 py-1">
                   <div className="text-muted-foreground">Entries</div>
                   <div className="font-mono tnum font-semibold">{cache.totalEntries}</div>
@@ -294,7 +294,7 @@ export function ValidationView() {
               <SectionLabel className="mb-2">System Counts</SectionLabel>
               <div className="space-y-0.5">
                 {Object.entries(sc).map(([key, val]) => (
-                  <div key={key} className="flex items-center justify-between text-[10px] px-1">
+                  <div key={key} className="flex items-center justify-between text-[14px] px-1">
                     <span className="text-muted-foreground">{key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase())}</span>
                     <span className="font-mono tnum">{String(val)}</span>
                   </div>
@@ -307,18 +307,18 @@ export function ValidationView() {
             <div>
               <SectionLabel className="mb-2">Latest Evaluation</SectionLabel>
               <div className="rounded-lg border border-border bg-card/40 p-2.5 space-y-1">
-                <div className="flex justify-between text-[10px]"><span className="text-muted-foreground">Precision</span><span className="font-mono">{(sciDashboard.latestEvaluation.precision * 100).toFixed(0)}%</span></div>
-                <div className="flex justify-between text-[10px]"><span className="text-muted-foreground">Recall</span><span className="font-mono">{(sciDashboard.latestEvaluation.recall * 100).toFixed(0)}%</span></div>
-                <div className="flex justify-between text-[10px]"><span className="text-muted-foreground">F1</span><span className="font-mono">{(sciDashboard.latestEvaluation.f1 * 100).toFixed(0)}%</span></div>
-                <div className="flex justify-between text-[10px]"><span className="text-muted-foreground">Samples</span><span className="font-mono">{sciDashboard.latestEvaluation.sampleCount}</span></div>
+                <div className="flex justify-between text-[14px]"><span className="text-muted-foreground">Precision</span><span className="font-mono">{(sciDashboard.latestEvaluation.precision * 100).toFixed(0)}%</span></div>
+                <div className="flex justify-between text-[14px]"><span className="text-muted-foreground">Recall</span><span className="font-mono">{(sciDashboard.latestEvaluation.recall * 100).toFixed(0)}%</span></div>
+                <div className="flex justify-between text-[14px]"><span className="text-muted-foreground">F1</span><span className="font-mono">{(sciDashboard.latestEvaluation.f1 * 100).toFixed(0)}%</span></div>
+                <div className="flex justify-between text-[14px]"><span className="text-muted-foreground">Samples</span><span className="font-mono">{sciDashboard.latestEvaluation.sampleCount}</span></div>
               </div>
             </div>
           )}
 
           {obs?.timestamp && (
             <div className="rounded-lg border border-border bg-card/40 p-2 text-center">
-              <div className="text-[9px] text-muted-foreground">Last updated</div>
-              <div className="font-mono text-[10px]">{timeAgo(obs.timestamp)}</div>
+              <div className="text-[13px] text-muted-foreground">Last updated</div>
+              <div className="font-mono text-[14px]">{timeAgo(obs.timestamp)}</div>
             </div>
           )}
         </div>

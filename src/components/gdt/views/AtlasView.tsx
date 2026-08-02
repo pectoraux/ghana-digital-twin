@@ -120,7 +120,7 @@ export function AtlasView() {
           >
             <Layers className="size-4 text-primary" />
             <span className="text-xs font-semibold flex-1">Layers</span>
-            <span className="text-[10px] text-muted-foreground font-mono">
+            <span className="text-[14px] text-muted-foreground font-mono">
               {Object.values(layers).filter(Boolean).length}/{Object.values(layers).length}
             </span>
             {panelOpen ? <ChevronLeft className="size-3.5" /> : <ChevronRight className="size-3.5" />}
@@ -147,7 +147,7 @@ export function AtlasView() {
                         ) : (
                           <span className="size-2.5 rounded-full border border-border" />
                         )}
-                        <span className="flex-1 text-[11px] truncate">{it.label}</span>
+                        <span className="flex-1 text-[15px] truncate">{it.label}</span>
                         <span
                           className={cn(
                             "h-3 w-5 rounded-full p-0.5 transition-colors",
@@ -174,7 +174,7 @@ export function AtlasView() {
       {/* Legend (top-right) */}
       <div className="absolute right-3 top-3 w-[176px] rounded-lg border border-border bg-card/85 backdrop-blur-md shadow-lg p-2.5">
         <SectionLabel className="mb-2">Legend</SectionLabel>
-        <div className="space-y-1.5 text-[11px]">
+        <div className="space-y-1.5 text-[15px]">
           <LegendRow color="#2dd4bf" label="Rivers / Water" />
           <LegendRow color="#34d399" label="Forest / Protected" />
           <LegendRow color="#fbbf24" label="Settlement / Dam" />
@@ -191,7 +191,7 @@ export function AtlasView() {
           </SectionLabel>
           <div className="space-y-1 max-h-56 overflow-y-auto gdt-scroll">
             {changes.length === 0 && (
-              <div className="text-[10px] text-muted-foreground px-1 py-2">
+              <div className="text-[14px] text-muted-foreground px-1 py-2">
                 No recent changes
               </div>
             )}
@@ -214,7 +214,7 @@ export function AtlasView() {
           <div className="flex items-center gap-3">
             <div
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-semibold font-mono shrink-0",
+                "flex items-center gap-1.5 rounded-md px-2 py-1 text-[14px] font-semibold font-mono shrink-0",
                 temporalMode === "live"
                   ? "bg-emerald-500/15 text-emerald-400"
                   : "bg-amber-500/15 text-amber-400"
@@ -240,7 +240,7 @@ export function AtlasView() {
               </button>
             )}
 
-            <div className="text-[11px] font-mono text-foreground/90 tnum w-[150px] shrink-0">
+            <div className="text-[15px] font-mono text-foreground/90 tnum w-[150px] shrink-0">
               {temporalMode === "live"
                 ? fmtDateTime(liveTime.toISOString())
                 : fmtDateTime(temporalDate)}
@@ -257,7 +257,7 @@ export function AtlasView() {
                 className="gdt-range w-full"
                 style={{ "--pct": `${pct}%` } as React.CSSProperties}
               />
-              <div className="flex justify-between text-[9px] text-muted-foreground font-mono mt-1">
+              <div className="flex justify-between text-[13px] text-muted-foreground font-mono mt-1">
                 <span>Jan 2024</span>
                 <span>Jan 2025</span>
                 <span>Now</span>
@@ -267,7 +267,7 @@ export function AtlasView() {
             {temporalMode === "historical" && (
               <button
                 onClick={() => setTemporalMode("live")}
-                className="flex items-center gap-1 rounded-md border border-border bg-background/60 px-2 py-1 text-[10px] text-foreground/80 hover:text-primary hover:border-primary/40 shrink-0"
+                className="flex items-center gap-1 rounded-md border border-border bg-background/60 px-2 py-1 text-[14px] text-foreground/80 hover:text-primary hover:border-primary/40 shrink-0"
               >
                 <RotateCcw className="size-3" /> Live
               </button>
@@ -375,10 +375,10 @@ function ChangeRow({
     >
       <span className="size-1.5 shrink-0 rounded-full" style={{ background: col, boxShadow: `0 0 6px ${col}` }} />
       <span className="flex-1 min-w-0">
-        <span className="block truncate text-[10px] text-foreground/80 group-hover:text-foreground">
+        <span className="block truncate text-[14px] text-foreground/80 group-hover:text-foreground">
           {title}
         </span>
-        <span className="block text-[9px] text-muted-foreground font-mono truncate">{sub}</span>
+        <span className="block text-[13px] text-muted-foreground font-mono truncate">{sub}</span>
       </span>
     </button>
   );

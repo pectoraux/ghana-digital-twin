@@ -386,7 +386,7 @@ export function KnowledgeGraphView() {
         {/* hover tooltip */}
         {tooltip && (
           <div
-            className="pointer-events-none fixed z-50 max-w-xs rounded-lg border border-border bg-card/95 backdrop-blur px-3 py-2 text-[11px] leading-relaxed text-foreground/90 shadow-xl"
+            className="pointer-events-none fixed z-50 max-w-xs rounded-lg border border-border bg-card/95 backdrop-blur px-3 py-2 text-[15px] leading-relaxed text-foreground/90 shadow-xl"
             style={{ left: tooltip.x + 14, top: tooltip.y + 14 }}
           >
             {tooltip.text}
@@ -399,14 +399,14 @@ export function KnowledgeGraphView() {
             <Network className="size-4 text-primary" />
             <div className="flex flex-col">
               <span className="text-xs font-semibold">Environmental Knowledge Graph</span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[14px] text-muted-foreground">
                 Domain concepts and conceptual relationships
               </span>
             </div>
           </div>
           {layout && (
             <div className="flex w-fit items-center gap-2 rounded-lg border border-border bg-card/85 backdrop-blur px-3 py-1.5">
-              <span className="text-[10px] text-muted-foreground font-mono tnum">
+              <span className="text-[14px] text-muted-foreground font-mono tnum">
                 {nodes.length} nodes · {edges.length} edges
               </span>
             </div>
@@ -449,13 +449,13 @@ export function KnowledgeGraphView() {
             {focusNode && (
               <button
                 onClick={() => setSelected(null)}
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1 text-[14px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="size-3" /> overview
               </button>
             )}
           </div>
-          <p className="mt-1 text-[10px] text-muted-foreground">
+          <p className="mt-1 text-[14px] text-muted-foreground">
             {focusNode ? "Concept details and connections" : "Legend, stats, and overview"}
           </p>
         </div>
@@ -472,7 +472,7 @@ export function KnowledgeGraphView() {
               {/* categories legend */}
               <div>
                 <SectionLabel className="mb-2">Categories</SectionLabel>
-                <div className="space-y-1 text-[10px]">
+                <div className="space-y-1 text-[14px]">
                   {legendCategories.map((c) => (
                     <div
                       key={c.category}
@@ -489,7 +489,7 @@ export function KnowledgeGraphView() {
                     </div>
                   ))}
                   {legendCategories.length === 0 && (
-                    <div className="text-[10px] text-muted-foreground italic">No concepts loaded.</div>
+                    <div className="text-[14px] text-muted-foreground italic">No concepts loaded.</div>
                   )}
                 </div>
               </div>
@@ -497,7 +497,7 @@ export function KnowledgeGraphView() {
               {/* relations legend */}
               <div>
                 <SectionLabel className="mb-2">Relation Types</SectionLabel>
-                <div className="space-y-1 text-[10px]">
+                <div className="space-y-1 text-[14px]">
                   {legendRelations.map((r) => (
                     <div
                       key={r.relation}
@@ -509,7 +509,7 @@ export function KnowledgeGraphView() {
                     </div>
                   ))}
                   {legendRelations.length === 0 && (
-                    <div className="text-[10px] text-muted-foreground italic">No relationships defined.</div>
+                    <div className="text-[14px] text-muted-foreground italic">No relationships defined.</div>
                   )}
                 </div>
               </div>
@@ -517,17 +517,17 @@ export function KnowledgeGraphView() {
               {/* stats */}
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-lg border border-border bg-card/40 px-3 py-2">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Nodes</div>
+                  <div className="text-[14px] uppercase tracking-wider text-muted-foreground">Nodes</div>
                   <div className="text-lg font-semibold tnum mt-0.5">{nodes.length}</div>
                 </div>
                 <div className="rounded-lg border border-border bg-card/40 px-3 py-2">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Edges</div>
+                  <div className="text-[14px] uppercase tracking-wider text-muted-foreground">Edges</div>
                   <div className="text-lg font-semibold tnum mt-0.5">{edges.length}</div>
                 </div>
               </div>
 
               {/* explanation */}
-              <div className="rounded-lg border border-border bg-background/40 p-3 text-[11px] text-muted-foreground leading-relaxed">
+              <div className="rounded-lg border border-border bg-background/40 p-3 text-[15px] text-muted-foreground leading-relaxed">
                 This graph represents domain knowledge — conceptual relationships between environmental
                 concepts. Separate from the World Model which represents physical entities.
               </div>
@@ -558,17 +558,17 @@ function NodeInspector({
         <div className="flex items-center gap-2 mb-1">
           <span className="size-2.5 rounded-full" style={{ background: col }} />
           <span
-            className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider"
+            className="inline-flex items-center rounded px-1.5 py-0.5 text-[13px] font-semibold uppercase tracking-wider"
             style={{ color: col, background: `${col}1a`, border: `1px solid ${col}33` }}
           >
             {node.category.replace(/_/g, " ")}
           </span>
         </div>
-        <div className="text-[13px] font-semibold leading-snug">{node.label}</div>
+        <div className="text-[17px] font-semibold leading-snug">{node.label}</div>
         {node.description && (
-          <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">{node.description}</p>
+          <p className="mt-1.5 text-[15px] text-muted-foreground leading-relaxed">{node.description}</p>
         )}
-        <div className="mt-2 flex items-center gap-3 text-[10px] text-muted-foreground font-mono">
+        <div className="mt-2 flex items-center gap-3 text-[14px] text-muted-foreground font-mono">
           <span>
             degree: <span className="tnum text-foreground/80">{node.degree}</span>
           </span>
@@ -594,8 +594,8 @@ function NodeInspector({
               >
                 <span className="size-2 rounded-full shrink-0" style={{ background: other.color }} />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[11px] truncate">{other.label}</div>
-                  <div className="text-[9px] font-mono" style={{ color: eColor }}>
+                  <div className="text-[15px] truncate">{other.label}</div>
+                  <div className="text-[13px] font-mono" style={{ color: eColor }}>
                     {c.dir === "out" ? "→" : "←"} {e.relation}
                     <span className="ml-1 text-muted-foreground">
                       · conf <span className="tnum">{(e.confidence * 100).toFixed(0)}%</span>
@@ -606,7 +606,7 @@ function NodeInspector({
             );
           })}
           {connections.length === 0 && (
-            <div className="text-[10px] text-muted-foreground italic">No direct relationships.</div>
+            <div className="text-[14px] text-muted-foreground italic">No direct relationships.</div>
           )}
         </div>
       </div>

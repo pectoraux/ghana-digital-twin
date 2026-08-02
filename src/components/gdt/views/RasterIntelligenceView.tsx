@@ -147,7 +147,7 @@ export function RasterIntelligenceView() {
           <h3 className="flex items-center gap-2 text-xs font-semibold">
             <Grid3x3 className="size-3.5 text-primary" /> Raster Intelligence
           </h3>
-          <p className="mt-1 text-[10px] text-muted-foreground">Derived products with uncertainty</p>
+          <p className="mt-1 text-[14px] text-muted-foreground">Derived products with uncertainty</p>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-3 space-y-4">
           {/* Product types */}
@@ -169,10 +169,10 @@ export function RasterIntelligenceView() {
                     <span className="mt-0.5 size-2.5 rounded-full" style={{ background: t.color }} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className={cn("text-[12px] font-semibold", active && "text-primary")}>{t.label}</span>
-                        {count > 0 && <span className="text-[9px] font-mono text-muted-foreground">{count}</span>}
+                        <span className={cn("text-[16px] font-semibold", active && "text-primary")}>{t.label}</span>
+                        {count > 0 && <span className="text-[13px] font-mono text-muted-foreground">{count}</span>}
                       </div>
-                      <div className="text-[9px] text-muted-foreground/70 line-clamp-2 mt-0.5">{t.description}</div>
+                      <div className="text-[13px] text-muted-foreground/70 line-clamp-2 mt-0.5">{t.description}</div>
                     </div>
                   </button>
                 );
@@ -199,19 +199,19 @@ export function RasterIntelligenceView() {
                   >
                     <span className="size-2 rounded-full" style={{ background: selectedTypeInfo?.color }} />
                     <div className="min-w-0 flex-1">
-                      <div className="text-[11px] font-medium truncate">
+                      <div className="text-[15px] font-medium truncate">
                         {p.mgrsTile ?? "—"} · {p.season ?? "—"}
                       </div>
-                      <div className="text-[9px] text-muted-foreground font-mono">
+                      <div className="text-[13px] text-muted-foreground font-mono">
                         mean {p.meanValue?.toFixed(3) ?? "—"} · {(p.confidence * 100).toFixed(0)}% conf
                       </div>
                     </div>
-                    <span className="text-[9px] text-muted-foreground">{timeAgo(p.computedAt)}</span>
+                    <span className="text-[13px] text-muted-foreground">{timeAgo(p.computedAt)}</span>
                   </button>
                 );
               })}
               {products.filter((p) => p.type === selectedType).length === 0 && (
-                <div className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-[10px] text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-[14px] text-muted-foreground">
                   No products yet. Generate via API.
                 </div>
               )}
@@ -227,11 +227,11 @@ export function RasterIntelligenceView() {
               {baselines.map((b) => (
                 <div key={b.id} className="rounded-md border border-border bg-card/40 px-2.5 py-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-medium">{b.indexName}</span>
-                    <span className="text-[9px] font-mono text-muted-foreground">{b.mgrsTile}</span>
-                    <span className="ml-auto text-[9px] text-muted-foreground">{b.season}</span>
+                    <span className="text-[15px] font-medium">{b.indexName}</span>
+                    <span className="text-[13px] font-mono text-muted-foreground">{b.mgrsTile}</span>
+                    <span className="ml-auto text-[13px] text-muted-foreground">{b.season}</span>
                   </div>
-                  <div className="mt-1 flex items-center gap-3 text-[9px] font-mono text-muted-foreground">
+                  <div className="mt-1 flex items-center gap-3 text-[13px] font-mono text-muted-foreground">
                     <span>n={b.sampleCount}</span>
                     <span>±{b.uncertainty.toFixed(4)}</span>
                     <span className="text-primary">{b.gridSize}×{b.gridSize}</span>
@@ -239,7 +239,7 @@ export function RasterIntelligenceView() {
                 </div>
               ))}
               {baselines.length === 0 && (
-                <div className="rounded-lg border border-dashed border-border px-3 py-3 text-center text-[10px] text-muted-foreground">
+                <div className="rounded-lg border border-dashed border-border px-3 py-3 text-center text-[14px] text-muted-foreground">
                   No baselines computed
                 </div>
               )}
@@ -255,11 +255,11 @@ export function RasterIntelligenceView() {
             <h2 className="text-base font-semibold flex items-center gap-2">
               <Grid3x3 className="size-4 text-primary" /> Raster Intelligence
             </h2>
-            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">
+            <span className="rounded-md bg-foreground/5 px-1.5 py-0.5 text-[14px] font-mono text-muted-foreground">
               {products.length} products · {baselines.length} baselines
             </span>
             {selectedTypeInfo && (
-              <span className="text-[11px] text-muted-foreground">· {selectedTypeInfo.description}</span>
+              <span className="text-[15px] text-muted-foreground">· {selectedTypeInfo.description}</span>
             )}
           </div>
         </div>
@@ -317,7 +317,7 @@ export function RasterIntelligenceView() {
             <div className="absolute left-3 bottom-3 rounded-lg border border-border bg-card/85 backdrop-blur p-2.5 w-[200px]">
               <SectionLabel className="mb-1.5">{selectedTypeInfo?.label}</SectionLabel>
               <ColorBar type={selectedType} min={productDetail.minValue ?? 0} max={productDetail.maxValue ?? 1} />
-              <div className="mt-1.5 flex items-center justify-between text-[9px] font-mono text-muted-foreground">
+              <div className="mt-1.5 flex items-center justify-between text-[13px] font-mono text-muted-foreground">
                 <span>min: {productDetail.minValue?.toFixed(3)}</span>
                 <span>mean: {productDetail.meanValue?.toFixed(3)}</span>
                 <span>max: {productDetail.maxValue?.toFixed(3)}</span>
@@ -326,7 +326,7 @@ export function RasterIntelligenceView() {
           )}
 
           {/* Info badge */}
-          <div className="absolute left-3 top-3 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-[10px] font-mono text-primary backdrop-blur">
+          <div className="absolute left-3 top-3 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-[14px] font-mono text-primary backdrop-blur">
             {productDetail ? `${productDetail.gridSize}×${productDetail.gridSize} GRID · UNCERTAINTY ±${(productDetail.confidence * 100).toFixed(0)}%` : "SELECT A PRODUCT"}
           </div>
         </div>
@@ -364,7 +364,7 @@ export function RasterIntelligenceView() {
                   </span>
                 </div>
                 <ConfidenceBar value={productDetail.confidence} showLabel={false} />
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[14px] text-muted-foreground">
                   Derived from valid-pixel ratio × uncertainty factor
                 </div>
               </div>
@@ -373,7 +373,7 @@ export function RasterIntelligenceView() {
               <div>
                 <SectionLabel className="mb-2">Formula</SectionLabel>
                 <div className="rounded-lg border border-border bg-background/60 p-3">
-                  <code className="text-[11px] font-mono text-foreground/90 leading-relaxed">{productDetail.formula}</code>
+                  <code className="text-[15px] font-mono text-foreground/90 leading-relaxed">{productDetail.formula}</code>
                 </div>
               </div>
 
@@ -386,7 +386,7 @@ export function RasterIntelligenceView() {
                   {productDetail.sources.map((s) => (
                     <div key={s} className="flex items-center gap-2 rounded-md border border-border bg-card/40 px-2.5 py-1.5">
                       <Database className="size-3 text-muted-foreground" />
-                      <span className="text-[11px]">{s}</span>
+                      <span className="text-[15px]">{s}</span>
                     </div>
                   ))}
                 </div>
@@ -395,7 +395,7 @@ export function RasterIntelligenceView() {
               {/* spatial extent */}
               <div>
                 <SectionLabel className="mb-2">Spatial Extent</SectionLabel>
-                <div className="rounded-lg border border-border bg-card/40 p-3 space-y-1 text-[10px] font-mono text-muted-foreground">
+                <div className="rounded-lg border border-border bg-card/40 p-3 space-y-1 text-[14px] font-mono text-muted-foreground">
                   <div>MGRS: {productDetail.mgrsTile ?? "—"}</div>
                   <div>Season: {productDetail.season ?? "—"}</div>
                   <div>Grid: {productDetail.gridSize}×{productDetail.gridSize} ({productDetail.gridSize ** 2} cells)</div>
@@ -408,9 +408,9 @@ export function RasterIntelligenceView() {
               <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
                 <div className="flex items-center gap-1.5 mb-1">
                   <Sigma className="size-3 text-amber-400" />
-                  <span className="text-[10px] font-semibold text-amber-400">Uncertainty Propagation</span>
+                  <span className="text-[14px] font-semibold text-amber-400">Uncertainty Propagation</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                <p className="text-[14px] text-muted-foreground leading-relaxed">
                   Every cell carries a value ± uncertainty, propagated from sensor noise (cloud-cover dependent),
                   atmospheric correction, and baseline standard error (σ/√n). Downstream systems receive both
                   the measurement and its confidence.
