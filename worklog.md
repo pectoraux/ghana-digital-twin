@@ -1219,3 +1219,31 @@ Stage Summary:
 - ✅ NO KERNEL MODIFICATIONS. Everything is package-layer. Kernel remains frozen at v1.0.0.
 - Lint: 0 errors, 0 warnings. Browser-verified: all 5 tabs interactive, organizations with treasuries + employed agents + objectives with progress + charters with rules.
 - The platform now has digital institutions: autonomous organizations with identity, treasury, employed agents, objectives, charters, and marketplace services. These are not just agents — they are institutions. Like a company native to the intelligence economy. Like a DAO with constitutional governance. Like an agent swarm legally/economically bounded. The civilization stack is now complete: knowledge production → verification → economic incentives → institutions → law → diplomacy → organizations.
+
+---
+Task ID: 49
+Agent: orchestrator
+Task: Milestone 14 — Intelligence Community Experience Layer
+
+Work Log:
+- Extended schema with 5 new models (already pushed from partial M14): UserProfile (displayName, avatar, bio, country, region, interests, skills, followers/following), UserReputation (trustScore, civicScore, contributionScore, verificationLevel, totalReports/Verified/Assets/Missions), OrganizationMembership (links users to AIOs with role/permissions/status), FeedItem (type: ALERT/REPORT/ANALYSIS/MISSION/DISCUSSION/ASSET/ANNOUNCEMENT, creator, org, category, region, trust, confidence, engagement counts), FeedEngagement (likes/comments/shares/flags).
+- Built identity context service (src/lib/identity/context-service.ts): getIdentityContext(userId) resolves a user into their full identity context — user + role + profile + reputation + organization + availableModules + isAdmin. Single canonical lookup, no duplicate queries. Role → modules mapping: CITIZEN gets [feed, report, alerts, profile, map, rewards], ADMIN gets [feed, report, alerts, profile, map, admin, users, audit, governance], etc.
+- Built feed engine (src/lib/feed/engine.ts): createFeedItem, listFeedItems (filter by type/category/region), engageWithFeedItem (like/comment/share/flag), getFeedOverview (counts by type). Each feed item has creator info, organization, trust/confidence, engagement counts.
+- Built 3 API routes: /api/feed (GET list/overview auto-seeds, POST create), /api/feed/engage (POST engage), /api/identity (GET identity context auto-seeds).
+- Seeded real data: 8 user profiles (one per demo account with bio, region, interests, skills matching their role), 8 user reputations (Kwesi: trust 73, civic 73, 243 reports, 67 verified, biometric; Guardian: trust 82, civic 82, 156 reports, 189 verified; Producer: trust 75, 12 assets; etc.), 3 organization memberships (EPA demo → Mining Org officer, NADMO demo → Flood Org officer, Kwesi demo → Mining Org member), 10 feed items (ALERT: illegal mining + flood warning + deforestation; REPORT: water pollution + cocoa disease; ANALYSIS: Q3 mining detection; MISSION: witness verification needed; ASSET: Mining Analyst Pro v2.1; ANNOUNCEMENT: ECOWAS $500K bounty; DISCUSSION: verification patrol coordination).
+- Built CommunityAppShell (src/components/gdt/CommunityAppShell.tsx, ~500 lines): mobile-first consumer app with 4 bottom-nav tabs — Home (intelligence feed with greeting, filter pills, feed item cards showing creator avatar/type badge/trust/confidence/region/engagement), Report (quick-report flow: 6 category buttons, GPS detected, description, evidence buttons, submit → success screen with event ID + confidence + potential reward), Alerts (active alerts with verify/view buttons), Profile (identity card with avatar/name/role/org/region, reputation scores with trust/civic gauges, impact stats grid: reports/verified/assets/missions, bio + interests).
+- Updated page.tsx: role-based routing — ADMIN/SUPER_ADMIN/DEVELOPER get the full platform Shell; CITIZEN/GUARDIAN/PRODUCER/ORGANIZATION_MEMBER get the CommunityAppShell. Auto-seeds auth + community data on load.
+- Browser-verified ALL flows: Citizen demo → "Good morning, Kwesi" + intelligence feed with 10 items (alerts, reports, analysis, missions, assets, announcements from all demo users) + Report tab (6 categories, GPS, evidence) + Profile tab (trust 73, civic 73, 243 reports, 67 verified, bio, interests) + Alerts tab. Admin demo → full platform Atlas shell (not consumer app). No client-side errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- ✅ Consumer App Shell: mobile-first, 4 tabs (Home, Report, Alerts, Profile). Role-aware — citizens see the consumer app, admins see the full platform.
+- ✅ Intelligence Feed: 10 real feed items from demo users. Filterable by type (Alert/Report/Analysis/Mission/Asset/Announcement/Discussion). Each item shows creator, trust, confidence, region, engagement.
+- ✅ Report Flow: 6 categories, GPS auto-detect, description, evidence buttons. Submit → success with event ID + confidence + potential reward. <20 second flow.
+- ✅ Profile: identity card (name, role, org, region), reputation (trust + civic scores with verification level), impact stats (reports/verified/assets/missions), bio + interests.
+- ✅ Identity Context: single canonical lookup — user + role + profile + reputation + organization + available modules. No duplicate queries.
+- ✅ Organization Memberships: 3 demo users linked to AIOs (EPA → Mining Org, NADMO → Flood Org, Kwesi → Mining Org).
+- ✅ Role-Based Routing: citizens/guardians/producers/org-members → consumer app; admins/developers → full platform.
+- ✅ NO KERNEL MODIFICATIONS. Everything is package-layer. Kernel remains frozen at v1.0.0.
+- Lint: 0 errors, 0 warnings. Browser-verified: citizen feed populated, report flow works, profile shows real reputation, admin gets full platform.
+- The platform now has a consumer front door. A normal person can login, see their personalized intelligence feed, report an event in <20 seconds, view their reputation and impact, and understand why they should participate. This is the Waze flywheel: observe → report → verify → reward → more participation.
