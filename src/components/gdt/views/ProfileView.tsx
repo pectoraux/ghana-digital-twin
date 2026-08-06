@@ -68,8 +68,8 @@ export function ProfileView() {
             <h2 className="text-[20px] font-semibold mb-4">Reputation</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
-                <Shield className="size-6 mx-auto mb-2 text-blue-500" />
-                <div className="text-[36px] font-bold font-mono text-blue-500">{rep.trustScore.toFixed(0)}</div>
+                <Shield className="size-6 mx-auto mb-2 text-teal-500" />
+                <div className="text-[36px] font-bold font-mono text-teal-500">{rep.trustScore.toFixed(0)}</div>
                 <div className="text-[14px] text-muted-foreground">Trust Score</div>
               </div>
               <div className="text-center">

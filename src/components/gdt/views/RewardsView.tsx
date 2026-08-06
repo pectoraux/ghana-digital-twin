@@ -77,10 +77,10 @@ export function RewardsView() {
           </div>
           <div className="rounded-xl border border-border bg-card p-5 shadow-card">
             <div className="flex items-center gap-2 mb-2">
-              <ArrowDownLeft className="size-5 text-blue-500" />
+              <ArrowDownLeft className="size-5 text-cyan-500" />
               <span className="text-[14px] font-medium text-muted-foreground">Total Deposited</span>
             </div>
-            <div className="text-[36px] font-bold font-mono text-blue-500">{totalDeposited.toLocaleString()}</div>
+            <div className="text-[36px] font-bold font-mono text-cyan-500">{totalDeposited.toLocaleString()}</div>
             <div className="text-[14px] text-muted-foreground">IC added to account</div>
           </div>
         </div>
@@ -92,11 +92,11 @@ export function RewardsView() {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[15px] font-medium flex items-center gap-2"><Shield className="size-4 text-blue-500" /> Trust Score</span>
-                  <span className="text-[15px] font-mono font-bold text-blue-500">{rep.trustScore.toFixed(0)} / 100</span>
+                  <span className="text-[15px] font-medium flex items-center gap-2"><Shield className="size-4 text-teal-500" /> Trust Score</span>
+                  <span className="text-[15px] font-mono font-bold text-teal-500">{rep.trustScore.toFixed(0)} / 100</span>
                 </div>
                 <div className="h-3 rounded-full bg-foreground/10 overflow-hidden">
-                  <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${rep.trustScore}%` }} />
+                  <div className="h-full rounded-full bg-teal-500 transition-all" style={{ width: `${rep.trustScore}%` }} />
                 </div>
               </div>
               <div>

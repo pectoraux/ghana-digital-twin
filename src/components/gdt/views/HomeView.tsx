@@ -76,7 +76,7 @@ export function HomeView() {
         {rep && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <Shield className="size-5 text-blue-500 mb-2" />
+              <Shield className="size-5 text-teal-500 mb-2" />
               <div className="text-[32px] font-bold font-mono">{rep.trustScore.toFixed(0)}</div>
               <div className="text-[13px] text-muted-foreground">Trust Score</div>
             </div>

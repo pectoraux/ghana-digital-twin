@@ -164,7 +164,7 @@ export function CommunityConsumerView() {
                 <div className="flex items-center gap-3 mt-1 text-[14px] text-muted-foreground">
                   <span className="flex items-center gap-1"><Award className="size-4 text-amber-500" /> Civic {c.civicScore.toFixed(0)}</span>
                   <span className="flex items-center gap-1"><CheckCircle2 className="size-4 text-emerald-500" /> {c.confirmedReports} confirmed</span>
-                  <span className="flex items-center gap-1"><Eye className="size-4 text-blue-500" /> {c.totalWitnessResponses} witnessed</span>
+                  <span className="flex items-center gap-1"><Eye className="size-4 text-teal-500" /> {c.totalWitnessResponses} witnessed</span>
                   {c.totalEarnings > 0 && <span className="flex items-center gap-1 text-amber-500"><Zap className="size-4" /> {c.totalEarnings.toFixed(0)} IC</span>}
                 </div>
               </div>

@@ -69,7 +69,7 @@ export function CommandBar() {
   const userRole = (session?.user as any)?.role ?? "CITIZEN";
   const initials = userName.split(" ").map((w: string) => w[0]).join("").slice(0, 2).toUpperCase();
 
-  const meta = VIEW_TITLES[view];
+  const meta = VIEW_TITLES[view] ?? { title: "Ghana Digital Twin", sub: "Geospatial world model" };
   const activeCount = OBSERVATIONS.filter((o) => o.status === "active").length;
 
   return (
