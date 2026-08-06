@@ -16,7 +16,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 // Consumer-facing primary nav — what a normal user thinks in
 const PRIMARY_NAV: { id: ViewId; label: string; icon: React.ElementType; hint: string }[] = [
-  { id: "atlas", label: "Home", icon: Home, hint: "Intelligence dashboard" },
+  { id: "home", label: "Home", icon: Home, hint: "Intelligence dashboard" },
   { id: "observations", label: "Intelligence Feed", icon: Eye, hint: "Latest verified intelligence" },
   { id: "atlas", label: "Map", icon: MapIcon, hint: "Live intelligence map" },
   { id: "missions", label: "Missions", icon: Crosshair, hint: "Active intelligence missions" },

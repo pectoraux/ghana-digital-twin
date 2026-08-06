@@ -22,7 +22,8 @@ import { StatusDot } from "./atoms";
 import { fmtInt } from "@/lib/gdt/format";
 
 const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
-  atlas: { title: "Atlas", sub: "National geospatial world view" },
+  home: { title: "Home", sub: "Your intelligence dashboard" },
+  atlas: { title: "Map", sub: "Live intelligence map of Ghana" },
   observations: { title: "Observations", sub: "Fused evidence from multiple raster products" },
   phenomena: { title: "Phenomena", sub: "Evolving events tracked over time" },
   intelligence: { title: "Intelligence", sub: "Ranked hypotheses, Bayesian reasoning & scenarios" },

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/command";
 import {
   Map as MapIcon,
+  Home,
   Eye,
   Boxes,
   Share2,
@@ -39,7 +40,8 @@ import {
 } from "lucide-react";
 
 const VIEWS = [
-  { id: "atlas", label: "Atlas", icon: MapIcon, hint: "Geospatial world view" },
+  { id: "home", label: "Home", icon: Home, hint: "Intelligence dashboard" },
+  { id: "atlas", label: "Map", icon: MapIcon, hint: "Live intelligence map" },
   { id: "observations", label: "Change Log", icon: Eye, hint: "Entity version history" },
   { id: "entities", label: "Entities", icon: Boxes, hint: "Entity registry" },
   { id: "graph", label: "Knowledge Graph", icon: Share2, hint: "Relationship graph" },

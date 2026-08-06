@@ -7,6 +7,7 @@ import { Inspector } from "./Inspector";
 import { StatusBar } from "./StatusBar";
 import { CommandPalette } from "./CommandPalette";
 import { LiveEngine } from "./LiveEngine";
+import { HomeView } from "./views/HomeView";
 import { AtlasView } from "./views/AtlasView";
 import { ObservationsView } from "./views/ObservationsView";
 import { PhenomenaView } from "./views/PhenomenaView";
@@ -55,6 +56,7 @@ export function Shell() {
               transition={{ duration: 0.18, ease: "easeOut" }}
               className="absolute inset-0"
             >
+              {view === "home" && <HomeView />}
               {view === "atlas" && <AtlasView />}
               {view === "observations" && <ObservationsView />}
               {view === "phenomena" && <PhenomenaView />}

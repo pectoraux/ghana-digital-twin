@@ -94,7 +94,7 @@ interface GDTState {
 let feedCounter = 0;
 
 export const useGDT = create<GDTState>((set) => ({
-  view: "atlas",
+  view: "home",
   setView: (view) => set({ view }),
   navExpanded: false,
   setNavExpanded: (navExpanded) => set({ navExpanded }),
