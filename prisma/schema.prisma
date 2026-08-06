@@ -5889,3 +5889,23 @@ model Notification {
   @@index([userId, createdAt])
   @@index([type])
 }
+
+// MissionParticipation — citizens joining intelligence missions
+model MissionParticipation {
+  id          String   @id @default(uuid())
+  participationId String @unique // MP-YYYY-NNNN
+  userId      String   // User.id
+  userName    String
+  missionId   String   // Mission.id
+  missionTitle String
+  role        String   @default("contributor") // contributor | leader | witness
+  status      String   @default("active") // active | completed | withdrawn
+  joinedAt    DateTime @default(now())
+  completedAt DateTime?
+  notes       String?
+
+  @@unique([userId, missionId])
+  @@index([userId])
+  @@index([missionId])
+  @@index([status])
+}

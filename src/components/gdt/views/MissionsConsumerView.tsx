@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
+import { MissionDetail } from "@/components/gdt/MissionDetail";
 import {
   Loader2, Target, Zap, DollarSign, Users, MapPin, Clock,
   TrendingUp, ChevronRight, CheckCircle2, Crosshair,
@@ -45,6 +46,7 @@ export function MissionsConsumerView() {
   const [bounties, setBounties] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"missions" | "bounties">("missions");
+  const [selectedMission, setSelectedMission] = useState<any>(null);
 
   const load = useCallback(() => {
     Promise.all([
@@ -92,7 +94,7 @@ export function MissionsConsumerView() {
           const color = MISSION_COLORS[m.type] ?? "#a1a1aa";
           const priColor = PRIORITY_COLORS[m.priority] ?? "#71717a";
           return (
-            <div key={m.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
+            <div key={m.id} onClick={() => setSelectedMission(m)} className="rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/30 transition-colors cursor-pointer">
               <div className="flex items-start gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg" style={{ color, background: `${color}15` }}>
                   <Icon className="size-5" />
@@ -121,7 +123,7 @@ export function MissionsConsumerView() {
                     </span>
                   </div>
                   {m.status === "planned" && (
-                    <button className="mt-3 flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-[14px] font-medium text-primary hover:bg-primary/15 transition-colors">
+                    <button onClick={(e) => { e.stopPropagation(); setSelectedMission(m); }} className="mt-3 flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-[14px] font-medium text-primary hover:bg-primary/15 transition-colors">
                       <CheckCircle2 className="size-4" /> Join Mission
                     </button>
                   )}
@@ -185,6 +187,12 @@ export function MissionsConsumerView() {
           </div>
         )}
       </div>
+
+      {/* Mission Detail Dialog */}
+      <MissionDetail
+        mission={selectedMission}
+        onOpenChange={(open) => { if (!open) setSelectedMission(null); }}
+      />
     </div>
   );
 }

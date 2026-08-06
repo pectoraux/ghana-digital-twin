@@ -1613,3 +1613,39 @@ Stage Summary:
 - ✅ RewardsView: balance card with Withdraw button, Recent Transactions (direction icons + type badges + signed amounts), Pending Withdrawals (status pills), Wallet Summary.
 - ✅ Browser-verified: full withdrawal flow works end-to-end (fill form → submit → success with request ID). VLM-confirmed. 0 errors.
 - Users can now see exactly where their credits came from (transaction history) and withdraw their earnings to mobile money (MTN/Vodafone/AirtelTigo). The Waze flywheel is now economically complete: observe → report → verify → EARN → WITHDRAW.
+
+---
+Task ID: 59
+Agent: orchestrator
+Task: Mission Detail Dialog + Join Participation
+
+Work Log:
+- Identified gap: the "Join Mission" button in MissionsConsumerView had no onClick handler — it was non-functional. Users couldn't see mission details or join missions.
+- Added MissionParticipation Prisma model (participationId MP-YYYY-NNNN, userId, userName, missionId, missionTitle, role: contributor|leader|witness, status: active|completed|withdrawn, joinedAt, completedAt, notes). Unique constraint on [userId, missionId]. db:push succeeded.
+- Built mission participation service (src/lib/mission/participation.ts): joinMission (checks mission exists, handles re-join if withdrawn, creates participation record), withdrawFromMission, getMissionParticipants (returns active participants with time-ago), getUserMissions, getParticipantCount.
+- Built API route /api/missions/[id]/join (GET: list participants, POST: join mission with userId + userName).
+- Built MissionDetail component (src/components/gdt/MissionDetail.tsx, ~210 lines): Dialog with:
+  - Header: mission type badge, priority badge, status badge, title
+  - Mission Brief: full reasoning/description
+  - Stats grid: EVI Score, Info Gain, Cost, Location (2x2 grid)
+  - Coverage radius + created time
+  - Participants section: avatar + name + role + joined time-ago, scrollable, empty state "Be the first to join!"
+  - Footer: Join Mission button (or "You've joined this mission" status), loading state, disabled if not "planned" status
+  - On join: POST to /api/missions/[id]/join, toast success, optimistic participant list update
+- Wired into MissionsConsumerView: mission cards now clickable (onClick opens detail), Join Mission button has stopPropagation + opens detail.
+- Browser-verified via Agent Browser:
+  - Click mission card → detail dialog opens with title "Community Verification for agricultural expansion..." ✅
+  - Has Join Mission button, Participants section, EVI score, Mission Brief, Stats grid ✅
+  - Click Join Mission → POST returns success, toast "Mission joined!", participant count updates to 1 ✅
+  - Footer shows "You've joined this mission" ✅
+  - VLM-confirmed: clean dark theme, all sections visible, Join Mission button prominent ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ MissionParticipation model: tracks who joined which mission, with role + status + timestamps.
+- ✅ Participation service: joinMission, withdraw, getParticipants, getUserMissions.
+- ✅ API: GET/POST /api/missions/[id]/join.
+- ✅ MissionDetail dialog: full mission brief, stats grid, participants list, join button with toast + optimistic update.
+- ✅ Browser-verified: click card → see details → join → participant count updates. VLM-confirmed. 0 errors.
+- Missions are now interactive: users can see full mission details (EVI, info gain, cost, location, coverage), see who else is participating, and join missions to contribute. The flywheel is complete: observe → report → verify → reward → withdraw, AND join missions for structured intelligence gathering.
