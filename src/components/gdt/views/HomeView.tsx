@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useGDT } from "@/lib/gdt/store";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
 import {
@@ -28,6 +29,7 @@ async function api(path: string) {
 
 export function HomeView() {
   const { data: session } = useSession();
+  const setView = useGDT((s) => s.setView);
   const [identity, setIdentity] = useState<any>(null);
   const [feedItems, setFeedItems] = useState<any[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
@@ -166,21 +168,21 @@ export function HomeView() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
+          <button onClick={() => setView("feed")} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary"><Zap className="size-5" /></div>
             <span className="text-[14px] font-medium">Report Event</span>
           </button>
-          <button className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
+          <button onClick={() => setView("community")} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
             <div className="flex size-10 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-500"><CheckCircle2 className="size-5" /></div>
             <span className="text-[14px] font-medium">Verify Event</span>
           </button>
-          <button className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
+          <button onClick={() => setView("rewards")} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
             <div className="flex size-10 items-center justify-center rounded-lg bg-amber-500/15 text-amber-500"><Award className="size-5" /></div>
             <span className="text-[14px] font-medium">View Rewards</span>
           </button>
-          <button className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
+          <button onClick={() => setView("missions")} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
             <div className="flex size-10 items-center justify-center rounded-lg bg-violet-500/15 text-violet-500"><Brain className="size-5" /></div>
-            <span className="text-[14px] font-medium">AI Assistants</span>
+            <span className="text-[14px] font-medium">Join Missions</span>
           </button>
         </div>
       </div>
