@@ -1451,3 +1451,41 @@ Stage Summary:
 - ✅ Global state: selectedFeedItemId in store, triggered from FeedView and HomeView
 - ✅ Browser-verified: dialog opens, like works, comment posts, 0 errors
 - Feed items are now fully interactive: users can click any feed card to see full details, like, comment, share, verify, or flag. This closes the engagement loop — users can now interact with intelligence, not just consume it.
+
+---
+Task ID: 56
+Agent: orchestrator
+Task: Profile Edit Feature — update displayName, bio, region, interests, skills
+
+Work Log:
+- Identified gap: ProfileView was read-only — no way to edit bio, skills, region, or display name. This is a core account management feature that was missing.
+- Added updateProfile function to identity context-service (src/lib/identity/context-service.ts): updates displayName (also syncs User.name), bio, region, interests (JSON array), skills (JSON array). Creates UserProfile if it doesn't exist.
+- Added PATCH handler to /api/identity route: accepts { displayName, bio, region, interests, skills } body, calls updateProfile, returns updated profile.
+- Built ProfileEditModal component (src/components/gdt/ProfileEditModal.tsx, ~280 lines): Dialog with form fields:
+  - Display Name input (50 char limit)
+  - Bio textarea (300 char limit with counter)
+  - Region select (all 16 Ghana regions from REGIONS)
+  - Interests: chip-based selector with 9 suggested interests (Illegal Mining, Flood Monitoring, Deforestation, Water Quality, Cocoa Farming, Wildlife, Infrastructure, Climate, Community Safety) + custom interest input (Enter to add, 30 char limit)
+  - Skills: chip-based selector with 9 suggested skills (Drone Piloting, GPS Mapping, Photography, Data Analysis, Field Research, Report Writing, Social Media, First Aid, Community Organizing) + custom skill input
+  - Save button with loading state, Cancel button
+  - Toast notifications on success/error via sonner
+  - onSaved callback triggers profile reload
+- Added Edit button (top-right of identity card) to ProfileView that opens the modal.
+- Browser-verified via Agent Browser:
+  - Profile loads with Kwesi Demo ✅
+  - Edit button found and clicked ✅
+  - Modal opens with title "Edit Profile", all fields present (displayName, bio, region, interests, skills) ✅
+  - Updated bio: "Community reporter focused on environmental protection in Western Ghana. Passionate about stopping illegal mining." ✅
+  - Updated display name: "Kwesi Mensah" ✅
+  - Clicked Save → modal closed, toast "Profile updated! Your changes have been saved." appeared ✅
+  - DB verification: UserProfile.displayName = "Kwesi Mensah", bio = updated text, region = "Western". User.name also updated to "Kwesi Mensah". ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ updateProfile function: updates displayName, bio, region, interests, skills. Creates profile if missing. Syncs User.name.
+- ✅ PATCH /api/identity: accepts profile updates, returns updated profile.
+- ✅ ProfileEditModal: Dialog with all profile fields, chip-based interest/skill selectors, custom inputs, save/cancel, toast notifications.
+- ✅ ProfileView: Edit button in identity card header, modal wired with onSaved reload callback.
+- ✅ Browser-verified: edit modal opens, all fields present, bio + name updated, save persists to DB (verified via direct DB query), toast confirms, 0 errors.
+- Users can now manage their own profile: update display name, bio, region, interests, and skills. This makes the platform feel personal and lets users control how they appear to the community.

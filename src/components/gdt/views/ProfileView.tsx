@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
+import { Button } from "@/components/ui/button";
+import { ProfileEditModal } from "@/components/gdt/ProfileEditModal";
 import {
   Loader2, MapPin, Shield, Award, Eye, CheckCircle2, Target,
   Package, Building2, Zap, TrendingUp, DollarSign, Brain,
+  Pencil,
 } from "lucide-react";
 
 async function api(path: string) {
@@ -19,15 +22,18 @@ export function ProfileView() {
   const { data: session } = useSession();
   const [identity, setIdentity] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [editOpen, setEditOpen] = useState(false);
 
-  useEffect(() => {
+  const load = () => {
     const userId = (session?.user as any)?.id;
     if (!userId) return;
     api(`/api/identity?userId=${userId}`)
       .then((d) => setIdentity(d.identity))
       .catch(() => setIdentity({}))
       .finally(() => setLoading(false));
-  }, [session]);
+  };
+
+  useEffect(() => { load(); }, [session]);
 
   if (loading || !identity) return <div className="flex h-full items-center justify-center"><Loader2 className="size-6 animate-spin text-primary" /></div>;
 
@@ -40,7 +46,21 @@ export function ProfileView() {
     <div className="h-full overflow-y-auto gdt-scroll">
       <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Identity Card */}
-        <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card text-center">
+        <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card text-center relative">
+          <Button
+            onClick={() => setEditOpen(true)}
+            size="sm"
+            variant="outline"
+            className="absolute top-3 right-3 flex items-center gap-1.5"
+          >
+            <Pencil className="size-3.5" /> Edit
+          </Button>
+          <ProfileEditModal
+            open={editOpen}
+            onOpenChange={setEditOpen}
+            initialProfile={profile}
+            onSaved={load}
+          />
           <div className="mx-auto mb-3 flex size-20 items-center justify-center rounded-full bg-primary/15 border-2 border-primary/30">
             <span className="text-[28px] font-bold text-primary">{(user?.name ?? "?").charAt(0).toUpperCase()}</span>
           </div>

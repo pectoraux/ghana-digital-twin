@@ -90,3 +90,59 @@ export async function getIdentityContext(userId: string): Promise<IdentityContex
     isAdmin: isAdmin(user.role),
   };
 }
+
+export interface ProfileUpdateInput {
+  displayName?: string;
+  bio?: string;
+  region?: string;
+  interests?: string[];
+  skills?: string[];
+}
+
+export async function updateProfile(userId: string, input: ProfileUpdateInput): Promise<any> {
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("User not found");
+
+  // Ensure a profile row exists
+  let profile = await db.userProfile.findUnique({ where: { userId } }).catch(() => null);
+  const data: any = {};
+  if (input.displayName !== undefined) {
+    data.displayName = input.displayName.trim();
+    // Also update the User.name for consistency
+    await db.user.update({ where: { id: userId }, data: { name: input.displayName.trim() } });
+  }
+  if (input.bio !== undefined) data.bio = input.bio.trim();
+  if (input.region !== undefined) data.region = input.region.trim();
+  if (input.interests !== undefined) data.interests = JSON.stringify(input.interests);
+  if (input.skills !== undefined) data.skills = JSON.stringify(input.skills);
+
+  if (!profile) {
+    // Create profile if it doesn't exist
+    profile = await db.userProfile.create({
+      data: {
+        userId,
+        profileId: `PROF-${Date.now().toString(36).toUpperCase()}`,
+        displayName: data.displayName ?? user.name,
+        bio: data.bio ?? null,
+        region: data.region ?? null,
+        interests: data.interests ?? "[]",
+        skills: data.skills ?? "[]",
+        country: "Ghana",
+        avatar: null,
+      },
+    });
+  } else {
+    profile = await db.userProfile.update({
+      where: { userId },
+      data,
+    });
+  }
+
+  return {
+    displayName: profile.displayName,
+    bio: profile.bio,
+    region: profile.region,
+    interests: JSON.parse(profile.interests || "[]"),
+    skills: JSON.parse(profile.skills || "[]"),
+  };
+}
