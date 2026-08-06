@@ -1377,3 +1377,37 @@ Stage Summary:
 - ✅ Design standards respected: mobile-first (390px → desktop enhancement), 44px+ touch targets, 56px bottom nav + safe-area inset, Tailwind `md:`/`lg:`/`xl:` breakpoints, NO blue/indigo colors (kept dark geospatial theme with bg-background/border-border/bg-card + existing accent palette).
 - ✅ Desktop layout unchanged: NavRail, CommandBar full chrome, StatusBar all render exactly as before on md+ screens.
 - ✅ Lint: PASS — 0 errors, 0 warnings.
+
+---
+Task ID: 54
+Agent: orchestrator
+Task: Milestone 17 — Mobile-Responsive Layout with Bottom Navigation
+
+Work Log:
+- Identified that the app was desktop-first and broke on mobile (390px viewport): the 56px side nav rail consumed ~18% of screen width, content got truncated, touch targets were too small, and horizontal overflow occurred.
+- VLM-verified the mobile issues across all 7 views (Home, Feed, Map, Missions, Community, Rewards, Profile) — all had the same problem: "side navigation rail is consuming excessive horizontal space, causing the main content area to be severely compressed."
+- Delegated to full-stack-developer subagent (Task 54-a) to make the app responsive:
+  - Created MobileBottomNav component (7 items: Home/Feed/Map/Missions/Community/Rewards/Profile) with thumb-friendly touch targets, bg-card/95 backdrop-blur, iOS safe-area inset, active item highlight.
+  - NavRail: hidden on mobile (hidden md:flex), shown on desktop.
+  - Shell: render MobileBottomNav for mobile, StatusBar hidden on mobile.
+  - CommandBar: responsive — hide search bar, region filter, temporal toggle, obs indicator on mobile; add search icon trigger; keep title, notifications, avatar, logout always visible.
+  - 6 consumer views: responsive padding (p-4 md:p-6), flex-wrap on meta rows, line-clamp on summaries, truncate on titles.
+- Browser-verified via Agent Browser + VLM on iPhone 14 viewport (390x844):
+  - Bottom nav with 7 items visible at bottom ✅
+  - Side nav rail hidden on mobile ✅
+  - Content readable, not truncated ✅
+  - Good mobile experience with thumb-friendly navigation ✅
+  - Clean 2x2 metric grid, logical hierarchy ✅
+  - Desktop layout unchanged ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ MobileBottomNav: 7 primary nav items, thumb-friendly, safe-area aware, active highlight.
+- ✅ Responsive NavRail: hidden on mobile, shown on desktop (md:flex).
+- ✅ Responsive CommandBar: condenses on mobile, keeps essential elements.
+- ✅ Responsive StatusBar: hidden on mobile (bottom nav takes its place).
+- ✅ Responsive views: padding, gaps, flex-wrap, line-clamp, truncate.
+- ✅ Desktop layout: unchanged (no visual regressions).
+- ✅ Browser-verified: mobile layout is clean, readable, and thumb-friendly.
+- The app is now fully mobile-responsive — citizens can use it on their phones in the field, with a bottom tab bar for navigation, condensed header, and content that doesn't overflow or truncate.
