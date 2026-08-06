@@ -22,6 +22,7 @@ const PRIMARY_NAV: { id: ViewId; label: string; icon: React.ElementType; hint: s
   { id: "missions", label: "Missions", icon: Crosshair, hint: "Active intelligence missions" },
   { id: "community", label: "Community", icon: Users, hint: "Citizen intelligence network" },
   { id: "intelligence", label: "Rewards", icon: Award, hint: "Your earnings and reputation" },
+  { id: "profile", label: "Profile", icon: Users, hint: "Your identity, reputation, and impact" },
 ];
 
 // Advanced console — power users only, collapsed by default

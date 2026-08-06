@@ -50,6 +50,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   governance: { title: "Intelligence Governance", sub: "Constitution, council, courts, proposals — who governs the civilization" },
   "gov-intel": { title: "Governance Intelligence", sub: "Governance agents, legal precedents, institutional reputation, compliance audits" },
   aio: { title: "Autonomous Organizations", sub: "Digital institutions: treasury, agents, objectives, charters, services" },
+  profile: { title: "Profile", sub: "Your identity, reputation, and impact" },
   api: { title: "API", sub: "Programmatic access primitives" },
 };
 
