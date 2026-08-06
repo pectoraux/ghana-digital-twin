@@ -1,0 +1,2002 @@
+     1→// Ghana Digital Twin — World Model Foundation schema
+     2→// Spatial storage on PostgreSQL (Neon): geometry stored as GeoJSON + dedicated
+     3→// bbox/centroid columns for indexed spatial queries. Turf provides precise geometry ops.
+     4→
+     5→generator client {
+     6→  provider = "prisma-client-js"
+     7→}
+     8→
+     9→datasource db {
+    10→  provider = "postgresql"
+    11→  url      = env("DATABASE_URL")
+    12→}
+    13→
+    14→// ===== Core Entity (versioned, provenance-tracked) =====
+    15→model Entity {
+    16→  id              String   @id @default(uuid())
+    17→  uuid            String   @unique
+    18→  // stable external identifier (e.g. "geoboundaries:GHA-ADM1-ashanti", "osm:way:4790617")
+    19→  externalId      String   @unique
+    20→  kind            String   // river | lake | watershed | forest | road | settlement | ...
+    21→  type            String   // natural | infrastructure | administrative | human_activity
+    22→  name            String
+    23→  regionId        String?
+    24→  geometryType    String   // Point | LineString | Polygon | MultiPolygon
+    25→  geometryGeoJson String   // full GeoJSON geometry (WGS84)
+    26→  // spatial index columns
+    27→  centroidLng     Float
+    28→  centroidLat     Float
+    29→  minLng          Float
+    30→  minLat          Float
+    31→  maxLng          Float
+    32→  maxLat          Float
+    33→  areaKm2         Float?
+    34→  lengthKm        Float?
+    35→  attributes      String   @default("{}") // JSON
+    36→  tags            String   @default("[]") // JSON array
+    37→  confidence      Float    @default(1.0)
+    38→  // provenance
+    39→  datasetSourceId String
+    40→  sourceName      String
+    41→  sourceVersion   String
+    42→  // temporal
+    43→  firstObserved   DateTime
+    44→  lastObserved    DateTime
+    45→  currentVersion  Int      @default(1)
+    46→  createdAt       DateTime @default(now())
+    47→  updatedAt       DateTime @updatedAt
+    48→
+    49→  datasetSource     DatasetSource  @relation(fields: [datasetSourceId], references: [id])
+    50→  versions          EntityVersion[]
+    51→  relationshipsFrom Relationship[] @relation("fromEntity")
+    52→  relationshipsTo   Relationship[] @relation("toEntity")
+    53→
+    54→  @@index([kind])
+    55→  @@index([type])
+    56→  @@index([regionId])
+    57→  @@index([minLng, maxLng, minLat, maxLat])
+    58→  @@index([centroidLng, centroidLat])
+    59→}
+    60→
+    61→// ===== Versioned history (nothing is overwritten) =====
+    62→model EntityVersion {
+    63→  id              String   @id @default(uuid())
+    64→  entityId        String
+    65→  entity          Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+    66→  version         Int
+    67→  change          String   // human description of what changed
+    68→  geometryGeoJson String
+    69→  attributes      String
+    70→  confidence      Float
+    71→  sourceName      String
+    72→  sourceVersion   String
+    73→  observedAt      DateTime
+    74→  createdAt       DateTime @default(now())
+    75→
+    76→  @@unique([entityId, version])
+    77→  @@index([entityId, version])
+    78→  @@index([observedAt])
+    79→}
+    80→
+    81→// ===== Spatial relationship graph =====
+    82→model Relationship {
+    83→  id           String   @id @default(uuid())
+    84→  fromEntityId String
+    85→  toEntityId   String
+    86→  relation     String   // contains | within | intersects | adjacent_to | tributary_of | flows_to | part_of | near
+    87→  inferredBy   String   // spatial | source | manual
+    88→  confidence   Float    @default(1.0)
+    89→  createdAt    DateTime @default(now())
+    90→
+    91→  fromEntity Entity @relation("fromEntity", fields: [fromEntityId], references: [id], onDelete: Cascade)
+    92→  toEntity   Entity @relation("toEntity", fields: [toEntityId], references: [id], onDelete: Cascade)
+    93→
+    94→  @@unique([fromEntityId, toEntityId, relation])
+    95→  @@index([fromEntityId])
+    96→  @@index([toEntityId])
+    97→  @@index([relation])
+    98→}
+    99→
+   100→// ===== Dataset source registry (provenance + health) =====
+   101→model DatasetSource {
+   102→  id            String    @id @default(uuid())
+   103→  sourceId      String    @unique // "geoboundaries", "osm-overpass", "hydrosheds", ...
+   104→  name          String
+   105→  category      String    // administrative | hydrology | dem | landcover | weather | infrastructure | environmental | population | forest
+   106→  provider      String
+   107→  license       String
+   108→  resolution    String
+   109→  cadence       String
+   110→  coverage      String
+   111→  description   String
+   112→  storageType   String    @default("vector") // vector | raster | metadata
+   113→  status        String    @default("pending") // pending | healthy | syncing | degraded | offline
+   114→  recordCount   Int       @default(0)
+   115→  version       String?
+   116→  lastSyncAt    DateTime?
+   117→  lastSuccessAt DateTime?
+   118→  metadata      String    @default("{}") // JSON
+   119→  createdAt     DateTime  @default(now())
+   120→  updatedAt     DateTime  @updatedAt
+   121→
+   122→  entities Entity[]
+   123→  runs     ConnectorRun[]
+   124→
+   125→
+   126→  @@index([status])
+   127→}
+   128→
+   129→// ===== Connector run history (observability) =====
+   130→model ConnectorRun {
+   131→  id             String   @id @default(uuid())
+   132→  sourceId       String
+   133→  source         DatasetSource @relation(fields: [sourceId], references: [id])
+   134→  startedAt      DateTime
+   135→  finishedAt     DateTime?
+   136→  status         String   // running | success | failed | partial
+   137→  stage          String   @default("") // current pipeline stage
+   138→  recordsRead    Int      @default(0)
+   139→  recordsWritten Int     @default(0)
+   140→  durationMs     Int      @default(0)
+   141→  error          String?
+   142→  events         String   @default("[]") // JSON array of pipeline stage events
+   143→  createdAt      DateTime @default(now())
+   144→
+   145→  @@index([sourceId, startedAt])
+   146→  @@index([status])
+   147→}
+   148→
+   149→// ===== Event log (powers downstream AI + observability) =====
+   150→model IngestionEvent {
+   151→  id        String   @id @default(uuid())
+   152→  type      String   // DatasetDownloaded | DatasetValidated | EntityCreated | EntityUpdated | EntityVersionCreated | RelationshipsUpdated | ConnectorFailed | ConnectorRecovered | ...
+   153→  sourceId  String?
+   154→  entityId  String?
+   155→  message   String
+   156→  level     String   @default("info") // info | warn | error
+   157→  payload   String   @default("{}") // JSON
+   158→  createdAt DateTime @default(now())
+   159→
+   160→  @@index([type])
+   161→  @@index([sourceId])
+   162→  @@index([createdAt])
+   163→}
+   164→
+   165→// ===== Earth Observation Platform (Milestone 2.5) =====
+   166→
+   167→// STAC item — one satellite scene
+   168→model RasterScene {
+   169→  id              String   @id @default(uuid())
+   170→  stacId          String   @unique // e.g. "S2B_30NYM_20240701_0_L2A"
+   171→  collection      String   // "sentinel-2-l2a" | "sentinel-2-c1-l2a" | "landsat-c2-l2" | ...
+   172→  platform        String?  // "Sentinel-2B"
+   173→  instrument      String?  // "MSI"
+   174→  constellation   String?  // "sentinel-2"
+   175→  // spatial
+   176→  geometryGeoJson String   // footprint GeoJSON
+   177→  centroidLng     Float
+   178→  centroidLat     Float
+   179→  minLng          Float
+   180→  minLat          Float
+   181→  maxLng          Float
+   182→  maxLat          Float
+   183→  mgrsTile        String?  // "30NYM"
+   184→  // temporal
+   185→  datetime        DateTime
+   186→  // quality
+   187→  cloudCover      Float?
+   188→  // processing
+   189→  processingLevel String?  // "L2A"
+   190→  gsd             Float?   // ground sample distance (m)
+   191→  // provenance
+   192→  sourceId        String   // dataset source id ("stac-sentinel-2")
+   193→  stacVersion     String   @default("1.0.0")
+   194→  selfHref        String?
+   195→  metadata        String   @default("{}") // JSON (extra STAC properties)
+   196→  createdAt       DateTime @default(now())
+   197→
+   198→  bands         RasterBand[]
+   199→  indexLayers   SpectralIndexLayer[]
+   200→
+   201→  @@index([collection, datetime])
+   202→  @@index([centroidLng, centroidLat])
+   203→  @@index([minLng, maxLng, minLat, maxLat])
+   204→  @@index([datetime])
+   205→  @@index([mgrsTile])
+   206→  @@index([cloudCover])
+   207→}
+   208→
+   209→// One band of a scene (e.g. red, nir, green, blue, swir16, scl) — references real COG URL
+   210→model RasterBand {
+   211→  id           String   @id @default(uuid())
+   212→  sceneId      String
+   213→  scene        RasterScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+   214→  name         String   // "red" | "nir" | "green" | "blue" | "swir16" | "scl" | ...
+   215→  commonName   String?  // "red" | "nir" ...
+   216→  displayName  String?  // "Red (B04)"
+   217→  href         String   // real COG URL on S3 / elsewhere
+   218→  type         String?  // "image/tiff; application=geotiff; profile=cloud-optimized"
+   219→  roles        String   @default("[]") // JSON array
+   220→  gsd          Float?
+   221→  shapeW       Int?
+   222→  shapeH       Int?
+   223→  // band metadata (wavelength etc.)
+   224→  bandMetadata String   @default("{}") // JSON
+   225→  createdAt    DateTime @default(now())
+   226→
+   227→  @@unique([sceneId, name])
+   228→  @@index([sceneId])
+   229→  @@index([name])
+   230→}
+   231→
+   232→// Computed spectral index layer (NDVI, NDWI, NBR, EVI, BSI, MNDWI, SAVI)
+   233→// References the source scene + the index formula; values computed on demand
+   234→// from real band pixels and cached as statistics.
+   235→model SpectralIndexLayer {
+   236→  id           String   @id @default(uuid())
+   237→  sceneId      String
+   238→  scene        RasterScene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+   239→  indexName    String   // "NDVI" | "NDWI" | "NBR" | "EVI" | "BSI" | "MNDWI" | "SAVI"
+   240→  formula      String   // human-readable formula
+   241→  // cached statistics (computed once from real pixels over the scene footprint)
+   242→  meanValue    Float?
+   243→  minValue     Float?
+   244→  maxValue     Float?
+   245→  stdValue     Float?
+   246→  validPixelPct Float?
+   247→  computedAt   DateTime?
+   248→  createdAt    DateTime @default(now())
+   249→
+   250→  @@unique([sceneId, indexName])
+   251→  @@index([sceneId])
+   252→  @@index([indexName])
+   253→}
+   254→
+   255→// Factual Earth-Observation Observation (NOT AI — just facts, no conclusions)
+   256→// e.g. "NDVI decreased from 0.62 to 0.41 at [lng,lat] between [date1] and [date2]"
+   257→model EOObservation {
+   258→  id            String   @id @default(uuid())
+   259→  type          String   // "index_change" | "scene_acquired" | "cloud_gap" | "landcover_shift"
+   260→  indexName     String?  // "NDVI" | "NDWI" | ... (if applicable)
+   261→  locationLng   Float
+   262→  locationLat   Float
+   263→  // the two scenes compared
+   264→  beforeSceneId String?
+   265→  afterSceneId  String?
+   266→  // the measured values (objective facts)
+   267→  beforeValue   Float?
+   268→  afterValue    Float?
+   269→  deltaValue    Float?
+   270→  deltaPct      Float?
+   271→  // timing
+   272→  beforeDate    DateTime?
+   273→  afterDate     DateTime
+   274→  // affected world-model entity (if located)
+   275→  entityId      String?
+   276→  // objective description (NO conclusions about legality)
+   277→  summary       String
+   278→  confidence    Float    @default(1.0)
+   279→  createdAt     DateTime @default(now())
+   280→
+   281→  @@index([type])
+   282→  @@index([indexName])
+   283→  @@index([entityId])
+   284→  @@index([afterDate])
+   285→  @@index([locationLng, locationLat])
+   286→}
+   287→
+   288→// ===== Milestone 2.75: Raster Intelligence Platform =====
+   289→
+   290→// Seasonal baseline: expected condition (mean + std) per MGRS tile + season + index
+   291→model SeasonalBaseline {
+   292→  id            String   @id @default(uuid())
+   293→  indexName     String   // "NDVI" | "NDWI" | "NBR" | "BSI" | "MNDWI" | "EVI" | "SAVI"
+   294→  mgrsTile      String   // "30NYM"
+   295→  season        String   // "2026-Q3" or month "04"
+   296→  // gridded baseline (flattened gridSize × gridSize arrays)
+   297→  gridSize      Int      // e.g. 50
+   298→  meanGrid      String   // JSON float[] — per-cell expected mean
+   299→  stdGrid       String   // JSON float[] — per-cell expected std
+   300→  sampleCount   Int      // number of scenes used to build baseline
+   301→  uncertainty   Float    // mean per-cell uncertainty (propagated)
+   302→  // spatial extent
+   303→  minLng        Float
+   304→  minLat        Float
+   305→  maxLng        Float
+   306→  maxLat        Float
+   307→  computedAt    DateTime @default(now())
+   308→  createdAt     DateTime @default(now())
+   309→
+   310→  @@unique([indexName, mgrsTile, season])
+   311→  @@index([mgrsTile, season])
+   312→  @@index([indexName])
+   313→}
+   314→
+   315→// Raster intelligence product: derived gridded layer with uncertainty
+   316→model RasterProduct {
+   317→  id             String   @id @default(uuid())
+   318→  type           String   // vegetation_anomaly | water_anomaly | burn_severity | bare_soil | moisture_anomaly | temporal_variance | cloud_free_composite | change_probability
+   319→  indexName      String?  // source index (NDVI, NDWI, etc.)
+   320→  sceneId        String?  // scene this product is derived from (if applicable)
+   321→  baselineId     String?  // baseline used for comparison (if applicable)
+   322→  mgrsTile       String?  // MGRS tile this covers
+   323→  season         String?  // season label
+   324→  // gridded data
+   325→  gridSize       Int      // e.g. 50
+   326→  valueGrid      String   // JSON float[] — per-cell product value
+   327→  uncertaintyGrid String  // JSON float[] — per-cell uncertainty (±)
+   328→  // summary stats
+   329→  meanValue      Float?
+   330→  minValue       Float?
+   331→  maxValue       Float?
+   332→  stdValue       Float?
+   333→  // provenance
+   334→  formula        String   // human-readable how it was computed
+   335→  sources        String   @default("[]") // JSON array of source dataset names
+   336→  confidence     Float    @default(1.0)
+   337→  // spatial extent
+   338→  minLng         Float
+   339→  minLat         Float
+   340→  maxLng         Float
+   341→  maxLat         Float
+   342→  computedAt     DateTime @default(now())
+   343→  createdAt      DateTime @default(now())
+   344→
+   345→  @@index([type])
+   346→  @@index([mgrsTile])
+   347→  @@index([sceneId])
+   348→  @@index([indexName])
+   349→}
+   350→
+   351→// ===== Milestone 3: Observation Engine =====
+   352→// Observations are first-class, immutable, versioned objects. Each is produced
+   353→// by EVIDENCE FUSION across multiple raster products — never a single source.
+   354→// Observations describe objective physical-world change. No legal conclusions.
+   355→
+   356→model Observation {
+   357→  id              String   @id @default(uuid())
+   358→  uuid            String   @unique
+   359→  type            String   // surface_disturbance | water_body_change | vegetation_loss | burn_event | moisture_stress
+   360→  title           String
+   361→  summary         String   // objective description, no legal conclusions
+   362→  // spatial
+   363→  geometryGeoJson String   // polygon or point
+   364→  centroidLng     Float
+   365→  centroidLat     Float
+   366→  minLng          Float
+   367→  minLat          Float
+   368→  maxLng          Float
+   369→  maxLat          Float
+   370→  areaHa          Float    // affected area in hectares
+   371→  // temporal
+   372→  observedAt      DateTime
+   373→  firstObserved   DateTime
+   374→  lastUpdated     DateTime
+   375→  durationDays    Float?   // how long the change has persisted
+   376→  // assessment (fused)
+   377→  confidence      Float    // 0..1, fused from all evidence
+   378→  uncertainty     Float    // ± propagated uncertainty
+   379→  status          String   @default("active") // candidate | active | monitoring | resolved
+   380→  severity        String   @default("moderate") // low | moderate | high | critical
+   381→  // versioning (immutable — new version on evidence change)
+   382→  currentVersion  Int      @default(1)
+   383→  // provenance
+   384→  sourceProducts  String   @default("[]") // JSON: product IDs that contributed evidence
+   385→  sourceModels    String   @default("[]") // JSON: model versions used
+   386→  mgrsTile        String?
+   387→  sceneId         String?  // primary scene
+   388→  createdAt       DateTime @default(now())
+   389→  updatedAt       DateTime @updatedAt
+   390→
+   391→  evidence        ObservationEvidence[]
+   392→  versions        ObservationVersion[]
+   393→  affectedEntities ObservationEntityLink[]
+   394→  evidenceLinks   ObservationEvidenceLink[]
+   395→  phenomena       PhenomenonObservation[]
+   396→  bundles         EvidenceBundle[]
+   397→  hypotheses      Hypothesis[]
+   398→  scenarios       Scenario[]
+   399→
+   400→  @@index([type])
+   401→  @@index([status])
+   402→  @@index([severity])
+   403→  @@index([centroidLng, centroidLat])
+   404→  @@index([minLng, maxLng, minLat, maxLat])
+   405→  @@index([observedAt])
+   406→  @@index([mgrsTile])
+   407→}
+   408→
+   409→// Per-evidence breakdown — each raster product that contributed to the fused observation
+   410→model ObservationEvidence {
+   411→  id              String   @id @default(uuid())
+   412→  observationId   String
+   413→  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   414→  productType     String   // vegetation_anomaly | water_anomaly | bare_soil | change_probability | ...
+   415→  productId       String?  // FK to RasterProduct
+   416→  indexName       String?  // source spectral index
+   417→  value           Float    // the product value at this location
+   418→  normalizedSignal Float   // 0..1 normalized contribution
+   419→  weight          Float    // fusion weight
+   420→  confidence      Float    // per-evidence confidence
+   421→  uncertainty     Float    // per-evidence uncertainty
+   422→  contribution    Float    // actual contribution to fused signal (weight × signal)
+   423→  description     String   // human-readable evidence description
+   424→  createdAt       DateTime @default(now())
+   425→
+   426→  @@index([observationId])
+   427→  @@index([productType])
+   428→}
+   429→
+   430→// Immutable version history — nothing is overwritten
+   431→model ObservationVersion {
+   432→  id              String   @id @default(uuid())
+   433→  observationId   String
+   434→  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   435→  version         Int
+   436→  change          String   // what changed in this version
+   437→  confidence      Float
+   438→  uncertainty     Float
+   439→  status          String
+   440→  evidenceCount   Int
+   441→  observedAt      DateTime
+   442→  createdAt       DateTime @default(now())
+   443→
+   444→  @@unique([observationId, version])
+   445→  @@index([observationId, version])
+   446→}
+   447→
+   448→// Link observations to affected world-model entities (rivers, forests, settlements...)
+   449→model ObservationEntityLink {
+   450→  id              String   @id @default(uuid())
+   451→  observationId   String
+   452→  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   453→  entityId        String   // FK to Entity
+   454→  relationship    String   // overlaps | adjacent_to | within | upstream | downstream
+   455→  distance        Float?   // distance in km (if not overlapping)
+   456→  createdAt       DateTime @default(now())
+   457→
+   458→  @@unique([observationId, entityId])
+   459→  @@index([observationId])
+   460→  @@index([entityId])
+   461→}
+   462→
+   463→// ===== Milestone 3.5: Temporal Intelligence Engine =====
+   464→// Evidence as first-class immutable objects (reusable across observations),
+   465→// evolving Phenomena (temporal merging), Observation Lineage, and an
+   466→// Environmental Knowledge Graph (domain concepts separate from World Model).
+   467→
+   468→// ---- Standalone Evidence (immutable, reusable) ----
+   469→// Evidence can support multiple observations. Not embedded in observations.
+   470→model Evidence {
+   471→  id              String   @id @default(uuid())
+   472→  uuid            String   @unique
+   473→  // what kind of evidence
+   474→  productType     String   // vegetation_anomaly | water_anomaly | bare_soil | change_probability | ...
+   475→  indexName       String?  // NDVI | NDWI | NBR | ...
+   476→  // the source raster product (lineage link)
+   477→  productId       String?  // FK to RasterProduct
+   478→  // spatial
+   479→  geometryGeoJson String   // point or polygon where evidence was measured
+   480→  centroidLng     Float
+   481→  centroidLat     Float
+   482→  // temporal
+   483→  observedAt      DateTime // when the source scene was captured
+   484→  // measurement
+   485→  value           Float    // the product value at this location
+   486→  normalizedSignal Float   // 0..1 normalized anomaly signal
+   487→  confidence      Float    // per-evidence confidence
+   488→  uncertainty     Float    // per-evidence uncertainty (±)
+   489→  direction       String   @default("neutral") // loss | gain | neutral
+   490→  description     String   // human-readable
+   491→  // supporting lineage (drill-down chain)
+   492→  supportingPixels Int     @default(0) // how many pixels contributed
+   493→  supportingSceneId String? // FK to RasterScene
+   494→  supportingBandHrefs String @default("[]") // JSON: COG band URLs used
+   495→  createdAt       DateTime @default(now())
+   496→
+   497→  observationLinks ObservationEvidenceLink[]
+   498→
+   499→  @@index([productType])
+   500→  @@index([centroidLng, centroidLat])
+   501→  @@index([observedAt])
+   502→  @@index([productId])
+   503→}
+   504→
+   505→// Many-to-many: observations reference standalone evidence objects
+   506→model ObservationEvidenceLink {
+   507→  id              String   @id @default(uuid())
+   508→  observationId   String
+   509→  evidenceId      String
+   510→  weight          Float    // fusion weight of this evidence for this observation
+   511→  contribution    Float    // actual contribution (weight × signal)
+   512→  createdAt       DateTime @default(now())
+   513→
+   514→  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   515→  evidence        Evidence   @relation(fields: [evidenceId], references: [id], onDelete: Cascade)
+   516→
+   517→  @@unique([observationId, evidenceId])
+   518→  @@index([observationId])
+   519→  @@index([evidenceId])
+   520→}
+   521→
+   522→// ---- Phenomenon: evolving event tracked over time ----
+   523→model Phenomenon {
+   524→  id              String   @id @default(uuid())
+   525→  uuid            String   @unique
+   526→  type            String   // surface_disturbance | water_body_change | vegetation_loss | ...
+   527→  title           String
+   528→  summary         String
+   529→  // lifecycle
+   530→  status          String   @default("active") // emerging | active | growing | stabilizing | declining | resolved
+   531→  // spatial (current extent — may evolve)
+   532→  centroidLng     Float
+   533→  centroidLat     Float
+   534→  minLng          Float
+   535→  minLat          Float
+   536→  maxLng          Float
+   537→  maxLat          Float
+   538→  currentAreaHa   Float
+   539→  // temporal
+   540→  firstObserved   DateTime
+   541→  lastObserved    DateTime
+   542→  durationDays    Float
+   543→  observationCount Int     @default(0)
+   544→  // evolution metrics
+   545→  growthRateHaPerWeek Float? // area growth rate
+   546→  growthPct       Float?   // percentage growth from first observation
+   547→  movementKm      Float?   // centroid movement from first to last
+   548→  persistenceScore Float?  // 0..1 how persistently detected
+   549→  // assessment (fused across all linked observations)
+   550→  confidence      Float    @default(0.5)
+   551→  uncertainty     Float    @default(0.2)
+   552→  severity        String   @default("moderate")
+   553→  // MGRS tile
+   554→  mgrsTile        String?
+   555→  createdAt       DateTime @default(now())
+   556→  updatedAt       DateTime @updatedAt
+   557→
+   558→  observations    PhenomenonObservation[]
+   559→
+   560→  @@index([type])
+   561→  @@index([status])
+   562→  @@index([centroidLng, centroidLat])
+   563→  @@index([firstObserved])
+   564→}
+   565→
+   566→// Link observations to the phenomenon they belong to
+   567→model PhenomenonObservation {
+   568→  id              String   @id @default(uuid())
+   569→  phenomenonId    String
+   570→  observationId   String
+   571→  // temporal ordering
+   572→  sequence        Int      // 1 = first observation, 2 = next, etc.
+   573→  // change from previous observation in the phenomenon
+   574→  areaDeltaHa     Float?   // area change from previous
+   575→  areaDeltaPct    Float?
+   576→  centroidShiftKm Float?   // centroid movement from previous
+   577→  signalDelta     Float?   // fused signal change
+   578→  linkedAt        DateTime @default(now())
+   579→
+   580→  phenomenon      Phenomenon @relation(fields: [phenomenonId], references: [id], onDelete: Cascade)
+   581→  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   582→
+   583→  @@unique([phenomenonId, observationId])
+   584→  @@index([phenomenonId])
+   585→  @@index([observationId])
+   586→}
+   587→
+   588→// ---- Environmental Knowledge Graph (domain concepts) ----
+   589→// Separate from World Model. Connects environmental concepts with typed relationships.
+   590→model KnowledgeNode {
+   591→  id              String   @id @default(uuid())
+   592→  conceptId       String   @unique // "vegetation_loss" | "bare_soil" | "water_turbidity" | ...
+   593→  label           String
+   594→  category        String   // cause | effect | indicator | entity_type | condition
+   595→  description     String
+   596→  color           String   @default("#a1a1aa")
+   597→  metadata        String   @default("{}") // JSON
+   598→  createdAt       DateTime @default(now())
+   599→
+   600→  edgesFrom       KnowledgeEdge[] @relation("fromNode")
+   601→  edgesTo         KnowledgeEdge[] @relation("toNode")
+   602→
+   603→  @@index([category])
+   604→}
+   605→
+   606→model KnowledgeEdge {
+   607→  id              String   @id @default(uuid())
+   608→  fromNodeId      String
+   609→  toNodeId        String
+   610→  relation        String   // precedes | causes | indicates | affects | correlates_with | often_follows
+   611→  confidence      Float    @default(0.8) // domain knowledge confidence
+   612→  description     String
+   613→  metadata        String   @default("{}") // JSON
+   614→  createdAt       DateTime @default(now())
+   615→
+   616→  fromNode        KnowledgeNode @relation("fromNode", fields: [fromNodeId], references: [id], onDelete: Cascade)
+   617→  toNode          KnowledgeNode @relation("toNode", fields: [toNodeId], references: [id], onDelete: Cascade)
+   618→
+   619→  @@unique([fromNodeId, toNodeId, relation])
+   620→  @@index([fromNodeId])
+   621→  @@index([toNodeId])
+   622→  @@index([relation])
+   623→}
+   624→
+   625→// ===== Milestone 4: Intelligence Engine =====
+   626→// Ranked competing hypotheses with Bayesian confidence, supporting +
+   627→// contradicting evidence, deterministic rules, decision traces, and
+   628→// scenario forecasting. NOT "AI deciding legality" — principled reasoning.
+   629→
+   630→// ---- Evidence Bundle: groups evidence by category per observation ----
+   631→model EvidenceBundle {
+   632→  id              String   @id @default(uuid())
+   633→  observationId   String
+   634→  category        String   // vegetation | hydrology | infrastructure | terrain | atmospheric
+   635→  label           String   // "Vegetation Evidence" etc.
+   636→  evidenceCount   Int      @default(0)
+   637→  // aggregate metrics
+   638→  meanSignal      Float    @default(0)
+   639→  meanConfidence  Float    @default(0)
+   640→  fusedUncertainty Float   @default(0)
+   641→  // summary of what this bundle indicates
+   642→  indication      String   // "vegetation loss" | "bare soil increase" | "water change"
+   643→  // the evidence IDs in this bundle (JSON array)
+   644→  evidenceIds     String   @default("[]")
+   645→  createdAt       DateTime @default(now())
+   646→
+   647→  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   648→
+   649→  @@unique([observationId, category])
+   650→  @@index([observationId])
+   651→  @@index([category])
+   652→}
+   653→
+   654→// ---- Hypothesis: ranked competing explanation for an observation ----
+   655→model Hypothesis {
+   656→  id              String   @id @default(uuid())
+   657→  uuid            String   @unique
+   658→  observationId   String
+   659→  // the hypothesis
+   660→  type            String   // "artisanal_mining" | "road_construction" | "flood_erosion" | "agricultural_expansion" | "quarrying" | "deforestation" | "natural_clearing"
+   661→  label           String   // "Possible artisanal mining activity"
+   662→  description     String   // human-readable explanation
+   663→  // Bayesian confidence
+   664→  prior           Float    // prior probability (from base rates / rules)
+   665→  posterior       Float    // posterior probability after evidence (0..1)
+   666→  confidence      Float    // final confidence = posterior normalized across competing hypotheses
+   667→  // ranking
+   668→  rank            Int      // 1 = most likely
+   669→  isPrimary       Boolean  @default(false) // top hypothesis
+   670→  // evidence counts
+   671→  supportingCount Int      @default(0)
+   672→  contradictingCount Int   @default(0)
+   673→  missingCount    Int      @default(0)
+   674→  // reasoning
+   675→  reasoning       String   // human-readable chain of reasoning
+   676→  recommendedVerification String // "Verify with high-resolution imagery" etc.
+   677→  status          String   @default("candidate") // candidate | confirmed | rejected | superseded
+   678→  // provenance
+   679→  rulesFired      String   @default("[]") // JSON: rule IDs that contributed
+   680→  createdAt       DateTime @default(now())
+   681→  updatedAt       DateTime @updatedAt
+   682→
+   683→  observation     Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   684→  evidence        HypothesisEvidence[]
+   685→
+   686→  @@index([observationId])
+   687→  @@index([type])
+   688→  @@index([rank])
+   689→}
+   690→
+   691→// Per-evidence contribution to a hypothesis: supports / contradicts / neutral
+   692→model HypothesisEvidence {
+   693→  id              String   @id @default(uuid())
+   694→  hypothesisId    String
+   695→  evidenceId      String?  // FK to Evidence (if standalone evidence)
+   696→  bundleId        String?  // FK to EvidenceBundle (if bundle-level)
+   697→  // relationship to the hypothesis
+   698→  relationship    String   // supports | contradicts | neutral
+   699→  // Bayesian contribution
+   700→  likelihoodRatio Float    // P(evidence|hypothesis) / P(evidence|¬hypothesis)
+   701→  posteriorContribution Float // log-odds contribution
+   702→  // explanation
+   703→  description     String   // why this evidence supports/contradicts
+   704→  weight          Float    // importance weight
+   705→  createdAt       DateTime @default(now())
+   706→
+   707→  hypothesis      Hypothesis @relation(fields: [hypothesisId], references: [id], onDelete: Cascade)
+   708→
+   709→  @@index([hypothesisId])
+   710→  @@index([relationship])
+   711→}
+   712→
+   713→// ---- Rules Engine: deterministic rules ----
+   714→model Rule {
+   715→  id              String   @id @default(uuid())
+   716→  ruleId          String   @unique // "rule-mining-01"
+   717→  name            String
+   718→  description     String
+   719→  // condition (JSON: evidence pattern to match)
+   720→  conditions      String   // JSON: [{bundle, indication, minSignal}]
+   721→  // effect: which hypothesis to boost/suppress
+   722→  hypothesisType  String   // "artisanal_mining"
+   723→  effect          String   // "boost" | "suppress"
+   724→  // Bayesian parameters
+   725→  likelihoodRatio Float    // how much to update
+   726→  priorAdjustment Float    @default(0) // adjustment to prior
+   727→  // metadata
+   728→  category        String   // "mining" | "infrastructure" | "natural" | "agriculture"
+   729→  enabled         Boolean  @default(true)
+   730→  createdAt       DateTime @default(now())
+   731→
+   732→  @@index([hypothesisType])
+   733→  @@index([category])
+   734→}
+   735→
+   736→// ---- Scenario: predictive forecast ----
+   737→model Scenario {
+   738→  id              String   @id @default(uuid())
+   739→  uuid            String   @unique
+   740→  phenomenonId    String?  // linked phenomenon (if applicable)
+   741→  observationId   String?  // or linked observation
+   742→  hypothesisId    String?  // linked hypothesis
+   743→  // forecast
+   744→  type            String   // "trend_continuation" | "seasonal" | "intervention"
+   745→  label           String
+   746→  description     String
+   747→  // temporal
+   748→  forecastDays    Int      // 30, 60, 90
+   749→  // predicted state
+   750→  predictedAreaHa Float
+   751→  predictedGrowthPct Float
+   752→  // predicted impact
+   753→  affectedRiversCount Int   @default(0)
+   754→  affectedCommunitiesCount Int @default(0)
+   755→  expectedSedimentIncrease Float? // % expected sediment increase downstream
+   756→  // confidence
+   757→  confidence      Float    @default(0.5)
+   758→  uncertainty     Float    @default(0.2)
+   759→  // assumptions
+   760→  assumptions     String   @default("[]") // JSON array of assumption strings
+   761→  createdAt       DateTime @default(now())
+   762→
+   763→  observation     Observation? @relation(fields: [observationId], references: [id], onDelete: Cascade)
+   764→
+   765→  @@index([phenomenonId])
+   766→  @@index([observationId])
+   767→}
+   768→
+   769→// ===== Milestone 5: Continuous Learning & Active Intelligence =====
+   770→
+   771→// Spatial grid partition of Ghana — each tile is a fixed processing unit
+   772→model ProcessingTile {
+   773→  id              String   @id @default(uuid())
+   774→  tileId          String   @unique // "gh-grid-30NYM" or "gh-cell-001"
+   775→  // spatial extent
+   776→  minLng          Float
+   777→  minLat          Float
+   778→  maxLng          Float
+   779→  maxLat          Float
+   780→  centroidLng     Float
+   781→  centroidLat     Float
+   782→  // grid coordinates
+   783→  gridRow         Int
+   784→  gridCol         Int
+   785→  // coverage
+   786→  mgrsTile        String?  // overlapping MGRS tile
+   787→  regionId        String?  // Ghana region
+   788→  // processing state
+   789→  lastProcessedAt DateTime?
+   790→  lastSceneId     String?  // last scene processed
+   791→  processingCount Int      @default(0)
+   792→  observationCount Int     @default(0)
+   793→  status          String   @default("pending") // pending | processing | processed | stale
+   794→  // last detected change
+   795→  lastChangeAt    DateTime?
+   796→  lastChangeType  String?  // observation type
+   797→  createdAt       DateTime @default(now())
+   798→  updatedAt       DateTime @updatedAt
+   799→
+   800→  @@index([status])
+   801→  @@index([mgrsTile])
+   802→  @@index([gridRow, gridCol])
+   803→}
+   804→
+   805→// Feedback: confirmed/rejected outcomes from humans, government, community, ground truth
+   806→model FeedbackRecord {
+   807→  id              String   @id @default(uuid())
+   808→  observationId   String?
+   809→  hypothesisId    String?
+   810→  phenomenonId    String?
+   811→  // feedback
+   812→  outcome         String   // confirmed | rejected | needs_monitoring | partial
+   813→  feedbackType    String   // human_inspector | government | community | ground_truth | auto_validation
+   814→  // the confirmed/rejected hypothesis type (if applicable)
+   815→  hypothesisType  String?  // "artisanal_mining" etc.
+   816→  // reasoning
+   817→  notes           String?
+   818→  evidence        String   @default("{}") // JSON: supporting photos, reports, etc.
+   819→  // feedback provider
+   820→  providerId      String?  // user/org id
+   821→  providerRole    String?  // "inspector" | "official" | "community_member"
+   822→  credibility     Float    @default(0.8) // provider credibility score
+   823→  createdAt       DateTime @default(now())
+   824→
+   825→  @@index([observationId])
+   826→  @@index([hypothesisId])
+   827→  @@index([outcome])
+   828→  @@index([feedbackType])
+   829→}
+   830→
+   831→// Learning update: logged changes to priors, weights, thresholds from feedback
+   832→model LearningUpdate {
+   833→  id              String   @id @default(uuid())
+   834→  // what was updated
+   835→  updateType      String   // "prior" | "evidence_weight" | "threshold" | "rule_likelihood"
+   836→  targetId        String   // hypothesis type or rule id
+   837→  // old → new values
+   838→  oldValue        Float
+   839→  newValue        Float
+   840→  deltaPct        Float
+   841→  // why (which feedback triggered it)
+   842→  feedbackCount   Int      // number of feedback records used
+   843→  feedbackIds     String   @default("[]") // JSON
+   844→  // learning metrics
+   845→  accuracyBefore  Float?   // accuracy on feedback set before update
+   846→  accuracyAfter   Float?   // accuracy after update
+   847→  createdAt       DateTime @default(now())
+   848→
+   849→  @@index([updateType])
+   850→  @@index([targetId])
+   851→}
+   852→
+   853→// Continuous pipeline run log
+   854→model ProcessingRun {
+   855→  id              String   @id @default(uuid())
+   856→  startedAt       DateTime
+   857→  finishedAt      DateTime?
+   858→  status          String   @default("running") // running | success | partial | failed
+   859→  tilesProcessed  Int      @default(0)
+   860→  tilesTotal      Int      @default(0)
+   861→  scenesProcessed Int      @default(0)
+   862→  observationsCreated Int  @default(0)
+   863→  observationsUpdated Int  @default(0)
+   864→  hypothesesCreated Int    @default(0)
+   865→  phenomenaCreated Int     @default(0)
+   866→  durationMs      Int      @default(0)
+   867→  error           String?
+   868→  createdAt       DateTime @default(now())
+   869→
+   870→  @@index([status])
+   871→  @@index([startedAt])
+   872→}
+   873→
+   874→// Learned priors (dynamic — updated by the learning engine)
+   875→model LearnedPrior {
+   876→  id              String   @id @default(uuid())
+   877→  hypothesisType  String   @unique
+   878→  originalPrior   Float    // base-rate prior from HYPOTHESIS_DEFS
+   879→  learnedPrior    Float    // current learned prior
+   880→  // accuracy metrics
+   881→  confirmations   Int      @default(0) // times this hypothesis was confirmed
+   882→  rejections      Int      @default(0) // times rejected
+   883→  falsePositives  Int      @default(0)
+   884→  falseNegatives  Int      @default(0)
+   885→  accuracy        Float    @default(0.5) // running accuracy
+   886→  lastUpdated     DateTime @default(now())
+   887→  createdAt       DateTime @default(now())
+   888→
+   889→  @@index([hypothesisType])
+   890→}
+   891→
+   892→// ===== Milestone 5.25: Ground Truth & Active Learning =====
+   893→
+   894→// Human Review Queue — structured workflow for verification
+   895→model ReviewQueue {
+   896→  id              String   @id @default(uuid())
+   897→  observationId   String
+   898→  hypothesisId    String?  // specific hypothesis to review
+   899→  // queue state
+   900→  status          String   @default("needs_review") // needs_review | assigned | reviewed | ground_truth | skipped
+   901→  priority        String   @default("normal") // low | normal | high | urgent
+   902→  priorityScore   Float    @default(0.5) // 0..1, higher = more important to review
+   903→  // active learning
+   904→  uncertaintyScore Float   @default(0.5) // how uncertain the AI is
+   905→  informationGain Float    @default(0) // expected information gain from reviewing
+   906→  // assignment
+   907→  assignedTo      String?  // reviewer id
+   908→  assignedAt      DateTime?
+   909→  // review result
+   910→  reviewOutcome   String?  // confirmed | rejected | partial | needs_monitoring
+   911→  reviewNotes     String?
+   912→  reviewEvidence  String   @default("{}") // JSON: photos, drone scans, etc.
+   913→  reviewedAt      DateTime?
+   914→  reviewedBy      String?
+   915→  // timestamps
+   916→  createdAt       DateTime @default(now())
+   917→  updatedAt       DateTime @updatedAt
+   918→
+   919→  @@index([status])
+   920→  @@index([priority])
+   921→  @@index([assignedTo])
+   922→  @@index([observationId])
+   923→}
+   924→
+   925→// Ground Truth — verified outcomes linked to observations/hypotheses
+   926→model GroundTruth {
+   927→  id              String   @id @default(uuid())
+   928→  observationId   String?
+   929→  hypothesisId    String?
+   930→  phenomenonId    String?
+   931→  // the verified truth
+   932→  verifiedOutcome String   // confirmed | rejected | partial
+   933→  verifiedHypothesisType String? // which hypothesis was correct
+   934→  // verification method
+   935→  verificationMethod String // field_inspection | drone_survey | government_confirmation | community_verification | multi_source
+   936→  confidence      Float    @default(1.0) // ground truth confidence (1.0 = certain)
+   937→  // evidence
+   938→  evidenceSummary String   // text description of verification evidence
+   939→  evidenceData    String   @default("{}") // JSON: photos, coordinates, reports
+   940→  // verifier
+   941→  verifiedBy      String?
+   942→  verifierRole    String?  // inspector | official | community_lead | ai_auto
+   943→  verifierCredibility Float @default(0.8)
+   944→  // learning link
+   945→  learningApplied Boolean  @default(false) // has this been fed to the learning engine?
+   946→  createdAt       DateTime @default(now())
+   947→
+   948→  @@index([observationId])
+   949→  @@index([verifiedOutcome])
+   950→  @@index([verificationMethod])
+   951→}
+   952→
+   953→// Calibration metrics — tracked over time
+   954→model CalibrationMetric {
+   955→  id              String   @id @default(uuid())
+   956→  // what's being calibrated
+   957→  hypothesisType  String?  // null = global
+   958→  metricType      String   // brier_score | ece | precision | recall | f1 | accuracy
+   959→  value           Float
+   960→  // context
+   961→  sampleCount     Int
+   962→  timeWindow      String   // "7d" | "30d" | "all"
+   963→  computedAt      DateTime @default(now())
+   964→
+   965→  @@index([hypothesisType])
+   966→  @@index([metricType])
+   967→  @@index([computedAt])
+   968→}
+   969→
+   970→// Evidence Quality Score — per-evidence quality assessment
+   971→model EvidenceQualityScore {
+   972→  id              String   @id @default(uuid())
+   973→  evidenceId      String   @unique
+   974→  // quality factors (0..1 each)
+   975→  sensorReliability Float   @default(0.9) // sentinel-2 = high
+   976→  cloudCover      Float    @default(0) // 0..100
+   977→  ageDays         Float    @default(0) // how old
+   978→  resolution      Float    @default(10) // meters
+   979→  distanceToTarget Float   @default(0) // km
+   980→  humanCredibility Float   @default(0.8)
+   981→  crossSourceAgreement Float @default(0.5) // 0..1
+   982→  // computed quality
+   983→  qualityScore    Float    @default(0.5) // 0..1 composite
+   984→  qualityFactors  String   @default("{}") // JSON breakdown
+   985→  createdAt       DateTime @default(now())
+   986→
+   987→  @@index([evidenceId])
+   988→  @@index([qualityScore])
+   989→}
+   990→
+   991→// Drift detection — distribution shift monitoring
+   992→model DriftAlert {
+   993→  id              String   @id @default(uuid())
+   994→  type            String   // seasonal | distribution | sensor | anomaly_pattern
+   995→  metric          String   // what drifted
+   996→  baselineValue   Float
+   997→  currentValue    Float
+   998→  driftMagnitude  Float    // % change
+   999→  threshold       Float    // alert threshold
+  1000→  status          String   @default("active") // active | acknowledged | resolved
+  1001→  description     String
+  1002→  affectedTiles   String   @default("[]") // JSON
+  1003→  detectedAt      DateTime @default(now())
+  1004→  resolvedAt      DateTime?
+  1005→
+  1006→  @@index([status])
+  1007→  @@index([type])
+  1008→  @@index([detectedAt])
+  1009→}
+  1010→
+  1011→// Benchmark report — periodic performance summary
+  1012→model BenchmarkReport {
+  1013→  id              String   @id @default(uuid())
+  1014→  period          String   // "2025-01" or "2025-W03"
+  1015→  periodStart     DateTime
+  1016→  periodEnd       DateTime
+  1017→  // metrics
+  1018→  detectionAccuracy Float
+  1019→  falsePositiveRate Float
+  1020→  falseNegativeRate Float
+  1021→  avgCalibrationError Float
+  1022→  timeToConfirmation Float? // hours
+  1023→  humanWorkloadHours Float
+  1024→  learningImprovement Float // % accuracy change
+  1025→  avgUncertainty  Float
+  1026→  coveragePct     Float
+  1027→  // details
+  1028→  observationsCount Int
+  1029→  groundTruthCount Int
+  1030→  reviewQueueSize Int
+  1031→  metrics         String   @default("{}") // JSON: per-hypothesis breakdown
+  1032→  createdAt       DateTime @default(now())
+  1033→
+  1034→  @@index([period])
+  1035→}
+  1036→
+  1037→// Model version — for reproducibility
+  1038→model ModelVersion {
+  1039→  id              String   @id @default(uuid())
+  1040→  versionId       String   @unique // "hypothesis-model-v12"
+  1041→  component       String   // "hypothesis_engine" | "raster_intelligence" | "baseline" | "learning_state"
+  1042→  description     String
+  1043→  // state snapshot
+  1044→  stateHash       String?  // hash of model state for reproducibility
+  1045→  parameters      String   @default("{}") // JSON: priors, weights, thresholds
+  1046→  // parentage
+  1047→  parentVersionId String?
+  1048→  createdAt       DateTime @default(now())
+  1049→
+  1050→  @@index([component])
+  1051→  @@index([createdAt])
+  1052→}
+  1053→
+  1054→// ===== Milestone 5.75: Multi-Modal Evidence Fusion & Feature Store =====
+  1055→
+  1056→// Feature Store — per-cell feature vectors, reusable across the platform
+  1057→model FeatureVector {
+  1058→  id              String   @id @default(uuid())
+  1059→  tileId          String   // FK to ProcessingTile
+  1060→  // spatial reference
+  1061→  centroidLng     Float
+  1062→  centroidLat     Float
+  1063→  // temporal
+  1064→  computedAt      DateTime
+  1065→  sceneId         String?  // source scene (if applicable)
+  1066→  // multi-modal features (each modality contributes features)
+  1067→  // optical (Sentinel-2 derived)
+  1068→  ndvi            Float?
+  1069→  ndwi            Float?
+  1070→  nbr             Float?
+  1071→  evi             Float?
+  1072→  bsi             Float?
+  1073→  mndwi           Float?
+  1074→  savi            Float?
+  1075→  // sar (Sentinel-1 derived — metadata-based until SAR connector built)
+  1076→  sarBackscatter  Float?   // VV dB
+  1077→  sarCoherence    Float?   // 0..1
+  1078→  sarRoughness    Float?   // surface roughness index
+  1079→  // thermal (Landsat derived)
+  1080→  thermalAnomaly  Float?   // temperature deviation
+  1081→  // weather (CHIRPS / ERA5)
+  1082→  rainfall7d      Float?   // mm last 7 days
+  1083→  rainfallAnomaly Float?   // deviation from seasonal norm
+  1084→  temperature     Float?   // °C
+  1085→  soilMoisture    Float?   // ERA5 derived
+  1086→  // terrain (DEM derived)
+  1087→  elevation       Float?   // meters
+  1088→  slope           Float?   // degrees
+  1089→  aspect          Float?   // degrees
+  1090→  flowAccumulation Float?  // upstream area
+  1091→  erosionSusceptibility Float? // 0..1
+  1092→  // hydrology
+  1093→  distanceToRiver Float?   // km to nearest river
+  1094→  riverProximity  Float?   // 0..1 (1 = on riverbank)
+  1095→  downstreamConnected Boolean @default(false)
+  1096→  // infrastructure
+  1097→  distanceToRoad  Float?   // km
+  1098→  distanceToSettlement Float? // km
+  1099→  nightLights     Float?   // radiance
+  1100→  builtUpIndex    Float?   // 0..1
+  1101→  // human activity
+  1102→  populationDensity Float? // people/km²
+  1103→  settlementGrowthRate Float? // % annual
+  1104→  // composite quality
+  1105→  cloudCover      Float?   // % at observation time
+  1106→  dataCompleteness Float?  // 0..1 fraction of modalities with data
+  1107→  // feature vector hash for dedup
+  1108→  vectorHash      String?
+  1109→  createdAt       DateTime @default(now())
+  1110→
+  1111→  @@index([tileId])
+  1112→  @@index([computedAt])
+  1113→  @@index([centroidLng, centroidLat])
+  1114→}
+  1115→
+  1116→// National Feature Cube — temporal sequence of feature vectors per cell
+  1117→model FeatureCubeCell {
+  1118→  id              String   @id @default(uuid())
+  1119→  tileId          String   @unique // one cell per tile
+  1120→  // current state (latest feature vector)
+  1121→  currentFeatureVectorId String?
+  1122→  // temporal sequences (JSON arrays of feature vector IDs, most recent first)
+  1123→  weeklyHistory   String   @default("[]") // last 12 weeks
+  1124→  monthlyHistory  String   @default("[]") // last 12 months
+  1125→  seasonalHistory String   @default("[]") // last 5 seasons
+  1126→  // trend metrics
+  1127→  ndviTrend       Float?   // slope of NDVI over time
+  1128→  ndviTrendPct    Float?   // % change
+  1129→  waterTrend      Float?
+  1130→  bareSoilTrend   Float?
+  1131→  settlementTrend Float?
+  1132→  // anomaly flags
+  1133→  anomalyScore    Float    @default(0) // 0..1 composite
+  1134→  isAnomalous     Boolean  @default(false)
+  1135→  anomalyType     String?  // "vegetation_loss" | "water_change" | "urban_growth" etc.
+  1136→  lastAnomalyAt   DateTime?
+  1137→  // update tracking
+  1138→  lastUpdated     DateTime @default(now())
+  1139→  updateCount     Int      @default(0)
+  1140→  createdAt       DateTime @default(now())
+  1141→
+  1142→  @@index([tileId])
+  1143→  @@index([isAnomalous])
+  1144→  @@index([anomalyScore])
+  1145→}
+  1146→
+  1147→// Digital Twin State Engine — per-cell persistent state
+  1148→model TwinState {
+  1149→  id              String   @id @default(uuid())
+  1150→  tileId          String   @unique
+  1151→  // physical state
+  1152→  landCover       String?  // current dominant land cover class
+  1153→  vegetationHealth Float?  // 0..1
+  1154→  waterExtent     Float?   // ha
+  1155→  bareSoilExtent  Float?   // ha
+  1156→  // environmental state
+  1157→  rainfallRecent  Float?   // mm
+  1158→  temperatureRecent Float?
+  1159→  soilMoistureRecent Float?
+  1160→  season          String?  // "rainy" | "dry" | "transitional"
+  1161→  // human activity state
+  1162→  settlementArea  Float?   // ha
+  1163→  roadDensity     Float?   // km/km²
+  1164→  nightLightsIntensity Float?
+  1165→  populationEstimate Float?
+  1166→  // observation history
+  1167→  observationCount Int     @default(0)
+  1168→  lastObservationAt DateTime?
+  1169→  lastObservationType String?
+  1170→  // phenomena history
+  1171→  activePhenomenaCount Int @default(0)
+  1172→  // risk state
+  1173→  riskLevel       String   @default("low") // low | moderate | high | critical
+  1174→  riskScore       Float    @default(0) // 0..1
+  1175→  riskFactors     String   @default("[]") // JSON: [{factor, weight}]
+  1176→  // forecast state
+  1177→  forecastArea30d Float?   // predicted area in 30 days
+  1178→  forecastConfidence Float? // 0..1
+  1179→  // confidence state
+  1180→  overallConfidence Float  @default(0.5)
+  1181→  dataQualityScore Float  @default(0.5)
+  1182→  // metadata
+  1183→  lastUpdated     DateTime @default(now())
+  1184→  updateCount     Int      @default(0)
+  1185→  createdAt       DateTime @default(now())
+  1186→
+  1187→  @@index([tileId])
+  1188→  @@index([riskLevel])
+  1189→  @@index([riskScore])
+  1190→}
+  1191→
+  1192→// Modality source registry — tracks which modalities are available
+  1193→model ModalitySource {
+  1194→  id              String   @id @default(uuid())
+  1195→  modalityId      String   @unique // "sentinel-2-optical" | "sentinel-1-sar" | "landsat-thermal" | "chirps-weather" | "era5" | "srtm-dem" | "hydrosheds" | "nightlights" | "population"
+  1196→  name            String
+  1197→  category        String   // optical | sar | thermal | weather | dem | hydrology | infrastructure | human_activity
+  1198→  sensor          String?  // "MSI" | "C-SAR" | "TIRS" etc.
+  1199→  platform        String?  // "Sentinel-2" | "Sentinel-1" | "Landsat-8"
+  1200→  resolution      String?  // "10m" | "30m" etc.
+  1201→  cadence         String?  // "5 days" | "daily"
+  1202→  status          String   @default("registered") // registered | active | degraded
+  1203→  // what features it contributes
+  1204→  featuresProvided String  @default("[]") // JSON: ["ndvi", "ndwi"]
+  1205→  // coverage
+  1206→  coveragePct     Float    @default(0)
+  1207→  lastDataAt      DateTime?
+  1208→  description     String
+  1209→  createdAt       DateTime @default(now())
+  1210→
+  1211→  @@index([category])
+  1212→  @@index([status])
+  1213→}
+  1214→
+  1215→// ===== Milestone 6: Autonomous Mission Planning & Data Acquisition =====
+  1216→// The platform actively decides what evidence it needs next and creates missions
+  1217→// to acquire it. Closes the intelligence loop: observe → reason → plan → collect → re-observe.
+  1218→
+  1219→model Mission {
+  1220→  id              String   @id @default(uuid())
+  1221→  uuid            String   @unique
+  1222→  // what triggered the mission
+  1223→  observationId   String?
+  1224→  hypothesisId    String?
+  1225→  phenomenonId    String?
+  1226→  tileId          String?  // target processing tile
+  1227→  // mission type
+  1228→  type            String   // satellite_revisit | drone | community | inspector | iot | sar_tasking
+  1229→  title           String
+  1230→  description     String
+  1231→  // target
+  1232→  targetLng       Float
+  1233→  targetLat       Float
+  1234→  targetRadiusM   Float    // coverage radius in meters
+  1235→  // mission parameters (JSON — type-specific)
+  1236→  parameters      String   @default("{}") // altitude, sensor, checklist, etc.
+  1237→  // Expected Value of Information
+  1238→  informationGain Float    @default(0) // expected uncertainty reduction (0..1)
+  1239→  cost            Float    @default(0) // estimated cost ($)
+  1240→  evi             Float    @default(0) // EVI = informationGain / cost
+  1241→  // priority
+  1242→  priority        String   @default("normal") // low | normal | high | urgent
+  1243→  priorityScore   Float    @default(0.5) // 0..1
+  1244→  // lifecycle
+  1245→  status          String   @default("planned") // planned | assigned | in_progress | completed | cancelled | failed
+  1246→  assignedTo      String?  // who/what is executing
+  1247→  assignedAt      DateTime?
+  1248→  startedAt       DateTime?
+  1249→  completedAt     DateTime?
+  1250→  // results
+  1251→  outcome         String?  // success | partial | failure
+  1252→  evidenceCollected String  @default("{}") // JSON: collected evidence
+  1253→  uncertaintyBefore Float? // hypothesis uncertainty before mission
+  1254→  uncertaintyAfter  Float? // uncertainty after mission (if completed)
+  1255→  actualInformationGain Float? // measured (not estimated) info gain
+  1256→  // reasoning
+  1257→  reasoning       String   // why this mission was created
+  1258→  missingEvidence String   @default("[]") // JSON: what evidence was missing
+  1259→  createdAt       DateTime @default(now())
+  1260→  updatedAt       DateTime @updatedAt
+  1261→
+  1262→  @@index([status])
+  1263→  @@index([type])
+  1264→  @@index([priority])
+  1265→  @@index([observationId])
+  1266→  @@index([hypothesisId])
+  1267→  @@index([evi])
+  1268→}
+  1269→
+  1270→// Autonomous observation scheduling — tile frequency assignment
+  1271→model ObservationSchedule {
+  1272→  id              String   @id @default(uuid())
+  1273→  tileId          String   @unique
+  1274→  // frequency tier
+  1275→  tier            String   @default("low") // high | medium | low
+  1276→  frequency       String   @default("monthly") // daily | weekly | monthly | quarterly
+  1277→  // rationale
+  1278→  priorityScore   Float    @default(0) // 0..1, higher = more important to monitor
+  1279→  riskScore       Float    @default(0)
+  1280→  changeRate      Float    @default(0) // how fast this tile changes
+  1281→  lastObservationCount Int  @default(0)
+  1282→  lastPhenomenaCount Int   @default(0)
+  1283→  // scheduling
+  1284→  nextObservationAt DateTime?
+  1285→  lastScheduledAt DateTime?
+  1286→  createdAt       DateTime @default(now())
+  1287→  updatedAt       DateTime @updatedAt
+  1288→
+  1289→  @@index([tier])
+  1290→  @@index([priorityScore])
+  1291→}
+  1292→
+  1293→// ===== Milestone 6.5: Production Validation & Scientific Evaluation =====
+  1294→
+  1295→// Replay run — end-to-end pipeline replay for regression testing
+  1296→model ReplayRun {
+  1297→  id              String   @id @default(uuid())
+  1298→  sceneId         String?  // scene replayed (if applicable)
+  1299→  tileId          String?  // tile replayed (if applicable)
+  1300→  // what was replayed
+  1301→  scope           String   // "scene" | "tile" | "full_pipeline"
+  1302→  // stages executed
+  1303→  stagesCompleted String   @default("[]") // JSON: ["ingest", "indices", "products", "evidence", "observations", "hypotheses"]
+  1304→  stagesFailed    String   @default("[]") // JSON
+  1305→  // timing
+  1306→  startedAt       DateTime
+  1307→  finishedAt      DateTime?
+  1308→  durationMs      Int      @default(0)
+  1309→  // results
+  1310→  status          String   @default("running") // running | success | partial | failed
+  1311→  observationsCreated Int   @default(0)
+  1312→  hypothesesCreated Int    @default(0)
+  1313→  error           String?
+  1314→  // comparison (if replaying against known outcomes)
+  1315→  comparisonResult String  @default("{}") // JSON: { matched, mismatched, new }
+  1316→  createdAt       DateTime @default(now())
+  1317→
+  1318→  @@index([status])
+  1319→  @@index([scope])
+  1320→  @@index([startedAt])
+  1321→}
+  1322→
+  1323→// Benchmark dataset — labeled ground truth for scientific evaluation
+  1324→model BenchmarkSample {
+  1325→  id              String   @id @default(uuid())
+  1326→  datasetName     String   // "ghana_mining_2024" | "seasonal_agriculture" | "floods"
+  1327→  // location
+  1328→  centroidLng     Float
+  1329→  centroidLat     Float
+  1330→  mgrsTile        String?
+  1331→  regionId        String?
+  1332→  // label (ground truth)
+  1333→  labelType       String   // "mining" | "agriculture" | "flood" | "logging" | "construction" | "bare_rock" | "reservoir" | "natural"
+  1334→  isConfirmed     Boolean  @default(true) // verified ground truth
+  1335→  // temporal
+  1336→  eventDate       DateTime?
+  1337→  // biome context
+  1338→  biome           String?  // "forest" | "savanna" | "coastal" | "wetland" | "urban"
+  1339→  // expected properties
+  1340→  expectedAreaHa  Float?
+  1341→  // notes
+  1342→  notes           String?
+  1343→  source          String?  // "government" | "inspector" | "research" | "community"
+  1344→  createdAt       DateTime @default(now())
+  1345→
+  1346→  @@index([datasetName])
+  1347→  @@index([labelType])
+  1348→  @@index([biome])
+  1349→}
+  1350→
+  1351→// Evaluation result — scientific metrics per evaluation run
+  1352→model EvaluationResult {
+  1353→  id              String   @id @default(uuid())
+  1354→  datasetName     String
+  1355→  // metrics
+  1356→  precision       Float
+  1357→  recall          Float
+  1358→  f1Score         Float
+  1359→  auroc           Float?
+  1360→  brierScore      Float?
+  1361→  ece             Float?   // Expected Calibration Error
+  1362→  // per-class breakdown
+  1363→  perClassMetrics String   @default("{}") // JSON: { mining: {precision, recall, f1}, agriculture: {...} }
+  1364→  // per-biome breakdown
+  1365→  perBiomeMetrics String   @default("{}") // JSON: { forest: {fp, fn, tp, tn}, savanna: {...} }
+  1366→  // counts
+  1367→  truePositives   Int
+  1368→  falsePositives  Int
+  1369→  trueNegatives   Int
+  1370→  falseNegatives  Int
+  1371→  sampleCount     Int
+  1372→  // timing
+  1373→  evaluatedAt     DateTime @default(now())
+  1374→
+  1375→  @@index([datasetName])
+  1376→  @@index([evaluatedAt])
+  1377→}
+  1378→
+  1379→// Pipeline metric — observability for every stage
+  1380→model PipelineMetric {
+  1381→  id              String   @id @default(uuid())
+  1382→  stage           String   // "ingest" | "raster_read" | "index_compute" | "product_compute" | "evidence_extract" | "observation_scan" | "hypothesis_gen" | "mission_plan" | "learning"
+  1383→  metricName      String   // "count" | "duration_ms" | "latency_p95" | "error_rate" | "throughput"
+  1384→  value           Float
+  1385→  unit            String   @default("") // "items" | "ms" | "items/hr" | "%"
+  1386→  // context
+  1387→  context         String   @default("{}") // JSON: { tileId, sceneId, type }
+  1388→  recordedAt      DateTime @default(now())
+  1389→
+  1390→  @@index([stage])
+  1391→  @@index([metricName])
+  1392→  @@index([recordedAt])
+  1393→}
+  1394→
+  1395→// Cache entry — for performance engineering
+  1396→model CacheEntry {
+  1397→  id              String   @id @default(uuid())
+  1398→  cacheKey        String   @unique
+  1399→  cacheType       String   // "raster_read" | "stac_query" | "feature_vector" | "product_stats" | "bandit" | "scene_index"
+  1400→  value           String   // JSON serialized cached value
+  1401→  ttlSeconds      Int      @default(300)
+  1402→  hitCount        Int      @default(0)
+  1403→  sizeBytes       Int      @default(0)
+  1404→  createdAt       DateTime @default(now())
+  1405→  lastAccessedAt  DateTime @default(now())
+  1406→
+  1407→  @@index([cacheKey])
+  1408→  @@index([cacheType])
+  1409→}
+  1410→
+  1411→// ===== Milestone 6.5+: Validation Gates (SLOs, Lineage Audit, Drift Actions, Deterministic Replay) =====
+  1412→
+  1413→// Service-Level Objective — measurable production targets
+  1414→model SLO {
+  1415→  id              String   @id @default(uuid())
+  1416→  sloId           String   @unique // "scene_ingestion" | "product_generation" etc.
+  1417→  name            String
+  1418→  description     String
+  1419→  // metric
+  1420→  metricName      String   // "duration_ms" | "success_rate" | "availability"
+  1421→  target          Float    // target value (e.g. 600000 ms = 10 min, or 0.999 = 99.9%)
+  1422→  targetDirection String   @default("less") // "less" (below target is good) | "greater" (above is good)
+  1423→  unit            String   @default("") // "ms" | "%" | "ratio"
+  1424→  category        String   // "engineering" | "scientific"
+  1425→  // window
+  1426→  windowHours     Int      @default(24) // measurement window
+  1427→  // current status
+  1428→  currentValue    Float?   @default(0)
+  1429→  status          String   @default("unknown") // met | violated | unknown | warning
+  1430→  lastMeasuredAt  DateTime?
+  1431→  createdAt       DateTime @default(now())
+  1432→  updatedAt       DateTime @updatedAt
+  1433→
+  1434→  measurements    SLOMeasurement[]
+  1435→
+  1436→  @@index([category])
+  1437→  @@index([status])
+  1438→}
+  1439→
+  1440→// SLO measurement history — track SLO compliance over time
+  1441→model SLOMeasurement {
+  1442→  id              String   @id @default(uuid())
+  1443→  sloId           String
+  1444→  slo             SLO      @relation(fields: [sloId], references: [id], onDelete: Cascade)
+  1445→  value           Float
+  1446→  status          String   // met | violated | warning
+  1447→  measuredAt      DateTime @default(now())
+  1448→
+  1449→  @@index([sloId])
+  1450→  @@index([measuredAt])
+  1451→}
+  1452→
+  1453→// Lineage audit — completeness of the provenance chain per observation
+  1454→model LineageAudit {
+  1455→  id              String   @id @default(uuid())
+  1456→  observationId   String   @unique
+  1457→  // completeness checks (each stage of the chain)
+  1458→  hasEvidence     Boolean  @default(false)
+  1459→  hasRasterProduct Boolean @default(false)
+  1460→  hasBaseline     Boolean  @default(false)
+  1461→  hasScene        Boolean  @default(false)
+  1462→  hasCOG          Boolean  @default(false)
+  1463→  hasSTAC         Boolean  @default(false)
+  1464→  // overall
+  1465→  completenessPct Float    @default(0) // 0..100
+  1466→  missingStages   String   @default("[]") // JSON: ["baseline", "cog"]
+  1467→  auditedAt       DateTime @default(now())
+  1468→
+  1469→  @@index([completenessPct])
+  1470→  @@index([observationId])
+  1471→}
+  1472→
+  1473→// Drift action — operational workflow triggered by drift detection
+  1474→model DriftAction {
+  1475→  id              String   @id @default(uuid())
+  1476→  driftAlertId    String?  // FK to DriftAlert
+  1477→  actionType      String   // "increase_review_sampling" | "reduce_confidence" | "increase_sar_priority" | "notify_analysts" | "retrain_priors"
+  1478→  description     String
+  1479→  // action parameters
+  1480→  parameters      String   @default("{}") // JSON: how much to increase, who to notify, etc.
+  1481→  // execution
+  1482→  status          String   @default("pending") // pending | executed | skipped | failed
+  1483→  executedAt      DateTime?
+  1484→  result          String?  // execution result summary
+  1485→  createdAt       DateTime @default(now())
+  1486→
+  1487→  @@index([status])
+  1488→  @@index([actionType])
+  1489→}
+  1490→
+  1491→// Replay version — deterministic replay records all versions for reproducibility
+  1492→model ReplayVersion {
+  1493→  id              String   @id @default(uuid())
+  1494→  replayRunId     String?  // FK to ReplayRun
+  1495→  // versions recorded at replay time
+  1496→  codeVersion     String?  // git commit hash
+  1497→  schemaVersion   String?  // prisma schema hash
+  1498→  ruleVersion     String?  // rule set version
+  1499→  modelVersion    String?  // hypothesis model version
+  1500→  connectorVersions String @default("{}") // JSON: {geoboundaries: "2024-01", osm: "2024-08-01", stac: "sentinel-2-l2a"}
+  1501→  datasetVersions String   @default("{}") // JSON: {baseline: "v5", worldcover: "2021"}
+  1502→  configSnapshot  String   @default("{}") // JSON: thresholds, priors, weights at replay time
+  1503→  environment     String   @default("production") // production | staging | development
+  1504→  createdAt       DateTime @default(now())
+  1505→
+  1506→  @@index([replayRunId])
+  1507→}
+  1508→
+  1509→// Benchmark diversity tag — ensures benchmark coverage across conditions
+  1510→model BenchmarkDiversityTag {
+  1511→  id              String   @id @default(uuid())
+  1512→  benchmarkSampleId String
+  1513→  // diversity dimensions
+  1514→  season          String?  // "dry" | "rainy" | "transitional"
+  1515→  biome           String?  // "forest" | "savanna" | "wetland" | "urban" | "coastal" | "mining" | "agriculture"
+  1516→  topoPosition    String?  // "lowland" | "upland" | "riparian" | "plateau"
+  1517→  cloudCondition  String?  // "clear" | "cloudy" | "mixed"
+  1518→  // difficulty
+  1519→  difficulty      String?  // "easy" | "moderate" | "hard" // how hard to detect
+  1520→  notes           String?
+  1521→  createdAt       DateTime @default(now())
+  1522→
+  1523→  @@index([benchmarkSampleId])
+  1524→  @@index([season])
+  1525→  @@index([biome])
+  1526→}
+  1527→
+  1528→// ===== Milestone 6.75: Extension Platform =====
+  1529→// The core platform is domain-agnostic. Domain expertise (mining, floods,
+  1530→// agriculture, forestry) lives in installable extensions with manifests,
+  1531→// permissions, and a sandboxed SDK.
+  1532→
+  1533→model Extension {
+  1534→  id              String   @id @default(uuid())
+  1535→  extensionId     String   @unique // "illegal-mining" | "flood-monitoring" | "cocoa-agriculture"
+  1536→  name            String
+  1537→  version         String   // semver "2.1.0"
+  1538→  description     String
+  1539→  author          String
+  1540→  category        String   // "mining" | "flood" | "agriculture" | "forestry" | "infrastructure" | "biodiversity" | "custom"
+  1541→  // status
+  1542→  status          String   @default("installed") // available | installed | enabled | disabled | error
+  1543→  installedAt     DateTime @default(now())
+  1544→  enabledAt       DateTime?
+  1545→  // manifest (full YAML-like JSON manifest)
+  1546→  manifest        String   @default("{}") // JSON: full extension manifest
+  1547→  // permissions
+  1548→  permissions     String   @default("{}") // JSON: datasets, compute, ui, missions, alerts
+  1549→  // what the extension contributes
+  1550→  ruleCount       Int      @default(0)
+  1551→  hypothesisTypes String   @default("[]") // JSON: types this extension defines
+  1552→  missionTypes    String   @default("[]") // JSON: mission types
+  1553→  uiViews         String   @default("[]") // JSON: UI views contributed
+  1554→  observationTypes String  @default("[]") // JSON: observation types
+  1555→  // trust
+  1556→  isSigned        Boolean  @default(false)
+  1557→  isVerified      Boolean  @default(false)
+  1558→  trustScore      Float    @default(0.5) // 0..1
+  1559→  // metadata
+  1560→  icon            String   @default("puzzle")
+  1561→  color           String   @default("#a78bfa")
+  1562→  tags            String   @default("[]") // JSON
+  1563→  createdAt       DateTime @default(now())
+  1564→  updatedAt       DateTime @updatedAt
+  1565→
+  1566→  rules           ExtensionRule[]
+  1567→  configs         ExtensionConfig[]
+  1568→
+  1569→  @@index([status])
+  1570→  @@index([category])
+  1571→}
+  1572→
+  1573→model ExtensionRule {
+  1574→  id              String   @id @default(uuid())
+  1575→  extensionId     String   // FK to Extension.extensionId (string slug)
+  1576→  ruleId          String   // "illegal-mining-rule-01"
+  1577→  name            String
+  1578→  description     String
+  1579→  // rule definition
+  1580→  conditions      String   @default("[]") // JSON: evidence patterns
+  1581→  hypothesisType  String   // what hypothesis this rule supports
+  1582→  effect          String   // "boost" | "suppress"
+  1583→  likelihoodRatio Float    // Bayesian LR
+  1584→  priority        Int      @default(0)
+  1585→  enabled         Boolean  @default(true)
+  1586→  createdAt       DateTime @default(now())
+  1587→
+  1588→  extension       Extension @relation(fields: [extensionId], references: [extensionId], onDelete: Cascade)
+  1589→
+  1590→  @@index([extensionId])
+  1591→  @@index([hypothesisType])
+  1592→}
+  1593→
+  1594→model ExtensionConfig {
+  1595→  id              String   @id @default(uuid())
+  1596→  extensionId     String
+  1597→  key             String   // config key
+  1598→  value           String   // config value (JSON)
+  1599→  description     String?
+  1600→  updatedAt       DateTime @updatedAt
+  1601→
+  1602→  extension       Extension @relation(fields: [extensionId], references: [extensionId], onDelete: Cascade)
+  1603→
+  1604→  @@unique([extensionId, key])
+  1605→  @@index([extensionId])
+  1606→}
+  1607→
+  1608→// ===== Milestone 6.75+: Advanced Extension Platform =====
+  1609→// Lifecycle hooks, declarative pipelines, dependency management, versioned APIs,
+  1610→// resource limits, trust model, data contracts, replay testing.
+  1611→
+  1612→// Extension dependency — semver resolution between extensions
+  1613→model ExtensionDependency {
+  1614→  id              String   @id @default(uuid())
+  1615→  extensionId     String   // the extension that depends on something
+  1616→  dependsOnId     String   // the extension it depends on
+  1617→  versionRange    String   // ">=2.0" | "^1.5" | "*"
+  1618→  required        Boolean  @default(true) // hard vs optional dependency
+  1619→  createdAt       DateTime @default(now())
+  1620→
+  1621→  @@unique([extensionId, dependsOnId])
+  1622→  @@index([extensionId])
+  1623→  @@index([dependsOnId])
+  1624→}
+  1625→
+  1626→// Extension lifecycle hook — formal extension points
+  1627→model ExtensionHook {
+  1628→  id              String   @id @default(uuid())
+  1629→  extensionId     String   // FK to Extension.extensionId
+  1630→  hookName        String   // "datasets" | "features" | "evidence" | "observations" | "hypotheses" | "missions" | "learning" | "views" | "commands"
+  1631→  hookType        String   // "pipeline_stage" | "ui_contribution" | "command"
+  1632→  // execution metadata
+  1633→  priority        Int      @default(0) // lower = runs first
+  1634→  enabled         Boolean  @default(true)
+  1635→  // the hook's contribution (JSON — varies by hookType)
+  1636→  contribution    String   @default("{}") // JSON: what this hook contributes
+  1637→  createdAt       DateTime @default(now())
+  1638→
+  1639→  @@unique([extensionId, hookName])
+  1640→  @@index([extensionId])
+  1641→  @@index([hookName])
+  1642→}
+  1643→
+  1644→// Extension pipeline — declarative processing stages
+  1645→model ExtensionPipeline {
+  1646→  id              String   @id @default(uuid())
+  1647→  extensionId     String
+  1648→  name            String   // pipeline name
+  1649→  // declarative stages (JSON array of stage definitions)
+  1650→  stages          String   @default("[]") // JSON: [{stage, input, output, config}]
+  1651→  stageCount      Int      @default(0)
+  1652→  // execution metadata
+  1653→  cacheable       Boolean  @default(true)
+  1654→  parallelizable  Boolean  @default(false)
+  1655→  createdAt       DateTime @default(now())
+  1656→
+  1657→  @@index([extensionId])
+  1658→}
+  1659→
+  1660→// Extension data contract — what it consumes and produces
+  1661→model ExtensionContract {
+  1662→  id              String   @id @default(uuid())
+  1663→  extensionId     String   @unique
+  1664→  // consumes (JSON arrays of type names)
+  1665→  consumes        String   @default("[]") // JSON: ["Observation", "RasterProduct", "Weather"]
+  1666→  produces        String   @default("[]") // JSON: ["MiningObservation", "Mission", "Alert"]
+  1667→  // validation status
+  1668→  validated       Boolean  @default(false)
+  1669→  validationErrors String  @default("[]") // JSON: missing inputs, type mismatches
+  1670→  createdAt       DateTime @default(now())
+  1671→  updatedAt       DateTime @updatedAt
+  1672→
+  1673→  @@index([extensionId])
+  1674→}
+  1675→
+  1676→// Extension resource limit — quotas per extension
+  1677→model ExtensionResourceLimit {
+  1678→  id              String   @id @default(uuid())
+  1679→  extensionId     String   @unique
+  1680→  // quotas
+  1681→  cpuMs           Int      @default(500) // max CPU time per invocation
+  1682→  memoryMB        Int      @default(512)
+  1683→  networkEnabled  Boolean  @default(false)
+  1684→  maxRasterReads  Int      @default(1000) // per pipeline run
+  1685→  maxFeatureWrites Int     @default(100)
+  1686→  maxApiCalls     Int      @default(500) // SDK calls per invocation
+  1687→  // tracking
+  1688→  currentRasterReads Int   @default(0)
+  1689→  currentApiCalls  Int     @default(0)
+  1690→  lastResetAt     DateTime @default(now())
+  1691→  createdAt       DateTime @default(now())
+  1692→  updatedAt       DateTime @updatedAt
+  1693→
+  1694→  @@index([extensionId])
+  1695→}
+  1696→
+  1697→// Extension test — replay tests shipped with the extension
+  1698→model ExtensionTest {
+  1699→  id              String   @id @default(uuid())
+  1700→  extensionId     String
+  1701→  testName        String   // "evidence.test" | "rules.test" | "replay.test"
+  1702→  testType        String   // "unit" | "integration" | "replay"
+  1703→  description     String
+  1704→  // test definition (JSON: input, expected output, comparison)
+  1705→  definition      String   @default("{}")
+  1706→  // last run result
+  1707→  lastRunAt       DateTime?
+  1708→  lastResult      String?  // "passed" | "failed" | "skipped"
+  1709→  lastDuration    Int?     // ms
+  1710→  lastDiff        String?  // JSON: differences from expected output
+  1711→  createdAt       DateTime @default(now())
+  1712→
+  1713→  @@index([extensionId])
+  1714→  @@index([testType])
+  1715→}
+  1716→
+  1717→// Extension trust metadata — extended trust model
+  1718→model ExtensionTrust {
+  1719→  id              String   @id @default(uuid())
+  1720→  extensionId     String   @unique
+  1721→  // publisher
+  1722→  publisher       String?
+  1723→  publisherVerified Boolean @default(false)
+  1724→  // signature
+  1725→  signatureHash   String?
+  1726→  signatureVerified Boolean @default(false)
+  1727→  // review
+  1728→  reviewedBy      String?  // "Ghana EPA" | "University of Ghana"
+  1729→  reviewDate      DateTime?
+  1730→  reviewStatus    String?  // "approved" | "pending" | "rejected"
+  1731→  // scientific
+  1732→  reproducibilityScore Float? // 0..1
+  1733→  scientificValidation String? // "peer-reviewed" | "preprint" | "internal" | "none"
+  1734→  peerReviewUrl   String?
+  1735→  // trust level
+  1736→  trustLevel      String   @default("community") // "official" | "verified" | "community" | "experimental"
+  1737→  trustScore      Float    @default(0.5) // composite 0..1
+  1738→  createdAt       DateTime @default(now())
+  1739→  updatedAt       DateTime @updatedAt
+  1740→
+  1741→  @@index([extensionId])
+  1742→  @@index([trustLevel])
+  1743→}
+  1744→
+  1745→// ===== Platform Kernel: Capability System + Dynamic Registries =====
+  1746→// The core is domain-agnostic. Extensions register hypothesis types, rules,
+  1747→// mission types dynamically. The Capability System enforces permissions
+  1748→// before every SDK call — the security boundary for the entire platform.
+  1749→
+  1750→// Capability — a permission that can be granted to an extension
+  1751→model Capability {
+  1752→  id              String   @id @default(uuid())
+  1753→  capabilityId    String   @unique // "dataset:read:sentinel2" | "observation:emit" | "mission:create"
+  1754→  category        String   // "dataset" | "observation" | "mission" | "feature" | "scene" | "learning" | "alert" | "ui" | "filesystem" | "network" | "compute"
+  1755→  description     String
+  1756→  riskLevel       String   @default("low") // "low" | "medium" | "high" | "critical"
+  1757→  requiresApproval Boolean @default(false) // if true, requires manual approval
+  1758→  createdAt       DateTime @default(now())
+  1759→
+  1760→  grants          CapabilityGrant[]
+  1761→
+  1762→  @@index([category])
+  1763→  @@index([riskLevel])
+  1764→}
+  1765→
+  1766→// Capability Grant — what capabilities an extension has been granted
+  1767→model CapabilityGrant {
+  1768→  id              String   @id @default(uuid())
+  1769→  extensionId     String   // FK to Extension.extensionId
+  1770→  capabilityId    String   // FK to Capability.capabilityId
+  1771→  granted         Boolean  @default(false)
+  1772→  grantedAt       DateTime?
+  1773→  grantedBy       String?  // who approved
+  1774→  // usage tracking
+  1775→  invocationCount Int      @default(0)
+  1776→  lastInvokedAt   DateTime?
+  1777→  // rate limiting
+  1778→  rateLimitPerMin Int?     // max invocations per minute
+  1779→  createdAt       DateTime @default(now())
+  1780→
+  1781→  capability      Capability @relation(fields: [capabilityId], references: [capabilityId], onDelete: Cascade)
+  1782→
+  1783→  @@unique([extensionId, capabilityId])
+  1784→  @@index([extensionId])
+  1785→  @@index([granted])
+  1786→}
+  1787→
+  1788→// Dynamic Hypothesis Type — registered by extensions, not hardcoded
+  1789→model DynamicHypothesisType {
+  1790→  id              String   @id @default(uuid())
+  1791→  typeId          String   @unique // "artisanal_mining" | "flood_erosion" | "cocoa_stress"
+  1792→  extensionId     String   // which extension registered this
+  1793→  label           String
+  1794→  description     String
+  1795→  prior           Float    @default(0.15)
+  1796→  recommendedVerification String?
+  1797→  // metadata
+  1798→  category        String   // from extension category
+  1799→  enabled         Boolean  @default(true)
+  1800→  createdAt       DateTime @default(now())
+  1801→
+  1802→  @@index([extensionId])
+  1803→  @@index([category])
+  1804→  @@index([enabled])
+  1805→}
+  1806→
+  1807→// Dynamic Rule — registered by extensions
+  1808→model DynamicRule {
+  1809→  id              String   @id @default(uuid())
+  1810→  ruleId          String   @unique // "mining-001"
+  1811→  extensionId     String
+  1812→  name            String
+  1813→  description     String
+  1814→  // declarative rule (YAML-like JSON)
+  1815→  conditions      String   @default("[]") // JSON: [{bundle, indication, minSignal, productType}]
+  1816→  hypothesisType  String   // which dynamic hypothesis type this supports
+  1817→  effect          String   @default("boost") // "boost" | "suppress"
+  1818→  likelihoodRatio Float    @default(1.0)
+  1819→  priority        Int      @default(0)
+  1820→  enabled         Boolean  @default(true)
+  1821→  createdAt       DateTime @default(now())
+  1822→
+  1823→  @@index([extensionId])
+  1824→  @@index([hypothesisType])
+  1825→  @@index([enabled])
+  1826→}
+  1827→
+  1828→// Dynamic Mission Type — registered by extensions
+  1829→model DynamicMissionType {
+  1830→  id              String   @id @default(uuid())
+  1831→  typeId          String   @unique // "sar_tasking" | "river_gauge" | "farmer_survey"
+  1832→  extensionId     String
+  1833→  label           String
+  1834→  description     String
+  1835→  baseCost        Float    @default(0)
+  1836→  baseInfoGain    Float    @default(0.3)
+  1837→  estimatedTime   String   @default("1-2 hours")
+  1838→  enabled         Boolean  @default(true)
+  1839→  createdAt       DateTime @default(now())
+  1840→
+  1841→  @@index([extensionId])
+  1842→  @@index([enabled])
+  1843→}
+  1844→
+  1845→// Extension package metadata — standardized layout
+  1846→model ExtensionPackage {
+  1847→  id              String   @id @default(uuid())
+  1848→  extensionId     String   @unique
+  1849→  // package structure validation
+  1850→  hasManifest     Boolean  @default(false)
+  1851→  hasRules        Boolean  @default(false)
+  1852→  hasHypotheses   Boolean  @default(false)
+  1853→  hasMissions     Boolean  @default(false)
+  1854→  hasUI           Boolean  @default(false)
+  1855→  hasAgents       Boolean  @default(false)
+  1856→  hasTests        Boolean  @default(false)
+  1857→  hasKnowledge    Boolean  @default(false)
+  1858→  // file count
+  1859→  totalFiles      Int      @default(0)
+  1860→  totalSize       Int      @default(0) // bytes
+  1861→  // validation
+  1862→  structureValid  Boolean  @default(false)
+  1863→  validationErrors String  @default("[]")
+  1864→  validatedAt     DateTime?
+  1865→  createdAt       DateTime @default(now())
+  1866→
+  1867→  @@index([structureValid])
+  1868→}
+  1869→
+  1870→// ===== Platform Orchestration: Composable Packages, Artifacts, Events, DAGs, Policies =====
+  1871→
+  1872→// Typed Contribution — unified registry replacing separate Dynamic* tables
+  1873→model TypedContribution {
+  1874→  id              String   @id @default(uuid())
+  1875→  contributionId  String   @unique // "illegal-mining:rule:mining-001"
+  1876→  packageId       String   // which package contributed this
+  1877→  kind            String   // "rule" | "hypothesis_type" | "mission_type" | "observation_type" | "ui_view" | "widget" | "dashboard" | "command" | "workflow" | "ontology" | "agent" | "model" | "pipeline_stage" | "alert_type" | "report" | "scheduler" | "validator" | "exporter" | "prompt" | "tool" | "policy"
+  1878→  // versioned
+  1879→  version         String   @default("1.0.0")
+  1880→  apiVersion      String   @default("v1")
+  1881→  // payload (JSON — type-specific)
+  1882→  payload         String   @default("{}")
+  1883→  // composition
+  1884→  composesFrom    String   @default("[]") // JSON: contribution IDs this composes from
+  1885→  // trust
+  1886→  signature       String?
+  1887→  enabled         Boolean  @default(true)
+  1888→  createdAt       DateTime @default(now())
+  1889→  updatedAt       DateTime @updatedAt
+  1890→
+  1891→  @@index([packageId])
+  1892→  @@index([kind])
+  1893→  @@index([enabled])
+  1894→}
+  1895→
+  1896→// Artifact — unified provenance store for everything the platform produces
+  1897→model Artifact {
+  1898→  id              String   @id @default(uuid())
+  1899→  artifactId      String   @unique
+  1900→  kind            String   // "observation" | "evidence" | "hypothesis" | "mission" | "scenario" | "report" | "benchmark" | "replay" | "phenomenon" | "ground_truth" | "alert" | "feature_vector" | "raster_product"
+  1901→  // ownership
+  1902→  ownerPackage    String?  // which package created this
+  1903→  createdBy       String?  // system | extension:illegal-mining | user:inspector
+  1904→  // lineage
+  1905→  parentIds       String   @default("[]") // JSON: artifact IDs this was derived from
+  1906→  lineageHash     String?  // hash of full lineage chain
+  1907→  // versioning
+  1908→  version         Int      @default(1)
+  1909→  currentVersion  Boolean  @default(true)
+  1910→  // metadata
+  1911→  metadata        String   @default("{}") // JSON: type-specific metadata
+  1912→  // temporal
+  1913→  createdAt       DateTime @default(now())
+  1914→  updatedAt       DateTime @updatedAt
+  1915→
+  1916→  @@index([kind])
+  1917→  @@index([ownerPackage])
+  1918→  @@index([currentVersion])
+  1919→  @@index([createdAt])
+  1920→}
+  1921→
+  1922→// Platform Package — replaces "extension" with composable packages
+  1923→model PlatformPackage {
+  1924→  id              String   @id @default(uuid())
+  1925→  packageId       String   @unique // "sentinel-2-connector" | "bayesian-reasoner" | "illegal-mining"
+  1926→  name            String
+  1927→  version         String   // semver
+  1928→  description     String
+  1929→  author          String
+  1930→  kind            String   @default("extension") // "dataset" | "connector" | "feature_extractor" | "rule_library" | "reasoning" | "mission_library" | "ui" | "dashboard" | "ontology" | "workflow" | "agent" | "model" | "domain" | "extension" | "theme" | "profile"
+  1931→  // composition
+  1932→  composes        String   @default("[]") // JSON: package IDs this composes from
+  1933→  dependsOn       String   @default("[]") // JSON: {packageId, versionRange, required}
+  1934→  // status
+  1935→  status          String   @default("available") // available | installed | enabled | disabled
+  1936→  installedAt     DateTime?
+  1937→  enabledAt       DateTime?
+  1938→  // trust
+  1939→  trustLevel      String   @default("community")
+  1940→  trustScore      Float    @default(0.5)
+  1941→  publisherVerified Boolean @default(false)
+  1942→  // metadata
+  1943→  icon            String   @default("package")
+  1944→  color           String   @default("#a78bfa")
+  1945→  tags            String   @default("[]")
+  1946→  createdAt       DateTime @default(now())
+  1947→  updatedAt       DateTime @updatedAt
+  1948→
+  1949→  @@index([kind])
+  1950→  @@index([status])
+  1951→  @@index([trustLevel])
+  1952→}
+  1953→
+  1954→// Package Profile — bundles compatible packages into installable solutions
+  1955→model PackageProfile {
+  1956→  id              String   @id @default(uuid())
+  1957→  profileId       String   @unique // "ghana-illegal-mining" | "national-flood-monitoring"
+  1958→  name            String
+  1959→  description     String
+  1960→  // packages included
+  1961→  packages        String   @default("[]") // JSON: [{packageId, versionRange}]
+  1962→  // profile metadata
+  1963→  author          String
+  1964→  version         String   @default("1.0.0")
+  1965→  icon            String   @default("layers")
+  1966→  color           String   @default("#34d399")
+  1967→  tags            String   @default("[]")
+  1968→  // status
+  1969→  status          String   @default("available") // available | installed
+  1970→  installedAt     DateTime?
+  1971→  createdAt       DateTime @default(now())
+  1972→
+  1973→  @@index([status])
+  1974→}
+  1975→
+  1976→// Workflow — reusable processing workflows
+  1977→model Workflow {
+  1978→  id              String   @id @default(uuid())
+  1979→  workflowId      String   @unique // "review" | "mission-planning" | "verification"
+  1980→  name            String
+  1981→  description     String
+  1982→  ownerPackage    String?  // which package owns this (null = built-in)
+  1983→  // DAG definition (JSON: nodes + edges)
+  1984→  nodes           String   @default("[]") // JSON: [{id, type, packageId, config}]
+  1985→  edges           String   @default("[]") // JSON: [{from, to, condition}]
+  1986→  // execution
+  1987→  cacheable       Boolean  @default(true)
+  1988→  parallelizable  Boolean  @default(true)
+  1989→  // reusable
+  1990→  reusable        Boolean  @default(true) // can be used by multiple packages
+  1991→  usageCount      Int      @default(0)
+  1992→  createdAt       DateTime @default(now())
+  1993→
+  1994→  @@index([ownerPackage])
+  1995→  @@index([reusable])
+  1996→}
+  1997→
+  1998→// Policy Rule — "should it?" (separate from capability "can it?")
+  1999→model PolicyRule {
+  2000→  id              String   @id @default(uuid())
+
+[showing lines 1-2000 of 5871; use offset=2001 with limit to continue reading]

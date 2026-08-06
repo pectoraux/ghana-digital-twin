@@ -4032,6 +4032,27 @@ model CreditTransaction {
   @@index([processedAt])
 }
 
+// WithdrawalRequest — a citizen's request to withdraw Intelligence Credits as
+// mobile money (MTN/Vodafone/AirtelTigo). Tracked separately from
+// CreditTransaction so admin/operators can review, process, and reconcile.
+model WithdrawalRequest {
+  id                String   @id @default(uuid())
+  requestId         String   @unique // WR-YYYY-NNNN
+  userId            String   // User.id
+  accountId         String   // CreditAccount.accountId
+  amount            Float    // IC amount to withdraw
+  mobileMoneyNumber String   // phone number for mobile money payout
+  provider          String   @default("mtn") // mtn | vodafone | airteltigo
+  status            String   @default("pending") // pending | processing | completed | rejected
+  notes             String?
+  processedAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
 // AssetLineage — derivative tracking. An intelligence asset can spawn downstream
 // assets. The lineage tracks the full chain so royalties flow to original
 // contributors. Like intellectual property royalties.
