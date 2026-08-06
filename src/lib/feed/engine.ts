@@ -62,6 +62,31 @@ export async function listFeedItems(filter: {
   return rows.map(serializeFeedItem);
 }
 
+export async function getFeedItem(feedItemId: string): Promise<any | null> {
+  const item = await db.feedItem.findUnique({ where: { feedItemId } });
+  if (!item) return null;
+  // Increment view count
+  await db.feedItem.update({ where: { feedItemId }, data: { viewCount: { increment: 1 } } });
+  return serializeFeedItem({ ...item, viewCount: item.viewCount + 1 });
+}
+
+export async function listComments(feedItemId: string, limit = 50): Promise<any[]> {
+  const comments = await db.feedEngagement.findMany({
+    where: { feedItemId, type: "comment" },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+  });
+  return comments.map((c: any) => ({
+    id: c.id,
+    engagementId: c.engagementId,
+    feedItemId: c.feedItemId,
+    userId: c.userId,
+    userName: c.userName,
+    content: c.content,
+    createdAt: c.createdAt,
+  }));
+}
+
 export async function engageWithFeedItem(input: {
   feedItemId: string;
   userId: string;

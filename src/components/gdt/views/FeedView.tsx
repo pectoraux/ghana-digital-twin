@@ -47,6 +47,7 @@ export function FeedView() {
   const [liked, setLiked] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const setReportOpen = useGDT((s) => s.setReportOpen);
+  const setSelectedFeedItemId = useGDT((s) => s.setSelectedFeedItemId);
 
   const load = useCallback(() => {
     const sp = new URLSearchParams();
@@ -125,7 +126,7 @@ export function FeedView() {
           const meta = FEED_TYPE_META[item.type] ?? FEED_TYPE_META.REPORT;
           const Icon = meta.icon;
           return (
-            <div key={item.feedItemId} className="rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/30 transition-colors cursor-pointer">
+            <div key={item.feedItemId} onClick={() => setSelectedFeedItemId(item.feedItemId)} className="rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/30 transition-colors cursor-pointer">
               <div className="flex items-start gap-3">
                 {/* Creator avatar */}
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full font-bold text-[15px]" style={{ color: meta.color, background: `${meta.color}15` }}>
@@ -168,7 +169,7 @@ export function FeedView() {
                     <span className="flex items-center gap-1 text-muted-foreground">
                       <Eye className="size-4" /> {item.viewCount}
                     </span>
-                    <button onClick={() => handleLike(item.feedItemId)} disabled={busy === item.feedItemId || liked.has(item.feedItemId)}
+                    <button onClick={(e) => { e.stopPropagation(); handleLike(item.feedItemId); }} disabled={busy === item.feedItemId || liked.has(item.feedItemId)}
                       className={cn("flex items-center gap-1 transition-colors", liked.has(item.feedItemId) ? "text-emerald-500" : "text-muted-foreground hover:text-emerald-500")}>
                       {busy === item.feedItemId ? <Loader2 className="size-4 animate-spin" /> : <ThumbsUp className="size-4" />} {item.likeCount}
                     </button>

@@ -8,6 +8,7 @@ import { Inspector } from "./Inspector";
 import { StatusBar } from "./StatusBar";
 import { CommandPalette } from "./CommandPalette";
 import { ReportModal } from "./ReportModal";
+import { FeedItemDetail } from "./FeedItemDetail";
 import { LiveEngine } from "./LiveEngine";
 import { HomeView } from "./views/HomeView";
 import { FeedView } from "./views/FeedView";
@@ -106,6 +107,7 @@ export function Shell() {
       {/* Global overlays */}
       <CommandPalette />
       <GlobalReportModal />
+      <GlobalFeedItemDetail />
       <LiveEngine />
     </div>
   );
@@ -116,4 +118,16 @@ function GlobalReportModal() {
   const reportOpen = useGDT((s) => s.reportOpen);
   const setReportOpen = useGDT((s) => s.setReportOpen);
   return <ReportModal open={reportOpen} onOpenChange={setReportOpen} />;
+}
+
+// Global feed item detail — reads from store so any feed card can open it
+function GlobalFeedItemDetail() {
+  const selectedFeedItemId = useGDT((s) => s.selectedFeedItemId);
+  const setSelectedFeedItemId = useGDT((s) => s.setSelectedFeedItemId);
+  return (
+    <FeedItemDetail
+      feedItemId={selectedFeedItemId}
+      onOpenChange={(open) => { if (!open) setSelectedFeedItemId(null); }}
+    />
+  );
 }

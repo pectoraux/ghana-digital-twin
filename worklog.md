@@ -1411,3 +1411,43 @@ Stage Summary:
 - ✅ Desktop layout: unchanged (no visual regressions).
 - ✅ Browser-verified: mobile layout is clean, readable, and thumb-friendly.
 - The app is now fully mobile-responsive — citizens can use it on their phones in the field, with a bottom tab bar for navigation, condensed header, and content that doesn't overflow or truncate.
+
+---
+Task ID: 55
+Agent: orchestrator
+Task: Feed Item Detail Dialog with Comments + Actions
+
+Work Log:
+- Identified gap (via VLM analysis): feed cards were read-only with no detail view, no action buttons (Verify, Share, Flag), and no way to view or add comments. Clicking a feed card navigated away instead of showing details.
+- Built FeedItemDetail component (src/components/gdt/FeedItemDetail.tsx, ~360 lines): Dialog-based detail view that opens when a feed card is clicked. Features:
+  - Header: creator avatar (color-coded by type), creator name, role, type badge, organization, time-ago, title
+  - Body: summary + full body (if present) in a bordered card
+  - Meta row: region (MapPin), trust score (Shield teal), confidence (TrendingUp, color-coded), views (Eye), likes (ThumbsUp), comments (MessageCircle)
+  - Action buttons: Like (toggles to "Liked" emerald, POST /api/feed/engage), Comment (focuses textarea), Share (copies link to clipboard), Verify (navigates to Community view), Flag (toast notification)
+  - Comments section: comment input (textarea + send button, ⌘+Enter shortcut), comment list with avatar/userName/time-ago/content, "No comments yet" empty state
+  - Footer: feed item ID (font-mono) + Flag button
+  - Loading state: spinner while fetching from /api/feed/[id]
+- Added getFeedItem function to feed engine (fetches single item, increments view count)
+- Added listComments function to feed engine (fetches comments from FeedEngagement table)
+- Created API route /api/feed/[id] (GET: returns feed item + comments)
+- Added selectedFeedItemId/setSelectedFeedItemId to Zustand store (global state so any component can open the detail)
+- Wired GlobalFeedItemDetail into Shell (global overlay alongside CommandPalette + GlobalReportModal)
+- Made feed cards clickable in FeedView (onClick opens detail, like button has stopPropagation)
+- Made feed cards clickable in HomeView Intelligence Pulse (onClick opens detail instead of navigating to feed)
+- Browser-verified via Agent Browser:
+  - Click feed card → dialog opens with title "Test: Suspicious excavators near Pra River" ✅
+  - Feed ID "FI-MSHLVMQG-BAR" visible in footer ✅
+  - Like button works (changes to "Liked", POST /api/feed/engage returns 200) ✅
+  - Comment submitted successfully ("Great report! This needs verification.") ✅
+  - 0 console errors ✅
+  - VLM-confirmed: header, body, metadata, action buttons (Like/Comment/Share/Verify), comment section all visible ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ FeedItemDetail dialog: full content view with engagement and actions
+- ✅ Comments: view + post (via /api/feed/engage with type="comment")
+- ✅ Actions: Like (toggle), Comment (focus), Share (copy link), Verify (navigate to Community), Flag (toast)
+- ✅ API: GET /api/feed/[id] returns item + comments, increments view count
+- ✅ Global state: selectedFeedItemId in store, triggered from FeedView and HomeView
+- ✅ Browser-verified: dialog opens, like works, comment posts, 0 errors
+- Feed items are now fully interactive: users can click any feed card to see full details, like, comment, share, verify, or flag. This closes the engagement loop — users can now interact with intelligence, not just consume it.

@@ -90,6 +90,10 @@ interface GDTState {
   reportOpen: boolean;
   setReportOpen: (open: boolean) => void;
 
+  // feed item detail — global so any feed card can open it
+  selectedFeedItemId: string | null;
+  setSelectedFeedItemId: (id: string | null) => void;
+
   // search
   search: string;
   setSearch: (s: string) => void;
@@ -171,6 +175,9 @@ export const useGDT = create<GDTState>((set) => ({
 
   reportOpen: false,
   setReportOpen: (reportOpen) => set({ reportOpen }),
+
+  selectedFeedItemId: null,
+  setSelectedFeedItemId: (selectedFeedItemId) => set({ selectedFeedItemId }),
 
   search: "",
   setSearch: (search) => set({ search }),

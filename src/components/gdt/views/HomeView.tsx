@@ -31,6 +31,7 @@ export function HomeView() {
   const { data: session } = useSession();
   const setView = useGDT((s) => s.setView);
   const setReportOpen = useGDT((s) => s.setReportOpen);
+  const setSelectedFeedItemId = useGDT((s) => s.setSelectedFeedItemId);
   const [identity, setIdentity] = useState<any>(null);
   const [feedItems, setFeedItems] = useState<any[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
@@ -115,7 +116,7 @@ export function HomeView() {
               const meta = FEED_TYPE_META[item.type] ?? FEED_TYPE_META.REPORT;
               const Icon = meta.icon;
               return (
-                <div key={item.feedItemId} onClick={() => setView("feed")} className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3 hover:bg-accent/30 transition-colors cursor-pointer">
+                <div key={item.feedItemId} onClick={() => setSelectedFeedItemId(item.feedItemId)} className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3 hover:bg-accent/30 transition-colors cursor-pointer">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg" style={{ color: meta.color, background: `${meta.color}15` }}>
                     <Icon className="size-4" />
                   </div>
