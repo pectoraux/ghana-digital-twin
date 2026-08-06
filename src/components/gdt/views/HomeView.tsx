@@ -113,7 +113,7 @@ export function HomeView() {
               const meta = FEED_TYPE_META[item.type] ?? FEED_TYPE_META.REPORT;
               const Icon = meta.icon;
               return (
-                <div key={item.feedItemId} className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3 hover:bg-accent/30 transition-colors cursor-pointer">
+                <div key={item.feedItemId} onClick={() => setView("feed")} className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3 hover:bg-accent/30 transition-colors cursor-pointer">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg" style={{ color: meta.color, background: `${meta.color}15` }}>
                     <Icon className="size-4" />
                   </div>
@@ -147,7 +147,7 @@ export function HomeView() {
             </div>
             <div className="space-y-3">
               {missions.map((m) => (
-                <div key={m.id} className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3">
+                <div key={m.id} onClick={() => setView("missions")} className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3 hover:bg-accent/30 transition-colors cursor-pointer">
                   <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-cyan-500/15 text-cyan-500">
                     <Target className="size-4" />
                   </div>

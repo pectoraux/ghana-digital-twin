@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
 import {
@@ -31,10 +32,12 @@ const STATUS_META: Record<string, { color: string; label: string }> = {
 };
 
 export function CommunityConsumerView() {
+  const { data: session } = useSession();
   const [events, setEvents] = useState<any[]>([]);
   const [citizens, setCitizens] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"events" | "citizens">("events");
+  const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(() => {
     Promise.all([
@@ -47,6 +50,22 @@ export function CommunityConsumerView() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const handleWitness = async (eventId: string, response: string) => {
+    setBusy(`${eventId}-${response}`);
+    try {
+      const userId = (session?.user as any)?.id;
+      // Use the first citizen as the witness for demo purposes
+      const citizens = await api("/api/community/citizens?limit=1").catch(() => ({ citizens: [] }));
+      const witnessId = citizens.citizens?.[0]?.citizenId ?? "cit-demo";
+      await fetch(`/api/community/events/${eventId}/witness`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ witnessId, response, note: `Witness response: ${response}` }),
+      });
+      load();
+    } finally { setBusy(null); }
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -106,14 +125,17 @@ export function CommunityConsumerView() {
                   </div>
                   {ev.status === "witnessing" && (
                     <div className="flex items-center gap-2 mt-3">
-                      <button className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-[14px] font-medium text-emerald-500 hover:bg-emerald-500/15 transition-colors">
-                        <ThumbsUp className="size-4" /> Confirm
+                      <button onClick={() => handleWitness(ev.eventId, "confirm")} disabled={!!busy}
+                        className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-[14px] font-medium text-emerald-500 hover:bg-emerald-500/15 transition-colors disabled:opacity-50">
+                        {busy === `${ev.eventId}-confirm` ? <Loader2 className="size-4 animate-spin" /> : <ThumbsUp className="size-4" />} Confirm
                       </button>
-                      <button className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-[14px] font-medium text-rose-500 hover:bg-rose-500/15 transition-colors">
-                        <ThumbsDown className="size-4" /> Reject
+                      <button onClick={() => handleWitness(ev.eventId, "reject")} disabled={!!busy}
+                        className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-[14px] font-medium text-rose-500 hover:bg-rose-500/15 transition-colors disabled:opacity-50">
+                        {busy === `${ev.eventId}-reject` ? <Loader2 className="size-4 animate-spin" /> : <ThumbsDown className="size-4" />} Reject
                       </button>
-                      <button className="flex items-center gap-1.5 rounded-lg border border-border bg-card/30 px-3 py-1.5 text-[14px] text-muted-foreground hover:bg-card/50 transition-colors">
-                        <HelpCircle className="size-4" /> Can't verify
+                      <button onClick={() => handleWitness(ev.eventId, "unknown")} disabled={!!busy}
+                        className="flex items-center gap-1.5 rounded-lg border border-border bg-card/30 px-3 py-1.5 text-[14px] text-muted-foreground hover:bg-card/50 transition-colors disabled:opacity-50">
+                        {busy === `${ev.eventId}-unknown` ? <Loader2 className="size-4 animate-spin" /> : <HelpCircle className="size-4" />} Can't verify
                       </button>
                     </div>
                   )}
