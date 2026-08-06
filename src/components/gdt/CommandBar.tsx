@@ -74,62 +74,73 @@ export function CommandBar() {
   const activeCount = OBSERVATIONS.filter((o) => o.status === "active").length;
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card/40 px-3">
+    <header className="flex h-14 shrink-0 items-center gap-2 md:gap-3 border-b border-border bg-card/40 px-3 overflow-hidden">
       {/* Title */}
-      <div className="flex items-center gap-2.5 min-w-0">
+      <div className="flex items-center gap-2.5 min-w-0 shrink">
         <div className="flex flex-col leading-tight min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-semibold truncate">{meta.title}</h1>
-            <Badge variant="outline" className="h-4 px-1 text-[13px] font-mono text-muted-foreground border-border">
+            <Badge variant="outline" className="h-4 px-1 text-[13px] font-mono text-muted-foreground border-border shrink-0">
               v4.2.0
             </Badge>
           </div>
-          <span className="text-[15px] text-muted-foreground truncate">{meta.sub}</span>
+          <span className="text-[15px] text-muted-foreground truncate hidden sm:block">{meta.sub}</span>
         </div>
       </div>
+
+      {/* Mobile search trigger — opens command palette */}
+      <button
+        onClick={() => setPaletteOpen(true)}
+        aria-label="Search"
+        className="ml-auto flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background/60 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-background lg:hidden"
+      >
+        <Search className="size-4" />
+      </button>
 
       {/* Search */}
       <button
         onClick={() => setPaletteOpen(true)}
-        className="group ml-2 flex h-9 w-[280px] items-center gap-2 rounded-lg border border-border bg-background/60 px-3 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-background"
+        className="group hidden lg:flex h-9 w-[280px] shrink-0 items-center gap-2 rounded-lg border border-border bg-background/60 px-3 text-muted-foreground transition-colors hover:border-primary/40 hover:bg-background"
       >
         <Search className="size-4" />
-        <span className="text-xs">Search entities, observations, regions…</span>
-        <kbd className="ml-auto text-[13px] font-mono border border-border rounded px-1 py-0.5">⌘K</kbd>
+        <span className="text-xs truncate">Search entities, observations, regions…</span>
+        <kbd className="ml-auto text-[13px] font-mono border border-border rounded px-1 py-0.5 shrink-0">⌘K</kbd>
       </button>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-2 min-w-0">
         {/* Active observations indicator */}
-        <div className="hidden lg:flex items-center gap-2 rounded-lg border border-border bg-background/40 px-2.5 h-9">
+        <div className="hidden lg:flex items-center gap-2 rounded-lg border border-border bg-background/40 px-2.5 h-9 shrink-0">
           <StatusDot color="#f43f5e" pulse />
           <span className="text-[15px] text-muted-foreground">Active</span>
           <span className="text-xs font-semibold tnum text-foreground">{activeCount}</span>
         </div>
 
         {/* Region filter */}
-        <Select
-          value={obsFilter.regionId}
-          onValueChange={(v) => setObsFilter({ regionId: v })}
-        >
-          <SelectTrigger className="h-9 w-[150px] bg-background/40 text-xs">
-            <SelectValue placeholder="All regions" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All regions</SelectItem>
-            {REGIONS.map((r) => (
-              <SelectItem key={r.id} value={r.id}>
-                {r.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="hidden md:flex shrink-0">
+          <Select
+            value={obsFilter.regionId}
+            onValueChange={(v) => setObsFilter({ regionId: v })}
+          >
+            <SelectTrigger className="h-9 w-[150px] bg-background/40 text-xs">
+              <SelectValue placeholder="All regions" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All regions</SelectItem>
+              {REGIONS.map((r) => (
+                <SelectItem key={r.id} value={r.id}>
+                  {r.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
         {/* Temporal mode */}
         <ToggleGroup
           type="single"
           value={temporalMode}
           onValueChange={(v) => v && setTemporalMode(v as "live" | "historical")}
-          className="h-9 rounded-lg border border-border bg-background/40 p-0.5"
+          className="hidden md:flex h-9 shrink-0 rounded-lg border border-border bg-background/40 p-0.5"
         >
           <ToggleGroupItem value="live" className="h-8 gap-1.5 px-2.5 text-xs data-[state=on]:bg-primary/15 data-[state=on]:text-primary">
             <Radio className="size-3.5" /> Live
@@ -143,12 +154,12 @@ export function CommandBar() {
         <NotificationCenter />
 
         {/* User */}
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-background/40 pl-1.5 pr-2.5 h-9">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-background/40 pl-1.5 pr-2.5 h-9 shrink-0">
           <div className="flex size-6 items-center justify-center rounded-md bg-primary/20 text-primary text-[14px] font-semibold">
             {initials}
           </div>
-          <div className="hidden xl:flex flex-col leading-tight">
-            <span className="text-[15px] font-medium">{userName}</span>
+          <div className="hidden xl:flex flex-col leading-tight min-w-0">
+            <span className="text-[15px] font-medium truncate">{userName}</span>
             <span className="text-[13px] text-muted-foreground flex items-center gap-1">
               <ShieldCheck className="size-2.5" /> {userRole.replace(/_/g, " ").toLowerCase()}
             </span>
@@ -156,7 +167,7 @@ export function CommandBar() {
         </div>
 
         {/* Logout */}
-        <Button variant="ghost" size="icon" className="size-9" onClick={() => signOut({ callbackUrl: "/login" })}>
+        <Button variant="ghost" size="icon" className="size-9 shrink-0" onClick={() => signOut({ callbackUrl: "/login" })}>
           <LogOut className="size-[18px]" />
         </Button>
       </div>

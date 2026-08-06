@@ -61,15 +61,15 @@ export function MissionsConsumerView() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-6 py-4">
-        <h1 className="text-[24px] font-bold flex items-center gap-2">
+      <div className="border-b border-border px-4 md:px-6 py-3 md:py-4">
+        <h1 className="text-[20px] md:text-[24px] font-bold flex items-center gap-2">
           <Target className="size-6 text-cyan-500" /> Missions
         </h1>
-        <p className="text-[15px] text-muted-foreground mt-1">Join intelligence missions and earn rewards</p>
+        <p className="text-[15px] text-muted-foreground mt-1 hidden sm:block">Join intelligence missions and earn rewards</p>
       </div>
 
       {/* Tab switcher */}
-      <div className="flex items-center gap-2 border-b border-border px-6 py-2">
+      <div className="flex items-center gap-2 border-b border-border px-4 md:px-6 py-2 overflow-x-auto">
         <button onClick={() => setTab("missions")}
           className={cn("rounded-full px-4 py-1.5 text-[14px] font-medium transition-colors",
             tab === "missions" ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground")}>
@@ -83,7 +83,7 @@ export function MissionsConsumerView() {
       </div>
 
       {/* Content */}
-      <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-4 space-y-3">
+      <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-4 space-y-3 md:space-y-4">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-6 animate-spin text-primary" /></div>}
 
         {/* Missions tab */}
@@ -106,7 +106,7 @@ export function MissionsConsumerView() {
                     <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-[13px]">{m.status}</span>
                   </div>
                   <p className="text-[15px] text-muted-foreground mt-1 leading-relaxed">{m.reasoning}</p>
-                  <div className="flex items-center gap-4 mt-3 text-[14px]">
+                  <div className="flex items-center gap-3 md:gap-4 mt-3 text-[14px] flex-wrap">
                     <span className="flex items-center gap-1 font-medium" style={{ color }}>
                       <Zap className="size-4" /> EVI {m.evi?.toFixed(2)}
                     </span>
@@ -147,7 +147,7 @@ export function MissionsConsumerView() {
                   </span>
                 </div>
                 <p className="text-[15px] text-muted-foreground mt-1 leading-relaxed">{b.description}</p>
-                <div className="flex items-center gap-4 mt-3 text-[14px]">
+                <div className="flex items-center gap-3 md:gap-4 mt-3 text-[14px] flex-wrap">
                   <span className="flex items-center gap-1 font-medium text-amber-500">
                     <DollarSign className="size-4" /> {b.rewardPerSubmission?.toLocaleString()} IC per submission
                   </span>

@@ -63,7 +63,7 @@ export function HomeView() {
 
   return (
     <div className="h-full overflow-y-auto gdt-scroll">
-      <div className="mx-auto max-w-4xl p-6 space-y-6">
+      <div className="mx-auto max-w-4xl p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Greeting */}
         <div>
           <h1 className="text-[28px] font-bold">{greeting}, {firstName}</h1>
@@ -75,7 +75,7 @@ export function HomeView() {
 
         {/* Reputation snapshot */}
         {rep && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <div className="rounded-xl border border-border bg-card p-4 shadow-card">
               <Shield className="size-5 text-teal-500 mb-2" />
               <div className="text-[32px] font-bold font-mono">{rep.trustScore.toFixed(0)}</div>
@@ -120,12 +120,12 @@ export function HomeView() {
                     <Icon className="size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[15px] font-medium truncate">{item.title}</span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[15px] font-medium truncate min-w-0">{item.title}</span>
                       <span className="text-[13px] text-muted-foreground shrink-0">{timeAgo(item.publishedAt)}</span>
                     </div>
-                    <p className="text-[14px] text-muted-foreground line-clamp-1 mt-0.5">{item.summary}</p>
-                    <div className="flex items-center gap-3 mt-1.5 text-[13px]">
+                    <p className="text-[14px] text-muted-foreground line-clamp-2 mt-0.5">{item.summary}</p>
+                    <div className="flex items-center gap-3 mt-1.5 text-[13px] flex-wrap">
                       <span className="text-muted-foreground">by {item.creatorName}</span>
                       {item.region && <span className="flex items-center gap-1 text-muted-foreground"><MapPin className="size-3" /> {item.region}</span>}
                       <span className="flex items-center gap-1 font-medium" style={{ color: meta.color }}>
@@ -155,9 +155,9 @@ export function HomeView() {
                     <Target className="size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[15px] font-medium">{m.title}</div>
-                    <p className="text-[14px] text-muted-foreground line-clamp-1">{m.reasoning}</p>
-                    <div className="flex items-center gap-3 mt-1 text-[13px]">
+                    <div className="text-[15px] font-medium truncate">{m.title}</div>
+                    <p className="text-[14px] text-muted-foreground line-clamp-2">{m.reasoning}</p>
+                    <div className="flex items-center gap-3 mt-1 text-[13px] flex-wrap">
                       <span className="flex items-center gap-1 text-amber-500"><Zap className="size-3" /> EVI {m.evi?.toFixed(2)}</span>
                       <span className="text-muted-foreground">{m.priority}</span>
                       <span className="text-muted-foreground">{m.status}</span>
@@ -170,7 +170,7 @@ export function HomeView() {
         )}
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           <button onClick={() => setReportOpen(true)} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary"><Zap className="size-5" /></div>
             <span className="text-[14px] font-medium">Report Event</span>

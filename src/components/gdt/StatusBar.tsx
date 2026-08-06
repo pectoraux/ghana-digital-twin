@@ -30,7 +30,7 @@ export function StatusBar() {
   const latest = feed[0];
 
   return (
-    <footer className="flex h-7 shrink-0 items-center gap-4 border-t border-border bg-card/50 px-3 text-[14px] font-mono text-muted-foreground tnum">
+    <footer className="hidden md:flex h-7 shrink-0 items-center gap-4 border-t border-border bg-card/50 px-3 text-[14px] font-mono text-muted-foreground tnum">
       <span className="flex items-center gap-1.5">
         <StatusDot color="#34d399" pulse />
         <span className="text-foreground/80">WORLD MODEL NOMINAL</span>

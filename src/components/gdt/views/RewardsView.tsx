@@ -48,7 +48,7 @@ export function RewardsView() {
 
   return (
     <div className="h-full overflow-y-auto gdt-scroll">
-      <div className="mx-auto max-w-3xl p-6 space-y-6">
+      <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Header */}
         <div>
           <h1 className="text-[24px] font-bold flex items-center gap-2">
@@ -58,7 +58,7 @@ export function RewardsView() {
         </div>
 
         {/* Balance cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           <div className="rounded-xl border border-border bg-card p-5 shadow-card">
             <div className="flex items-center gap-2 mb-2">
               <Coins className="size-5 text-amber-500" />
@@ -87,7 +87,7 @@ export function RewardsView() {
 
         {/* Reputation progress */}
         {rep && (
-          <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-5 shadow-card">
             <h2 className="text-[20px] font-semibold mb-4">Reputation Progress</h2>
             <div className="space-y-4">
               <div>
@@ -123,9 +123,9 @@ export function RewardsView() {
 
         {/* Impact summary */}
         {rep && (
-          <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-5 shadow-card">
             <h2 className="text-[20px] font-semibold mb-4">Contribution Impact</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               <div className="rounded-lg border border-border/60 bg-background/40 p-4 text-center">
                 <Eye className="size-5 mx-auto mb-2 text-amber-500" />
                 <div className="text-[24px] font-bold font-mono">{rep.totalReports}</div>
@@ -152,7 +152,7 @@ export function RewardsView() {
 
         {/* Recent transactions */}
         {transactions.length > 0 && (
-          <div className="rounded-xl border border-border bg-card p-5 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-5 shadow-card">
             <h2 className="text-[20px] font-semibold mb-4">Recent Transactions</h2>
             <div className="space-y-2">
               {transactions.slice(0, 10).map((tx) => {
@@ -183,7 +183,7 @@ export function RewardsView() {
         )}
 
         {/* How rewards work */}
-        <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 md:p-5">
           <h2 className="text-[20px] font-semibold mb-3 flex items-center gap-2">
             <DollarSign className="size-5 text-primary" /> How Rewards Work
           </h2>

@@ -80,18 +80,18 @@ export function FeedView() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-4">
-        <div>
-          <h1 className="text-[24px] font-bold">Intelligence Feed</h1>
-          <p className="text-[15px] text-muted-foreground mt-1">Latest verified intelligence from across the network</p>
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 md:px-6 py-3 md:py-4">
+        <div className="min-w-0">
+          <h1 className="text-[20px] md:text-[24px] font-bold truncate">Intelligence Feed</h1>
+          <p className="text-[15px] text-muted-foreground mt-1 hidden sm:block">Latest verified intelligence from across the network</p>
         </div>
-        <Button onClick={() => setReportOpen(true)} className="flex items-center gap-1.5">
+        <Button onClick={() => setReportOpen(true)} className="flex items-center gap-1.5 shrink-0">
           <Plus className="size-4" /> New Report
         </Button>
       </div>
 
       {/* Search + Filters */}
-      <div className="border-b border-border px-6 py-3 space-y-3">
+      <div className="border-b border-border px-4 md:px-6 py-3 space-y-3">
         <div className="flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
           <Search className="size-4 text-muted-foreground" />
           <input
@@ -118,7 +118,7 @@ export function FeedView() {
       </div>
 
       {/* Feed items */}
-      <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-4 space-y-3">
+      <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-4 space-y-3 md:space-y-4">
         {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-6 animate-spin text-primary" /></div>}
 
         {filtered.map((item) => {
@@ -149,11 +149,11 @@ export function FeedView() {
                   </div>
 
                   {/* Title + summary */}
-                  <h3 className="text-[17px] font-semibold mt-2">{item.title}</h3>
-                  <p className="text-[15px] text-muted-foreground mt-1 leading-relaxed">{item.summary}</p>
+                  <h3 className="text-[16px] md:text-[17px] font-semibold mt-2">{item.title}</h3>
+                  <p className="text-[15px] text-muted-foreground mt-1 leading-relaxed line-clamp-3">{item.summary}</p>
 
                   {/* Meta row */}
-                  <div className="flex items-center gap-4 mt-3 text-[14px]">
+                  <div className="flex items-center gap-3 md:gap-4 mt-3 text-[14px] flex-wrap">
                     {item.region && (
                       <span className="flex items-center gap-1 text-muted-foreground">
                         <MapPin className="size-4" /> {item.region}

@@ -3,6 +3,7 @@
 import { useGDT } from "@/lib/gdt/store";
 import { CommandBar } from "./CommandBar";
 import { NavRail } from "./NavRail";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { Inspector } from "./Inspector";
 import { StatusBar } from "./StatusBar";
 import { CommandPalette } from "./CommandPalette";
@@ -100,6 +101,7 @@ export function Shell() {
         <Inspector />
       </div>
       <StatusBar />
+      <MobileBottomNav />
 
       {/* Global overlays */}
       <CommandPalette />

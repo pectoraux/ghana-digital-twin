@@ -38,9 +38,9 @@ export function ProfileView() {
 
   return (
     <div className="h-full overflow-y-auto gdt-scroll">
-      <div className="mx-auto max-w-3xl p-6 space-y-6">
+      <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
         {/* Identity Card */}
-        <div className="rounded-xl border border-border bg-card p-6 shadow-card text-center">
+        <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card text-center">
           <div className="mx-auto mb-3 flex size-20 items-center justify-center rounded-full bg-primary/15 border-2 border-primary/30">
             <span className="text-[28px] font-bold text-primary">{(user?.name ?? "?").charAt(0).toUpperCase()}</span>
           </div>
@@ -64,9 +64,9 @@ export function ProfileView() {
 
         {/* Reputation Scores */}
         {rep && (
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card">
             <h2 className="text-[20px] font-semibold mb-4">Reputation</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               <div className="text-center">
                 <Shield className="size-6 mx-auto mb-2 text-teal-500" />
                 <div className="text-[36px] font-bold font-mono text-teal-500">{rep.trustScore.toFixed(0)}</div>
@@ -93,9 +93,9 @@ export function ProfileView() {
 
         {/* Impact Stats */}
         {rep && (
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card">
             <h2 className="text-[20px] font-semibold mb-4">Your Impact</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               <div className="rounded-lg border border-border/60 bg-background/40 p-4">
                 <Eye className="size-5 text-amber-500 mb-2" />
                 <div className="text-[24px] font-bold font-mono">{rep.totalReports}</div>
@@ -122,7 +122,7 @@ export function ProfileView() {
 
         {/* About */}
         {profile?.bio && (
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card">
             <h2 className="text-[20px] font-semibold mb-3">About</h2>
             <p className="text-[15px] text-foreground/80 leading-relaxed">{profile.bio}</p>
             {profile.interests?.length > 0 && (
@@ -137,7 +137,7 @@ export function ProfileView() {
 
         {/* Skills */}
         {profile?.skills?.length > 0 && (
-          <div className="rounded-xl border border-border bg-card p-6 shadow-card">
+          <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card">
             <h2 className="text-[20px] font-semibold mb-3">Skills</h2>
             <div className="flex flex-wrap gap-2">
               {profile.skills.map((s: string) => (

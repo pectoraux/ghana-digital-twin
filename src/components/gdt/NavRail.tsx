@@ -96,7 +96,7 @@ export function NavRail() {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <nav className="flex w-[56px] shrink-0 flex-col items-center border-r border-border bg-sidebar/60 py-2">
+      <nav className="hidden md:flex w-[56px] shrink-0 flex-col items-center border-r border-border bg-sidebar/60 py-2">
         {/* Logo mark */}
         <div className="mb-3 flex size-9 items-center justify-center rounded-lg bg-primary/15 border border-primary/30 text-primary">
           <svg viewBox="0 0 24 24" className="size-5" fill="none">
