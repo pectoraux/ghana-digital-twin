@@ -28,6 +28,7 @@ import { EOView } from "./views/EOView";
 import { RasterIntelligenceView } from "./views/RasterIntelligenceView";
 import { CommandCenterView } from "./views/CommandCenterView";
 import { CommunityView } from "./views/CommunityView";
+import { CommunityConsumerView } from "./views/CommunityConsumerView";
 import { CivicTrustView } from "./views/CivicTrustView";
 import { MarketplaceView } from "./views/MarketplaceView";
 import { FinanceView } from "./views/FinanceView";
@@ -79,7 +80,7 @@ export function Shell() {
               {view === "eo" && <EOView />}
               {view === "raster" && <RasterIntelligenceView />}
               {view === "command" && <CommandCenterView />}
-              {view === "community" && <CommunityView />}
+              {view === "community" && <CommunityConsumerView />}
               {view === "civic-trust" && <CivicTrustView />}
               {view === "marketplace" && <MarketplaceView />}
               {view === "finance" && <FinanceView />}

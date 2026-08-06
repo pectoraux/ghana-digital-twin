@@ -41,7 +41,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   raster: { title: "Raster Intelligence", sub: "Anomaly maps, baselines & uncertainty" },
   sources: { title: "Data Sources", sub: "Ingestion pipeline & connectors" },
   command: { title: "Command Center", sub: "National intelligence command: incidents, workflows, decisions, evidence rooms" },
-  community: { title: "Community Intelligence", sub: "Citizen intelligence network: events, witnesses, civic scores, rewards" },
+  community: { title: "Community", sub: "Citizen intelligence network — reports, witnesses, and reputation" },
   "civic-trust": { title: "Civic Trust Graph", sub: "Trust propagation, Sybil resistance, identity vouching" },
   marketplace: { title: "Intelligence Marketplace", sub: "Requests, assets, bounties, value attribution" },
   finance: { title: "Intelligence Finance", sub: "Credits, licensing, royalties, agent economy, insurance" },
