@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGDT } from "@/lib/gdt/store";
 import { ENTITIES } from "@/lib/gdt/entities";
 import { OBSERVATIONS } from "@/lib/gdt/observations";
@@ -28,6 +28,8 @@ import {
   Radio,
   RadioTower,
   Users,
+  User,
+  Target,
   Network,
   Store,
   Coins,
@@ -72,10 +74,55 @@ export function CommandPalette() {
   const setPaletteOpen = useGDT((s) => s.setPaletteOpen);
   const setView = useGDT((s) => s.setView);
   const setReportOpen = useGDT((s) => s.setReportOpen);
+  const setSelectedFeedItemId = useGDT((s) => s.setSelectedFeedItemId);
   const selectEntity = useGDT((s) => s.selectEntity);
   const selectObservation = useGDT((s) => s.selectObservation);
   const temporalMode = useGDT((s) => s.temporalMode);
   const setTemporalMode = useGDT((s) => s.setTemporalMode);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  // Debounced search — fetch when query changes, update results in callback
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) {
+      // Use a microtask to avoid synchronous setState in effect
+      Promise.resolve().then(() => setSearchResults(null));
+      return;
+    }
+    let cancelled = false;
+    setSearchLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          setSearchResults(data.results);
+        }
+      } catch {
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [searchQuery]);
+
+  const hasResults = searchResults && (
+    (searchResults.feed?.length ?? 0) > 0 ||
+    (searchResults.events?.length ?? 0) > 0 ||
+    (searchResults.citizens?.length ?? 0) > 0 ||
+    (searchResults.missions?.length ?? 0) > 0
+  );
+
+  const handleResultClick = (result: any) => {
+    if (result.kind === "feed") {
+      setSelectedFeedItemId(result.actionId);
+    } else if (result.actionView) {
+      setView(result.actionView);
+    }
+    setPaletteOpen(false);
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -91,11 +138,90 @@ export function CommandPalette() {
 
   return (
     <CommandDialog open={paletteOpen} onOpenChange={setPaletteOpen} className="max-w-[560px]">
-      <CommandInput placeholder="Search entities, observations, regions, or jump to…" />
+      <CommandInput placeholder="Search reports, events, citizens, missions, or jump to…" value={searchQuery} onValueChange={setSearchQuery} />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
 
-        <CommandGroup heading="Quick Actions">
+        {/* Dynamic search results — shown when user types 2+ chars */}
+        {hasResults && (
+          <>
+            {searchResults.feed?.length > 0 && (
+              <CommandGroup heading="Intelligence Feed">
+                {searchResults.feed.map((r: any) => (
+                  <CommandItem
+                    key={`feed-${r.id}`}
+                    value={`${r.title} ${r.meta}`}
+                    onSelect={() => handleResultClick(r)}
+                  >
+                    <Eye className="size-4 shrink-0 text-amber-500" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] font-medium">{r.title}</div>
+                      <div className="truncate text-[12px] text-muted-foreground">{r.meta}</div>
+                    </div>
+                    <span className="ml-auto shrink-0 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-medium text-amber-500">{r.type}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            {searchResults.events?.length > 0 && (
+              <CommandGroup heading="Community Events">
+                {searchResults.events.map((r: any) => (
+                  <CommandItem
+                    key={`event-${r.id}`}
+                    value={`${r.title} ${r.meta}`}
+                    onSelect={() => handleResultClick(r)}
+                  >
+                    <Users className="size-4 shrink-0 text-rose-500" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] font-medium">{r.title}</div>
+                      <div className="truncate text-[12px] text-muted-foreground">{r.meta}</div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            {searchResults.citizens?.length > 0 && (
+              <CommandGroup heading="Citizens">
+                {searchResults.citizens.map((r: any) => (
+                  <CommandItem
+                    key={`citizen-${r.id}`}
+                    value={`${r.title} ${r.meta}`}
+                    onSelect={() => handleResultClick(r)}
+                  >
+                    <User className="size-4 shrink-0 text-emerald-500" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] font-medium">{r.title}</div>
+                      <div className="truncate text-[12px] text-muted-foreground">{r.meta}</div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            {searchResults.missions?.length > 0 && (
+              <CommandGroup heading="Missions">
+                {searchResults.missions.map((r: any) => (
+                  <CommandItem
+                    key={`mission-${r.id}`}
+                    value={`${r.title} ${r.meta}`}
+                    onSelect={() => handleResultClick(r)}
+                  >
+                    <Target className="size-4 shrink-0 text-cyan-500" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] font-medium">{r.title}</div>
+                      <div className="truncate text-[12px] text-muted-foreground">{r.meta}</div>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+            <CommandSeparator />
+          </>
+        )}
+
+        {/* Static nav — hidden when search has results to reduce clutter */}
+        {!hasResults && (
+          <>
+          <CommandGroup heading="Quick Actions">
           <CommandItem
             value="report event new create submit intelligence"
             onSelect={() => {
@@ -216,6 +342,8 @@ export function CommandPalette() {
             </CommandItem>
           ))}
         </CommandGroup>
+        </>
+        )}
       </CommandList>
     </CommandDialog>
   );
