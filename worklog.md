@@ -1649,3 +1649,34 @@ Stage Summary:
 - ✅ MissionDetail dialog: full mission brief, stats grid, participants list, join button with toast + optimistic update.
 - ✅ Browser-verified: click card → see details → join → participant count updates. VLM-confirmed. 0 errors.
 - Missions are now interactive: users can see full mission details (EVI, info gain, cost, location, coverage), see who else is participating, and join missions to contribute. The flywheel is complete: observe → report → verify → reward → withdraw, AND join missions for structured intelligence gathering.
+
+---
+Task ID: 60
+Agent: orchestrator
+Task: Community Event Detail Dialog with witness verification
+
+Work Log:
+- Identified gap: community event cards had Confirm/Reject/Can't Verify buttons inline, but clicking a card did nothing — no way to see full event details, witness responses, or evidence. The inline witness buttons worked but there was no detail view.
+- Built CommunityEventDetail component (src/components/gdt/CommunityEventDetail.tsx, ~220 lines): Dialog with:
+  - Header: event ID (font-mono), type badge (color-coded), status badge, time-ago, title
+  - Body: full description, meta row (region, confidence, witness count, confirm/reject counts)
+  - Witness actions (only shown if status is "witnessing"): Confirm (emerald), Reject (rose), Can't verify (muted) buttons with loading states and toast notifications
+  - Witness responses section: scrollable list with response type icon (confirmed=reerald CheckCircle2, rejected=rose XCircle, unknown=gray HelpCircle), witness name, response label, time-ago, note
+  - Footer: reported time-ago + event ID
+  - Loads event + witnesses from GET /api/community/events/[id] (already existed)
+  - On witness action: POST to /api/community/events/[id]/witness, toast success, refreshes event + witnesses
+- Wired into CommunityConsumerView: event cards now clickable (onClick opens detail), witness buttons have stopPropagation to prevent opening detail when clicking Confirm/Reject inline.
+- Browser-verified via Agent Browser:
+  - 8 events loaded including "Volta Basin rising rapidly..." ✅
+  - Click event card → detail dialog opens with title "Volta Basin rising rapidly downstream of Akosombo" ✅
+  - Has Witness section, Confirm button, confidence display ✅
+  - Click Confirm → POST returns success, witness response appears (witnessCount=1, hasConfirmed=true) ✅
+  - VLM-confirmed: description, metadata, witness responses section all visible ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ CommunityEventDetail dialog: full event details, witness actions (Confirm/Reject/Can't verify), witness response history.
+- ✅ Event cards clickable in CommunityConsumerView, inline witness buttons have stopPropagation.
+- ✅ Browser-verified: click card → see details + witnesses → confirm → witness response appears. VLM-confirmed. 0 errors.
+- Community events are now fully interactive: users can see full event details, review witness responses, and submit their own verification — all from a clean detail dialog. The citizen verification loop is complete: report → broadcast → WITNESS → fuse → resolve.

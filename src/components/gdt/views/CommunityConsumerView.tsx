@@ -8,6 +8,7 @@ import {
   Loader2, Users, MapPin, Shield, Award, CheckCircle2,
   ThumbsUp, ThumbsDown, HelpCircle, Eye, TrendingUp, Zap,
 } from "lucide-react";
+import { CommunityEventDetail } from "@/components/gdt/CommunityEventDetail";
 
 async function api(path: string) {
   const res = await fetch(path);
@@ -38,6 +39,7 @@ export function CommunityConsumerView() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"events" | "citizens">("events");
   const [busy, setBusy] = useState<string | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     Promise.all([
@@ -100,7 +102,7 @@ export function CommunityConsumerView() {
           const meta = EVENT_TYPE_META[ev.type] ?? EVENT_TYPE_META.other;
           const smeta = STATUS_META[ev.status] ?? STATUS_META.created;
           return (
-            <div key={ev.eventId} className="rounded-xl border border-border bg-card p-4 shadow-card">
+            <div key={ev.eventId} onClick={() => setSelectedEventId(ev.eventId)} className="rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/30 transition-colors cursor-pointer">
               <div className="flex items-start gap-3">
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-lg text-[18px]" style={{ color: meta.color, background: `${meta.color}15` }}>
                   {meta.icon}
@@ -125,15 +127,15 @@ export function CommunityConsumerView() {
                   </div>
                   {ev.status === "witnessing" && (
                     <div className="flex items-center gap-2 mt-3">
-                      <button onClick={() => handleWitness(ev.eventId, "confirm")} disabled={!!busy}
+                      <button onClick={(e) => { e.stopPropagation(); handleWitness(ev.eventId, "confirm"); }} disabled={!!busy}
                         className="flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-[14px] font-medium text-emerald-500 hover:bg-emerald-500/15 transition-colors disabled:opacity-50">
                         {busy === `${ev.eventId}-confirm` ? <Loader2 className="size-4 animate-spin" /> : <ThumbsUp className="size-4" />} Confirm
                       </button>
-                      <button onClick={() => handleWitness(ev.eventId, "reject")} disabled={!!busy}
+                      <button onClick={(e) => { e.stopPropagation(); handleWitness(ev.eventId, "reject"); }} disabled={!!busy}
                         className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-[14px] font-medium text-rose-500 hover:bg-rose-500/15 transition-colors disabled:opacity-50">
                         {busy === `${ev.eventId}-reject` ? <Loader2 className="size-4 animate-spin" /> : <ThumbsDown className="size-4" />} Reject
                       </button>
-                      <button onClick={() => handleWitness(ev.eventId, "unknown")} disabled={!!busy}
+                      <button onClick={(e) => { e.stopPropagation(); handleWitness(ev.eventId, "unknown"); }} disabled={!!busy}
                         className="flex items-center gap-1.5 rounded-lg border border-border bg-card/30 px-3 py-1.5 text-[14px] text-muted-foreground hover:bg-card/50 transition-colors disabled:opacity-50">
                         {busy === `${ev.eventId}-unknown` ? <Loader2 className="size-4 animate-spin" /> : <HelpCircle className="size-4" />} Can't verify
                       </button>
@@ -185,6 +187,12 @@ export function CommunityConsumerView() {
           </div>
         )}
       </div>
+
+      {/* Community Event Detail Dialog */}
+      <CommunityEventDetail
+        eventId={selectedEventId}
+        onOpenChange={(open) => { if (!open) setSelectedEventId(null); }}
+      />
     </div>
   );
 }
