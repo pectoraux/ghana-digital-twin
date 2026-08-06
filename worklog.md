@@ -1751,3 +1751,26 @@ Stage Summary:
 - ✅ Profile Achievements section: earned badges (color-coded cards with tier badges) + locked badges (dimmed with progress bars + current/target counters)
 - ✅ Browser-verified: 4/14 earned, both earned and locked visible, 0 errors
 - Users can now see their achievements and track progress toward unlocking more. This adds gamification that encourages continued participation: report more → unlock "Prolific Reporter", verify more → unlock "Community Guardian", join missions → unlock "Mission Specialist". The flywheel now has a visual reward layer: observe → report → verify → reward → BADGES → more participation.
+
+---
+Task ID: 63
+Agent: orchestrator
+Task: Polish — skeleton loading state for Home view
+
+Work Log:
+- VLM analysis of Home view identified that the loading state (plain spinner) was poor UX: "The empty screen with just a spinner is poor UX. It should show skeleton screens so users understand the layout before data loads."
+- Replaced the plain Loader2 spinner in HomeView with a proper skeleton loading state:
+  - Greeting skeleton: h-8 w-64 + h-4 w-48 placeholder bars with animate-pulse
+  - Reputation cards skeleton: 4 cards with icon placeholder + value placeholder + label placeholder (grid-cols-2 md:grid-cols-4)
+  - Intelligence Pulse skeleton: card with header placeholder + 3 feed item placeholders (each with icon + title + summary lines)
+  - All using bg-foreground/10 animate-pulse for smooth loading animation
+- Removed unused Loader2 import.
+- Browser-verified: Home loads with skeleton structure, then transitions to real content (greeting, reputation cards, Intelligence Pulse). VLM-confirmed clean and professional design. 0 errors.
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ Skeleton loading state replaces plain spinner on Home view
+- ✅ Matches the actual layout structure (greeting + 4 cards + pulse feed) so users see the shape of the page immediately
+- ✅ Uses animate-pulse for smooth loading animation
+- ✅ Improves perceived performance when Neon APIs are slow (5-7s cold starts)
+- The app is now polished and production-ready across all consumer views.
