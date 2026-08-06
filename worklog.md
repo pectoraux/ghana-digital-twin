@@ -1715,3 +1715,39 @@ Stage Summary:
 - ✅ Profile "My Activity" section: scrollable timeline with color-coded icons, action labels, titles, metadata, time-ago, clickable navigation
 - ✅ Browser-verified: real activity data visible (published reports + witness confirmations), time-ago labels working, 0 errors
 - Users can now see their full contribution history on their profile — every report filed, comment made, mission joined, and witness verification, all in one unified timeline. This gives users a clear sense of their impact over time and ties together all their actions across the platform.
+
+---
+Task ID: 62
+Agent: orchestrator
+Task: Achievements & Badges — gamification on Profile
+
+Work Log:
+- Identified opportunity: the app is feature-complete but lacks gamification. Users have no visual incentive to keep contributing. An achievements/badges system would encourage more participation.
+- Built achievements API (/api/achievements?userId=...): computes 14 badges across 4 tiers (bronze/silver/gold/platinum) from user stats:
+  - Reporting: First Report (bronze), Prolific Reporter (silver, 10 reports), Intelligence Engine (gold, 50 reports)
+  - Verification: First Verification (bronze), Community Guardian (gold, 25 witnesses), Eagle Eye (platinum, 100 witnesses)
+  - Missions: Mission Rookie (bronze), Mission Specialist (silver, 5 missions)
+  - Engagement: Conversation Starter (bronze, 1 comment), Community Voice (silver, 25 comments)
+  - Trust: Trusted Citizen (silver, 60 trust), Civic Leader (gold, 80 trust)
+  - Earnings: First Earnings (bronze), Intelligence Mogul (platinum, 10K IC)
+  - Each badge has: id, name, description, icon, color, tier, check function, progress function (current/target)
+  - Gathers stats in parallel: feedItem count, comment count, mission participation count, witness response count, reputation scores, wallet totalEarned
+  - Returns: earned badges (sorted by tier rank desc), locked badges (sorted by tier asc, with progress), stats, earnedCount, totalBadges
+- Added "Achievements" section to ProfileView between Impact and About:
+  - Header with Award icon + "Achievements" title + earned/total count (e.g. "4 / 14")
+  - Earned badges: color-coded cards with icon, name, description, tier badge (top-right). Grid: grid-cols-2 md:grid-cols-3
+  - Locked badges (up to 6 shown): dimmed cards (opacity-70) with Lock icon, name, description, progress bar (h-1.5 with color fill), current/target counter. Grid: grid-cols-2 md:grid-cols-3
+  - badgeIcon helper function maps icon names to Lucide components
+- Browser-verified via Agent Browser:
+  - Profile view loads with "Achievements" section ✅
+  - 4 of 14 badges earned ✅
+  - Has earned badges (bronze/silver/gold tiers visible) ✅
+  - Has locked badges with progress bars ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ Achievements API: 14 badges across 4 tiers (bronze/silver/gold/platinum), computed from real user stats
+- ✅ Profile Achievements section: earned badges (color-coded cards with tier badges) + locked badges (dimmed with progress bars + current/target counters)
+- ✅ Browser-verified: 4/14 earned, both earned and locked visible, 0 errors
+- Users can now see their achievements and track progress toward unlocking more. This adds gamification that encourages continued participation: report more → unlock "Prolific Reporter", verify more → unlock "Community Guardian", join missions → unlock "Mission Specialist". The flywheel now has a visual reward layer: observe → report → verify → reward → BADGES → more participation.

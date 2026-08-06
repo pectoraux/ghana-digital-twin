@@ -11,7 +11,17 @@ import {
   Loader2, MapPin, Shield, Award, Eye, CheckCircle2, Target,
   Package, Building2, Zap, TrendingUp, DollarSign, Brain,
   Pencil, FileText, MessageCircle, XCircle, HelpCircle, Activity,
+  ShieldCheck, Crosshair, Coins, Lock,
 } from "lucide-react";
+
+const BADGE_ICONS: Record<string, React.ElementType> = {
+  FileText, CheckCircle2, ShieldCheck, Eye, Target, Crosshair,
+  MessageCircle, Shield, Award, Coins, DollarSign, Zap,
+};
+
+function badgeIcon(iconName: string): React.ElementType {
+  return BADGE_ICONS[iconName] ?? Award;
+}
 
 async function api(path: string) {
   const res = await fetch(path);
@@ -23,6 +33,7 @@ export function ProfileView() {
   const { data: session } = useSession();
   const [identity, setIdentity] = useState<any>(null);
   const [activities, setActivities] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const setView = useGDT((s) => s.setView);
@@ -34,9 +45,11 @@ export function ProfileView() {
     Promise.all([
       api(`/api/identity?userId=${userId}`),
       api(`/api/activity?userId=${userId}&limit=15`).catch(() => ({ activities: [] })),
-    ]).then(([idRes, actRes]) => {
+      api(`/api/achievements?userId=${userId}`).catch(() => ({ earned: [], locked: [], earnedCount: 0, totalBadges: 0 })),
+    ]).then(([idRes, actRes, achRes]) => {
       setIdentity(idRes.identity);
       setActivities(actRes.activities || []);
+      setAchievements(achRes);
     }).catch(() => setIdentity({})).finally(() => setLoading(false));
   };
 
@@ -144,6 +157,69 @@ export function ProfileView() {
                 <div className="text-[14px] text-muted-foreground">Missions Joined</div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Achievements */}
+        {achievements && (
+          <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[20px] font-semibold flex items-center gap-2">
+                <Award className="size-5 text-amber-500" /> Achievements
+              </h2>
+              <span className="text-[14px] text-muted-foreground font-mono">
+                {achievements.earnedCount ?? 0} / {achievements.totalBadges ?? 0}
+              </span>
+            </div>
+            {/* Earned badges */}
+            {(achievements.earned ?? []).length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3">
+                {(achievements.earned ?? []).map((b: any) => {
+                  const Icon = badgeIcon(b.icon);
+                  return (
+                    <div key={b.id} className="rounded-lg border p-3 text-center relative" style={{ borderColor: `${b.color}40`, background: `${b.color}08` }}>
+                      <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-full" style={{ color: b.color, background: `${b.color}15` }}>
+                        <Icon className="size-5" />
+                      </div>
+                      <div className="text-[14px] font-medium">{b.name}</div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5 line-clamp-2">{b.description}</div>
+                      <span className="absolute top-1.5 right-1.5 text-[10px] font-bold uppercase tracking-wide" style={{ color: b.color }}>
+                        {b.tier}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {/* Locked badges */}
+            {(achievements.locked ?? []).length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {(achievements.locked ?? []).slice(0, 6).map((b: any) => {
+                  const Icon = badgeIcon(b.icon);
+                  const progress = b.progress;
+                  const pct = progress ? Math.round((progress.current / progress.target) * 100) : 0;
+                  return (
+                    <div key={b.id} className="rounded-lg border border-border bg-card/50 p-3 text-center relative opacity-70">
+                      <div className="mx-auto mb-2 flex size-10 items-center justify-center rounded-full bg-foreground/5 text-muted-foreground">
+                        <Lock className="size-4" />
+                      </div>
+                      <div className="text-[14px] font-medium text-muted-foreground">{b.name}</div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5 line-clamp-2">{b.description}</div>
+                      {progress && (
+                        <div className="mt-2">
+                          <div className="h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+                            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: b.color }} />
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-1 font-mono">
+                            {progress.current} / {progress.target}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
