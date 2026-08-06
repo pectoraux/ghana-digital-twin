@@ -104,6 +104,7 @@ export function HomeView() {
             <Activity className="size-5 text-primary" />
             <h2 className="text-[20px] font-semibold">Intelligence Pulse</h2>
             <span className="ml-auto text-[13px] text-muted-foreground">{feedItems.length} new events</span>
+            <button onClick={() => setView("feed")} className="text-[14px] font-medium text-primary hover:underline">View All →</button>
           </div>
           <div className="space-y-3">
             {feedItems.length === 0 && (
@@ -144,6 +145,7 @@ export function HomeView() {
             <div className="flex items-center gap-2 mb-4">
               <Target className="size-5 text-cyan-500" />
               <h2 className="text-[20px] font-semibold">Active Missions</h2>
+              <button onClick={() => setView("missions")} className="ml-auto text-[14px] font-medium text-primary hover:underline">View All →</button>
             </div>
             <div className="space-y-3">
               {missions.map((m) => (

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
 import {
   Loader2, MapPin, Shield, TrendingUp, Eye, CheckCircle2,
   AlertTriangle, Target, Users, Zap, Package, ChevronRight,
-  Building2, Search,
+  Building2, Search, ThumbsUp,
 } from "lucide-react";
 
 const FEED_TYPE_META: Record<string, { color: string; icon: React.ElementType; label: string }> = {
@@ -36,10 +37,13 @@ async function api(path: string) {
 }
 
 export function FeedView() {
+  const { data: session } = useSession();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
+  const [liked, setLiked] = useState<Set<string>>(new Set());
+  const [busy, setBusy] = useState<string | null>(null);
 
   const load = useCallback(() => {
     const sp = new URLSearchParams();
@@ -49,6 +53,22 @@ export function FeedView() {
   }, [filter]);
 
   useEffect(() => { load(); }, [load]);
+
+  const handleLike = async (feedItemId: string) => {
+    if (liked.has(feedItemId)) return;
+    setBusy(feedItemId);
+    try {
+      const userId = (session?.user as any)?.id ?? "demo-user";
+      const userName = session?.user?.name ?? "Demo User";
+      await fetch("/api/feed/engage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ feedItemId, userId, userName, type: "like" }),
+      });
+      setLiked((prev) => new Set(prev).add(feedItemId));
+      setItems((prev) => prev.map((i) => i.feedItemId === feedItemId ? { ...i, likeCount: i.likeCount + 1 } : i));
+    } finally { setBusy(null); }
+  };
 
   const filtered = search
     ? items.filter((i) => i.title.toLowerCase().includes(search.toLowerCase()) || i.summary.toLowerCase().includes(search.toLowerCase()))
@@ -140,9 +160,10 @@ export function FeedView() {
                     <span className="flex items-center gap-1 text-muted-foreground">
                       <Eye className="size-4" /> {item.viewCount}
                     </span>
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <CheckCircle2 className="size-4" /> {item.likeCount}
-                    </span>
+                    <button onClick={() => handleLike(item.feedItemId)} disabled={busy === item.feedItemId || liked.has(item.feedItemId)}
+                      className={cn("flex items-center gap-1 transition-colors", liked.has(item.feedItemId) ? "text-emerald-500" : "text-muted-foreground hover:text-emerald-500")}>
+                      {busy === item.feedItemId ? <Loader2 className="size-4 animate-spin" /> : <ThumbsUp className="size-4" />} {item.likeCount}
+                    </button>
                   </div>
                 </div>
 
