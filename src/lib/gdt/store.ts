@@ -86,6 +86,10 @@ interface GDTState {
   paletteOpen: boolean;
   setPaletteOpen: (open: boolean) => void;
 
+  // report modal — global so any component can trigger it
+  reportOpen: boolean;
+  setReportOpen: (open: boolean) => void;
+
   // search
   search: string;
   setSearch: (s: string) => void;
@@ -164,6 +168,9 @@ export const useGDT = create<GDTState>((set) => ({
 
   paletteOpen: false,
   setPaletteOpen: (paletteOpen) => set({ paletteOpen }),
+
+  reportOpen: false,
+  setReportOpen: (reportOpen) => set({ reportOpen }),
 
   search: "",
   setSearch: (search) => set({ search }),

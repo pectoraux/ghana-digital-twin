@@ -6,6 +6,7 @@ import { NavRail } from "./NavRail";
 import { Inspector } from "./Inspector";
 import { StatusBar } from "./StatusBar";
 import { CommandPalette } from "./CommandPalette";
+import { ReportModal } from "./ReportModal";
 import { LiveEngine } from "./LiveEngine";
 import { HomeView } from "./views/HomeView";
 import { FeedView } from "./views/FeedView";
@@ -102,7 +103,15 @@ export function Shell() {
 
       {/* Global overlays */}
       <CommandPalette />
+      <GlobalReportModal />
       <LiveEngine />
     </div>
   );
+}
+
+// Global report modal — reads from store so any component can trigger it
+function GlobalReportModal() {
+  const reportOpen = useGDT((s) => s.reportOpen);
+  const setReportOpen = useGDT((s) => s.setReportOpen);
+  return <ReportModal open={reportOpen} onOpenChange={setReportOpen} />;
 }

@@ -4,11 +4,13 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
+import { useGDT } from "@/lib/gdt/store";
 import {
   Loader2, MapPin, Shield, TrendingUp, Eye, CheckCircle2,
   AlertTriangle, Target, Users, Zap, Package, ChevronRight,
-  Building2, Search, ThumbsUp,
+  Building2, Search, ThumbsUp, Plus,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const FEED_TYPE_META: Record<string, { color: string; icon: React.ElementType; label: string }> = {
   ALERT: { color: "#f43f5e", icon: AlertTriangle, label: "Alert" },
@@ -44,6 +46,7 @@ export function FeedView() {
   const [search, setSearch] = useState("");
   const [liked, setLiked] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
+  const setReportOpen = useGDT((s) => s.setReportOpen);
 
   const load = useCallback(() => {
     const sp = new URLSearchParams();
@@ -77,9 +80,14 @@ export function FeedView() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-6 py-4">
-        <h1 className="text-[24px] font-bold">Intelligence Feed</h1>
-        <p className="text-[15px] text-muted-foreground mt-1">Latest verified intelligence from across the network</p>
+      <div className="flex items-center justify-between border-b border-border px-6 py-4">
+        <div>
+          <h1 className="text-[24px] font-bold">Intelligence Feed</h1>
+          <p className="text-[15px] text-muted-foreground mt-1">Latest verified intelligence from across the network</p>
+        </div>
+        <Button onClick={() => setReportOpen(true)} className="flex items-center gap-1.5">
+          <Plus className="size-4" /> New Report
+        </Button>
       </div>
 
       {/* Search + Filters */}

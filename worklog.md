@@ -1312,3 +1312,40 @@ Stage Summary:
 - ✅ Browser-verified: badge shows "4", dropdown shows 5 items with titles + type labels, click navigates to Community view, mark-all-read works, 0 errors.
 - ✅ Fixed dev server stability (NODE_OPTIONS=--max-old-space-size=1024 in dev script).
 - The platform now has its connective tissue: when a citizen reports, they get notified when it's verified. When reports need witnesses, nearby users get notified. When rewards are earned, a toast-worthy notification appears. The Waze flywheel is now closed: observe → report → verify → REWARD → NOTIFIED → more participation.
+
+---
+Task ID: 52
+Agent: orchestrator
+Task: Milestone 16 — Report Submission Modal + Consumer Flywheel Completion
+
+Work Log:
+- Identified critical gap: the Home "Report Event" quick action navigated to the Feed view, but there was no way to actually create a report. The consumer flywheel (observe → report → verify → reward) was broken at the "report" step — users could consume intelligence but not create it.
+- Built ReportModal component (src/components/gdt/ReportModal.tsx): Dialog-based modal with two states:
+  - Form state: type selector (4 types with color-coded cards: Alert/Report/Analysis/Discussion), title input (120 char limit with counter), description textarea (500 char limit), region select (all 16 Ghana regions), category select (9 categories: illegal_mining, flood_risk, deforestation, water_pollution, cocoa_disease, infrastructure, security, agriculture, other), estimated confidence display (auto-calculated by type: Alert 65%, Report 55%, Analysis 45%, Discussion 35%), publish-as-user footer.
+  - Success state: green check icon, "Report Published!" heading, feed item ID (font-mono), estimated confidence %, potential reward range (15–45 IC), "Earn rewards when your report is verified by community guardians" guidance, Done button.
+- Added global `reportOpen` state to Zustand store (reportOpen + setReportOpen) so any component can trigger the modal.
+- Rendered GlobalReportModal wrapper in Shell.tsx as a global overlay alongside CommandPalette — the modal is always available regardless of which view is active.
+- Wired three trigger points:
+  1. Home "Report Event" quick action → setReportOpen(true) (was: navigate to feed)
+  2. Feed "New Report" button in header → setReportOpen(true)
+  3. CommandPalette "Report Intelligence..." item in new "Quick Actions" group → setReportOpen(true) + close palette
+- Added missing consumer views (feed, missions, community, rewards, profile) to CommandPalette VIEWS list — was missing 5 of the 7 primary nav views.
+- On submit: POST /api/feed with type, creator info (from session), title, summary, category, region, trustScore (50), confidence (estimated/100), sourceType "user_report". On success: toast notification (sonner) + success state with feedItemId. onSubmitted callback triggers feed list refresh.
+- Browser-verified end-to-end via Agent Browser (login as Citizen demo → Home):
+  - Click "Report Event" → modal opens with title "Report Intelligence" ✅
+  - Fill title "Test: Suspicious excavators near Pra River" (using React-compatible value setter) ✅
+  - Fill description "Observed 2 excavators operating near the Pra River bridge at 6am..." ✅
+  - Click "Publish Report" → POST /api/feed returns 200, feedItemId = "FI-MSHLVMQG-BAR" ✅
+  - Success state shows: Report ID FI-MSHLVMQG-BAR, Estimated Confidence 55%, Potential Reward 15–45 IC ✅
+  - VLM-confirmed success modal displays all details correctly ✅
+  - Navigate to Feed → 11 items (was 10), new "Pra River" report found in list ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ ReportModal: Dialog with form + success states. 4 report types, title/summary/region/category inputs, estimated confidence, toast notifications.
+- ✅ Global trigger: Zustand store `reportOpen` state. Modal rendered globally in Shell — any component can open it.
+- ✅ Three trigger points: Home quick action, Feed "New Report" button, CommandPalette "Report Intelligence..." (⌘K).
+- ✅ Full end-to-end flow verified: Home → Report Event → fill form → Publish → success (feedItemId + confidence + reward) → Feed shows new item.
+- ✅ CommandPalette enhanced: added missing consumer views (feed, missions, rewards, profile) + Quick Actions group.
+- The consumer flywheel is now complete: observe → REPORT → verify → reward → notified → more participation. Users can create intelligence, see it published to the feed, earn rewards when verified, and get notified throughout. This is the Waze flywheel fully operational.

@@ -37,11 +37,17 @@ import {
   Brain,
   Building2,
   Clock,
+  Sparkles,
 } from "lucide-react";
 
 const VIEWS = [
   { id: "home", label: "Home", icon: Home, hint: "Intelligence dashboard" },
+  { id: "feed", label: "Intelligence Feed", icon: Eye, hint: "Latest verified intelligence" },
   { id: "atlas", label: "Map", icon: MapIcon, hint: "Live intelligence map" },
+  { id: "missions", label: "Missions", icon: Radio, hint: "Active intelligence missions" },
+  { id: "community", label: "Community", icon: Users, hint: "Citizen intelligence network" },
+  { id: "rewards", label: "Rewards", icon: Coins, hint: "Your earnings and reputation" },
+  { id: "profile", label: "Profile", icon: Users, hint: "Your identity, reputation, and impact" },
   { id: "observations", label: "Change Log", icon: Eye, hint: "Entity version history" },
   { id: "entities", label: "Entities", icon: Boxes, hint: "Entity registry" },
   { id: "graph", label: "Knowledge Graph", icon: Share2, hint: "Relationship graph" },
@@ -49,7 +55,6 @@ const VIEWS = [
   { id: "raster", label: "Raster Intelligence", icon: Grid3x3, hint: "Anomaly maps, baselines & uncertainty" },
   { id: "sources", label: "Data Sources", icon: Database, hint: "Pipeline & connectors" },
   { id: "command", label: "Command Center", icon: RadioTower, hint: "National intelligence command center" },
-  { id: "community", label: "Community Intelligence", icon: Users, hint: "Citizen intelligence network" },
   { id: "civic-trust", label: "Civic Trust Graph", icon: Network, hint: "Trust propagation, Sybil resistance, identity vouching" },
   { id: "marketplace", label: "Intelligence Marketplace", icon: Store, hint: "Requests, assets, bounties, value attribution" },
   { id: "finance", label: "Intelligence Finance", icon: Coins, hint: "Credits, licensing, royalties, agent economy, insurance" },
@@ -66,6 +71,7 @@ export function CommandPalette() {
   const paletteOpen = useGDT((s) => s.paletteOpen);
   const setPaletteOpen = useGDT((s) => s.setPaletteOpen);
   const setView = useGDT((s) => s.setView);
+  const setReportOpen = useGDT((s) => s.setReportOpen);
   const selectEntity = useGDT((s) => s.selectEntity);
   const selectObservation = useGDT((s) => s.selectObservation);
   const temporalMode = useGDT((s) => s.temporalMode);
@@ -88,6 +94,22 @@ export function CommandPalette() {
       <CommandInput placeholder="Search entities, observations, regions, or jump to…" />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
+
+        <CommandGroup heading="Quick Actions">
+          <CommandItem
+            value="report event new create submit intelligence"
+            onSelect={() => {
+              setReportOpen(true);
+              setPaletteOpen(false);
+            }}
+          >
+            <Sparkles className="size-4 text-primary" />
+            <span>Report Intelligence...</span>
+            <span className="ml-auto text-[14px] text-muted-foreground">Create new report</span>
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
 
         <CommandGroup heading="Navigate">
           {VIEWS.map((v) => {

@@ -30,6 +30,7 @@ async function api(path: string) {
 export function HomeView() {
   const { data: session } = useSession();
   const setView = useGDT((s) => s.setView);
+  const setReportOpen = useGDT((s) => s.setReportOpen);
   const [identity, setIdentity] = useState<any>(null);
   const [feedItems, setFeedItems] = useState<any[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
@@ -170,7 +171,7 @@ export function HomeView() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button onClick={() => setView("feed")} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
+          <button onClick={() => setReportOpen(true)} className="flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/40 hover:bg-primary/5 transition-all">
             <div className="flex size-10 items-center justify-center rounded-lg bg-primary/15 text-primary"><Zap className="size-5" /></div>
             <span className="text-[14px] font-medium">Report Event</span>
           </button>
