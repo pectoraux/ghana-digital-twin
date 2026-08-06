@@ -28,7 +28,7 @@ const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   observations: { title: "Observations", sub: "Fused evidence from multiple raster products" },
   phenomena: { title: "Phenomena", sub: "Evolving events tracked over time" },
   intelligence: { title: "Intelligence", sub: "Ranked hypotheses, Bayesian reasoning & scenarios" },
-  missions: { title: "Missions", sub: "Autonomous mission planning & data acquisition" },
+  missions: { title: "Missions", sub: "Join intelligence missions and earn rewards" },
   validation: { title: "Validation", sub: "Replay testing, scientific evaluation & observability" },
   extensions: { title: "Extensions", sub: "Domain extensions: mining, flood, agriculture, forestry" },
   continuous: { title: "Continuous Pipeline", sub: "Nationwide processing & learning engine" },

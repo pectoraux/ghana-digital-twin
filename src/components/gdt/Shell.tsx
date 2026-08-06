@@ -14,6 +14,7 @@ import { ObservationsView } from "./views/ObservationsView";
 import { PhenomenaView } from "./views/PhenomenaView";
 import { IntelligenceView } from "./views/IntelligenceView";
 import { MissionsView } from "./views/MissionsView";
+import { MissionsConsumerView } from "./views/MissionsConsumerView";
 import { ValidationView } from "./views/ValidationView";
 import { ExtensionsView } from "./views/ExtensionsView";
 import { ContinuousView } from "./views/ContinuousView";
@@ -65,7 +66,7 @@ export function Shell() {
               {view === "observations" && <ObservationsView />}
               {view === "phenomena" && <PhenomenaView />}
               {view === "intelligence" && <IntelligenceView />}
-              {view === "missions" && <MissionsView />}
+              {view === "missions" && <MissionsConsumerView />}
               {view === "validation" && <ValidationView />}
               {view === "extensions" && <ExtensionsView />}
               {view === "continuous" && <ContinuousView />}
