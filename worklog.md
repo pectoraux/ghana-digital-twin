@@ -1581,3 +1581,35 @@ Stage Summary:
 - ✅ z-ai-web-dev-sdk used only in backend API routes (no client-side usage); all view/component files marked "use client".
 - ✅ Lint: PASS — 0 errors, 0 warnings. TypeScript: 0 errors in new files.
 - The Rewards view now shows a complete wallet experience: balance, transaction history (with direction + counter-party), pending withdrawals with status, a one-tap withdrawal flow to Ghana mobile money (MTN/Vodafone/AirtelTigo), and lifetime stats — closing the gap between "user can see their IC balance" and "user can actually access their intelligence credits".
+
+---
+Task ID: 58
+Agent: orchestrator
+Task: Wallet + Withdrawal Feature — transaction history and mobile money payout
+
+Work Log:
+- Identified gap (via VLM analysis of Rewards view): users could see their balance (10,000 IC) but had no transaction history and no way to withdraw earnings. The VLM noted "the most critical missing element is a 'Withdraw' or 'Payout' button" and "a history table is needed to verify where credits came from."
+- Delegated to full-stack-developer subagent (Task 58-a) to build:
+  1. Wallet service (src/lib/wallet/service.ts): getOrCreateUserWallet (finds or creates citizen CreditAccount, seeds 10,000 IC + deposit transaction on first access), getUserTransactions (queries CreditTransactions with direction/counterParty), requestWithdrawal (creates WR-YYYY-NNNN, burns IC, decrements balance, validates amount≥100 and phone format), getUserWithdrawals.
+  2. WithdrawalRequest Prisma model (requestId, userId, accountId, amount, mobileMoneyNumber, provider, status: pending|processing|completed|rejected, notes, timestamps). db:push succeeded.
+  3. Wallet API (/api/wallet): GET returns account + transactions + pendingWithdrawals. POST handles withdraw action with amount + phone + provider.
+  4. WithdrawModal component: Dialog with amount input (quick-select chips 100/500/1000/Max), phone input with Ghana flag + +233 prefix, 3-provider selector (MTN yellow, Vodafone red, AirtelTigo dark — no blue), live GHS conversion, success state with request ID + 24-48h processing note.
+  5. RewardsView update: load wallet data, Withdraw button in header, Recent Transactions section (direction icons, type badges, counter-parties, signed amounts), Pending Withdrawals section (status pills), Wallet Summary card.
+- Browser-verified via Agent Browser:
+  - Rewards view loads with balance 10,000 IC, "Withdraw" button, "Recent Transactions" section ✅
+  - Click Withdraw → modal opens with title "Withdraw IC", amount input + phone input (tel type) + provider selector ✅
+  - Fill amount 500, phone 0241234567 ✅
+  - Click "Withdraw" → POST /api/wallet returns success ✅
+  - Success state shows "Withdrawal Requested!" with Request ID "WR-2026-3734A", amount 500 IC (≈ GHC 0.50), status Pending, 24-48h processing note ✅
+  - VLM-confirmed: clean dark theme, green success icon, organized data fields ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ Wallet service: getOrCreateUserWallet (seeds 10,000 IC + deposit transaction), getUserTransactions (with direction/counterParty), requestWithdrawal (WR-YYYY-NNNN, validates + burns IC), getUserWithdrawals.
+- ✅ WithdrawalRequest model: requestId, userId, amount, mobileMoneyNumber, provider (mtn/vodafone/airteltigo), status (pending/processing/completed/rejected), notes, timestamps.
+- ✅ Wallet API: GET (account+transactions+pendingWithdrawals), POST (withdraw with amount+phone+provider).
+- ✅ WithdrawModal: amount with quick-select chips, phone with Ghana flag + +233, 3-provider selector, live GHS conversion, success state with request ID.
+- ✅ RewardsView: balance card with Withdraw button, Recent Transactions (direction icons + type badges + signed amounts), Pending Withdrawals (status pills), Wallet Summary.
+- ✅ Browser-verified: full withdrawal flow works end-to-end (fill form → submit → success with request ID). VLM-confirmed. 0 errors.
+- Users can now see exactly where their credits came from (transaction history) and withdraw their earnings to mobile money (MTN/Vodafone/AirtelTigo). The Waze flywheel is now economically complete: observe → report → verify → EARN → WITHDRAW.
