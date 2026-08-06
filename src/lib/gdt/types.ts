@@ -2,7 +2,7 @@
 
 import type { LngLat } from "./geo";
 
-export type ViewId = "home" | "atlas" | "feed" | "observations" | "phenomena" | "intelligence" | "missions" | "validation" | "extensions" | "continuous" | "groundtruth" | "multimodal" | "entities" | "graph" | "knowledge" | "eo" | "raster" | "sources" | "command" | "community" | "civic-trust" | "marketplace" | "finance" | "federation" | "os" | "reality" | "governance" | "gov-intel" | "aio" | "profile" | "api";
+export type ViewId = "home" | "atlas" | "feed" | "observations" | "phenomena" | "intelligence" | "missions" | "validation" | "extensions" | "continuous" | "groundtruth" | "multimodal" | "entities" | "graph" | "knowledge" | "eo" | "raster" | "sources" | "command" | "community" | "civic-trust" | "marketplace" | "finance" | "federation" | "os" | "reality" | "governance" | "gov-intel" | "aio" | "profile" | "rewards" | "api";
 
 export type EntityKind =
   | "river"

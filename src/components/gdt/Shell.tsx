@@ -37,6 +37,7 @@ import { GovernanceView } from "./views/GovernanceView";
 import { GovernanceIntelView } from "./views/GovernanceIntelView";
 import { AioView } from "./views/AioView";
 import { ProfileView } from "./views/ProfileView";
+import { RewardsView } from "./views/RewardsView";
 import { ApiView } from "./views/ApiView";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -88,6 +89,7 @@ export function Shell() {
               {view === "gov-intel" && <GovernanceIntelView />}
               {view === "aio" && <AioView />}
               {view === "profile" && <ProfileView />}
+              {view === "rewards" && <RewardsView />}
               {view === "api" && <ApiView />}
             </motion.div>
           </AnimatePresence>
