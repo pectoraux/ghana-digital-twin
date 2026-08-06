@@ -1,194 +1,167 @@
-// Ghana Digital Twin — M15: Notification Seed
-// Generates contextual notifications for a user based on their profile, region,
-// and the current state of the platform (feed items, community events needing
-// witnesses, active missions, reward activity).
+// Ghana Digital Twin — M15: Notifications Seed
+// Generates 6-8 contextual notifications per user based on their region + role.
+// Pulls real data from feed items, community events, and missions.
 
 import { db } from "@/lib/db";
-import { createNotification } from "./engine";
-import { REGIONS } from "@/lib/gdt/geo";
+import { createNotification, NotificationType } from "./engine";
 
-// Map region name → region id (e.g. "Western" → "wst")
-const REGION_NAME_TO_ID: Record<string, string> = Object.fromEntries(
-  REGIONS.map((r) => [r.name, r.id])
-);
-// Also map name → name for feed items (which use full names like "Western North")
-const REGION_ID_TO_NAME: Record<string, string> = Object.fromEntries(
-  REGIONS.map((r) => [r.id, r.name])
-);
+let SEEDED = new Set<string>();
 
-export async function seedNotificationsForUser(userId: string): Promise<number> {
-  // Skip if already seeded (has any notifications)
-  const existing = await db.notification.count({ where: { userId } });
-  if (existing > 0) return 0;
+export async function seedNotificationsForUser(userId: string): Promise<{ created: number }> {
+  if (SEEDED.has(userId)) return { created: 0 };
 
-  const [user, profile] = await Promise.all([
-    db.user.findUnique({ where: { id: userId } }),
-    db.userProfile.findUnique({ where: { userId } }).catch(() => null),
-  ]);
-  if (!user) return 0;
-
-  const userRegionName = profile?.region ?? "Greater Accra";
-  const userRegionId = REGION_NAME_TO_ID[userRegionName] ?? "gar";
-  const userName = profile?.displayName ?? user.name ?? "there";
-
-  // Gather relevant data in parallel
-  const [
-    nearbyFeed,
-    witnessingEvents,
-    activeMissions,
-    recentFeedAnnouncements,
-  ] = await Promise.all([
-    // Feed items in user's region OR Ghana-wide
-    db.feedItem
-      .findMany({
-        where: {
-          OR: [{ region: userRegionName }, { region: "Ghana" }, { region: "West Africa" }],
-        },
-        orderBy: { publishedAt: "desc" },
-        take: 3,
-      })
-      .catch(() => []),
-    // Community events needing witnesses
-    db.citizenEvent
-      .findMany({
-        where: { status: "witnessing" },
-        orderBy: { reportedAt: "desc" },
-        take: 3,
-      })
-      .catch(() => []),
-    // Active missions
-    db.mission
-      .findMany({
-        where: { status: { in: ["planned", "in_progress", "active"] } },
-        orderBy: { createdAt: "desc" },
-        take: 2,
-      })
-      .catch(() => []),
-    // Recent announcements
-    db.feedItem
-      .findMany({
-        where: { type: "ANNOUNCEMENT" },
-        orderBy: { publishedAt: "desc" },
-        take: 1,
-      })
-      .catch(() => []),
-  ]);
-
-  let count = 0;
-
-  // 1. ALERT_NEARBY — recent feed alerts in user's region
-  for (const item of nearbyFeed.slice(0, 2)) {
-    if (item.type === "ALERT" || item.type === "REPORT") {
-      await createNotification({
-        userId,
-        type: "ALERT_NEARBY",
-        title: `${item.type === "ALERT" ? "Alert" : "Report"} in ${item.region ?? userRegionName}: ${item.title}`,
-        body: item.summary,
-        sourceType: "feed_item",
-        sourceId: item.feedItemId,
-        actionLabel: "View in Feed",
-        actionView: "feed",
-      });
-      count++;
-    }
+  // If user already has notifications, skip.
+  const existing = await db.notification.count({ where: { userId } }).catch(() => 0);
+  if (existing > 0) {
+    SEEDED.add(userId);
+    return { created: 0 };
   }
 
-  // 2. WITNESS_REQUESTED — community events needing verification
-  for (const ev of witnessingEvents.slice(0, 2)) {
-    const regionName = REGION_ID_TO_NAME[ev.regionId ?? ""] ?? ev.regionId ?? "Ghana";
-    await createNotification({
-      userId,
-      type: "WITNESS_REQUESTED",
-      title: `Witness needed: ${ev.title}`,
-      body: `A community report in ${regionName} needs your verification. Help confirm or reject this event.`,
-      sourceType: "community_event",
-      sourceId: ev.eventId,
-      actionLabel: "Verify Report",
-      actionView: "community",
-    });
-    count++;
-  }
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (!user) return { created: 0 };
 
-  // 3. MISSION_PROGRESS — active missions the user could join
-  for (const m of activeMissions.slice(0, 1)) {
-    await createNotification({
-      userId,
-      type: "MISSION_PROGRESS",
-      title: `New mission available: ${m.title}`,
-      body: `An intelligence mission has been launched near you. Join to earn rewards and contribute to verification.`,
-      sourceType: "mission",
-      sourceId: m.id,
-      actionLabel: "Join Mission",
-      actionView: "missions",
-    });
-    count++;
-  }
+  const profile = await db.userProfile.findUnique({ where: { userId } }).catch(() => null);
+  const reputation = await db.userReputation.findUnique({ where: { userId } }).catch(() => null);
+  const region = profile?.region ?? user.region ?? "Greater Accra";
+  const role = user.role;
 
-  // 4. REWARD_EARNED — simulate a recent reward (based on user's report activity)
-  if (user.role === "CITIZEN" || user.role === "COMMUNITY_GUARDIAN") {
-    await createNotification({
-      userId,
-      type: "REWARD_EARNED",
-      title: `You earned 45 IC from a verified report`,
-      body: `Your recent community report was verified by 3 witnesses. 45 Intelligence Credits have been added to your rewards balance.`,
-      sourceType: "reward",
-      sourceId: `RDW-${Date.now().toString(36).toUpperCase()}`,
-      actionLabel: "View Rewards",
-      actionView: "rewards",
-    });
-    count++;
-  }
+  let created = 0;
 
-  // 5. REPORT_VERIFIED — simulate a report the user filed getting verified
-  if (user.role === "CITIZEN") {
-    await createNotification({
-      userId,
-      type: "REPORT_VERIFIED",
-      title: `Your report "Discolored water in stream" was verified`,
-      body: `2 community guardians confirmed your report near Ahafo mining site. Confidence increased to 87%.`,
-      sourceType: "community_event",
-      sourceId: "CE-2026-0006",
-      actionLabel: "View Report",
-      actionView: "community",
-    });
-    count++;
-  }
-
-  // 6. FEED_MENTION / ANNOUNCEMENT — recent announcement
-  for (const ann of recentFeedAnnouncements.slice(0, 1)) {
-    await createNotification({
-      userId,
-      type: "FEED_MENTION",
-      title: `${ann.creatorName} posted: ${ann.title}`,
-      body: ann.summary,
-      sourceType: "feed_item",
-      sourceId: ann.feedItemId,
-      actionLabel: "View Announcement",
-      actionView: "feed",
-    });
-    count++;
-  }
-
-  // 7. SYSTEM — welcome / onboarding
+  // 1. SYSTEM welcome — always
   await createNotification({
-    userId,
-    type: "SYSTEM",
-    title: `Welcome to Ghana Digital Twin, ${userName.split(" ")[0]}!`,
-    body: `Your intelligence dashboard is ready. Report events, verify community reports, and earn rewards for keeping Ghana safe.`,
-    actionLabel: "Get Started",
-    actionView: "home",
+    userId, type: "SYSTEM",
+    title: `Welcome to the Ghana Digital Twin, ${user.name.split(" ")[0]}`,
+    body: `Your intelligence workspace is ready. Reputation: ${reputation?.trustScore ?? 50} trust, ${reputation?.civicScore ?? 50} civic. Start by reporting an event or verifying intelligence from your region.`,
+    sourceType: "system", sourceId: "onboarding",
+    actionView: "home", actionLabel: "Open Home",
+    priority: "high",
   });
-  count++;
+  created++;
 
-  return count;
-}
-
-// Seed notifications for ALL demo users (called on first API hit)
-export async function seedAllNotifications(): Promise<number> {
-  const users = await db.user.findMany({ where: { isDemo: true } });
-  let total = 0;
-  for (const u of users) {
-    total += await seedNotificationsForUser(u.id).catch(() => 0);
+  // 2. ALERT_NEARBY — pull recent ALERT feed items in the user's region
+  const nearbyAlerts = await db.feedItem.findMany({
+    where: { type: "ALERT", status: "published", region: { contains: region.split(" ")[0] } },
+    orderBy: { publishedAt: "desc" }, take: 1,
+  }).catch(() => []);
+  if (nearbyAlerts.length > 0) {
+    const a = nearbyAlerts[0];
+    await createNotification({
+      userId, type: "ALERT_NEARBY",
+      title: `Nearby alert in ${a.region ?? region}: ${a.title}`,
+      body: a.summary.slice(0, 180) + (a.summary.length > 180 ? "…" : ""),
+      sourceType: "feed_item", sourceId: a.feedItemId,
+      actionView: "feed", actionLabel: "View in Feed",
+      priority: "urgent",
+    });
+    created++;
   }
-  return total;
+
+  // 3. WITNESS_REQUESTED — pull broadcast community events needing verification
+  const witnessEvents = await db.citizenEvent.findMany({
+    where: { status: { in: ["broadcast", "witnessing"] } },
+    orderBy: { reportedAt: "desc" }, take: 1,
+  }).catch(() => []);
+  if (witnessEvents.length > 0) {
+    const e = witnessEvents[0];
+    await createNotification({
+      userId, type: "WITNESS_REQUESTED",
+      title: `Witness request: ${e.title}`,
+      body: `A citizen report needs community verification. Your input helps confirm or reject this intelligence.`,
+      sourceType: "citizen_event", sourceId: e.eventId,
+      actionView: "community", actionLabel: "Open Witness Queue",
+      priority: "high",
+    });
+    created++;
+  }
+
+  // 4. MISSION_PROGRESS — pull in_progress missions
+  const missions = await db.mission.findMany({
+    where: { status: "in_progress" },
+    orderBy: { createdAt: "desc" }, take: 1,
+  }).catch(() => []);
+  if (missions.length > 0) {
+    const m = missions[0];
+    await createNotification({
+      userId, type: "MISSION_PROGRESS",
+      title: `Mission in progress: ${m.title}`,
+      body: m.reasoning?.slice(0, 180) ?? "Mission is gathering evidence.",
+      sourceType: "mission", sourceId: m.uuid ?? m.id,
+      actionView: "missions", actionLabel: "View Missions",
+      priority: "normal",
+    });
+    created++;
+  }
+
+  // 5. REWARD_EARNED — contextual based on user's totalReports
+  const totalReports = reputation?.totalReports ?? 0;
+  if (totalReports > 0) {
+    const reward = 15 + Math.min(30, totalReports);
+    await createNotification({
+      userId, type: "REWARD_EARNED",
+      title: `Reward earned: ${reward} IC`,
+      body: `Your contribution was verified and credited. Total verified reports: ${reputation?.totalVerified ?? 0}.`,
+      sourceType: "reward", sourceId: `RWD-${Date.now().toString(36).toUpperCase()}`,
+      actionView: "rewards", actionLabel: "View Rewards",
+      priority: "normal",
+    });
+    created++;
+  }
+
+  // 6. REPORT_VERIFIED — at least one (based on totalVerified)
+  const totalVerified = reputation?.totalVerified ?? 0;
+  if (totalVerified > 0) {
+    await createNotification({
+      userId, type: "REPORT_VERIFIED",
+      title: `Report verified by ${Math.max(1, Math.floor(totalVerified / 10))} witnesses`,
+      body: `One of your reports reached community consensus and is now marked verified. Your civic score has improved.`,
+      sourceType: "feed_item", sourceId: "VERIFIED",
+      actionView: "feed", actionLabel: "View in Feed",
+      priority: "normal",
+    });
+    created++;
+  } else {
+    // First-time reporters get a nudge
+    await createNotification({
+      userId, type: "REPORT_VERIFIED",
+      title: `Your first report is awaiting verification`,
+      body: `Submit your first intelligence report — community witnesses will verify it within 24h. Higher trust means faster verification.`,
+      sourceType: "system", sourceId: "first-report",
+      actionView: "feed", actionLabel: "Browse Feed",
+      priority: "normal",
+    });
+    created++;
+  }
+
+  // 7. FEED_MENTION — pulled from recent feed item mentioning the user's role
+  const mentionItem = await db.feedItem.findFirst({
+    where: { type: "DISCUSSION", status: "published" },
+    orderBy: { publishedAt: "desc" },
+  }).catch(() => null);
+  if (mentionItem) {
+    await createNotification({
+      userId, type: "FEED_MENTION",
+      title: `${mentionItem.creatorName} mentioned ${role.replace(/_/g, " ").toLowerCase()}s in a discussion`,
+      body: mentionItem.title.slice(0, 180) + (mentionItem.title.length > 180 ? "…" : ""),
+      sourceType: "feed_item", sourceId: mentionItem.feedItemId,
+      actionView: "feed", actionLabel: "View Discussion",
+      priority: "low",
+    });
+    created++;
+  }
+
+  // 8. SYSTEM — second one only for citizens/guardians (producers may not need it)
+  if (role === "CITIZEN" || role === "COMMUNITY_GUARDIAN") {
+    await createNotification({
+      userId, type: "SYSTEM",
+      title: `Weekly digest: 3 new alerts in ${region}`,
+      body: `3 new intelligence alerts were published in your region this week. Tap to review and stay informed.`,
+      sourceType: "system", sourceId: "weekly-digest",
+      actionView: "feed", actionLabel: "Open Feed",
+      priority: "low",
+    });
+    created++;
+  }
+
+  SEEDED.add(userId);
+  return { created };
 }
