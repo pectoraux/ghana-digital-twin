@@ -6,7 +6,7 @@ import { useGDT } from "@/lib/gdt/store";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
 import {
-  Loader2, MapPin, Shield, Award, TrendingUp, Zap, Users,
+  MapPin, Shield, Award, TrendingUp, Zap, Users,
   AlertTriangle, Target, CheckCircle2, ChevronRight, Activity,
   Building2, Eye, Brain, Radio,
 } from "lucide-react";
@@ -51,7 +51,41 @@ export function HomeView() {
     }).finally(() => setLoading(false));
   }, [session]);
 
-  if (loading) return <div className="flex h-full items-center justify-center"><Loader2 className="size-6 animate-spin text-primary" /></div>;
+  if (loading) return (
+    <div className="h-full overflow-y-auto gdt-scroll">
+      <div className="mx-auto max-w-4xl p-4 md:p-6 space-y-6">
+        {/* Greeting skeleton */}
+        <div className="space-y-2">
+          <div className="h-8 w-64 rounded-lg bg-foreground/10 animate-pulse" />
+          <div className="h-4 w-48 rounded bg-foreground/5 animate-pulse" />
+        </div>
+        {/* Reputation cards skeleton */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-card">
+              <div className="size-5 mb-2 rounded bg-foreground/10 animate-pulse" />
+              <div className="h-8 w-16 mb-1 rounded bg-foreground/10 animate-pulse" />
+              <div className="h-3 w-20 rounded bg-foreground/5 animate-pulse" />
+            </div>
+          ))}
+        </div>
+        {/* Pulse skeleton */}
+        <div className="rounded-xl border border-border bg-card p-5 shadow-card space-y-3">
+          <div className="h-5 w-40 rounded bg-foreground/10 animate-pulse" />
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex items-start gap-3 rounded-lg border border-border/60 p-3">
+              <div className="size-9 rounded-lg bg-foreground/10 animate-pulse shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 rounded bg-foreground/10 animate-pulse" />
+                <div className="h-3 w-full rounded bg-foreground/5 animate-pulse" />
+                <div className="h-3 w-1/2 rounded bg-foreground/5 animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   const name = identity?.profile?.displayName ?? session?.user?.name ?? "there";
   const firstName = name.split(" ")[0];
