@@ -6,10 +6,11 @@ import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
 import { Button } from "@/components/ui/button";
 import { ProfileEditModal } from "@/components/gdt/ProfileEditModal";
+import { useGDT } from "@/lib/gdt/store";
 import {
   Loader2, MapPin, Shield, Award, Eye, CheckCircle2, Target,
   Package, Building2, Zap, TrendingUp, DollarSign, Brain,
-  Pencil,
+  Pencil, FileText, MessageCircle, XCircle, HelpCircle, Activity,
 } from "lucide-react";
 
 async function api(path: string) {
@@ -21,16 +22,22 @@ async function api(path: string) {
 export function ProfileView() {
   const { data: session } = useSession();
   const [identity, setIdentity] = useState<any>(null);
+  const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
+  const setView = useGDT((s) => s.setView);
+  const setSelectedFeedItemId = useGDT((s) => s.setSelectedFeedItemId);
 
   const load = () => {
     const userId = (session?.user as any)?.id;
     if (!userId) return;
-    api(`/api/identity?userId=${userId}`)
-      .then((d) => setIdentity(d.identity))
-      .catch(() => setIdentity({}))
-      .finally(() => setLoading(false));
+    Promise.all([
+      api(`/api/identity?userId=${userId}`),
+      api(`/api/activity?userId=${userId}&limit=15`).catch(() => ({ activities: [] })),
+    ]).then(([idRes, actRes]) => {
+      setIdentity(idRes.identity);
+      setActivities(actRes.activities || []);
+    }).catch(() => setIdentity({})).finally(() => setLoading(false));
   };
 
   useEffect(() => { load(); }, [session]);
@@ -166,6 +173,51 @@ export function ProfileView() {
             </div>
           </div>
         )}
+
+        {/* My Activity Timeline */}
+        <div className="rounded-xl border border-border bg-card p-4 md:p-6 shadow-card">
+          <h2 className="text-[20px] font-semibold mb-4 flex items-center gap-2">
+            <Activity className="size-5 text-primary" /> My Activity
+          </h2>
+          {activities.length === 0 ? (
+            <p className="text-[14px] text-muted-foreground py-4 text-center">No activity yet. Start by reporting an event or joining a mission!</p>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto gdt-scroll">
+              {activities.map((a) => {
+              const IconMap: Record<string, React.ElementType> = {
+                FileText, MessageCircle, Target, CheckCircle2, XCircle, HelpCircle,
+              };
+              const Icon = IconMap[a.icon] ?? Activity;
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => {
+                    if (a.kind === "report" || a.kind === "comment") {
+                      setSelectedFeedItemId(a.actionId);
+                    } else if (a.actionView) {
+                      setView(a.actionView);
+                    }
+                  }}
+                  className="flex w-full items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3 hover:bg-accent/30 transition-colors text-left"
+                >
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-lg" style={{ color: a.color, background: `${a.color}15` }}>
+                    <Icon className="size-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-medium" style={{ color: a.color }}>{a.action}</span>
+                      <span className="ml-auto text-[12px] text-muted-foreground shrink-0">{a.timestampLabel}</span>
+                    </div>
+                    <p className="text-[14px] font-medium mt-0.5 truncate">{a.title}</p>
+                    {a.subtitle && <p className="text-[13px] text-muted-foreground truncate">{a.subtitle}</p>}
+                    {a.meta && <p className="text-[12px] text-muted-foreground mt-0.5">{a.meta}</p>}
+                  </div>
+                </button>
+              );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

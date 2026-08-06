@@ -1680,3 +1680,38 @@ Stage Summary:
 - ✅ Event cards clickable in CommunityConsumerView, inline witness buttons have stopPropagation.
 - ✅ Browser-verified: click card → see details + witnesses → confirm → witness response appears. VLM-confirmed. 0 errors.
 - Community events are now fully interactive: users can see full event details, review witness responses, and submit their own verification — all from a clean detail dialog. The citizen verification loop is complete: report → broadcast → WITNESS → fuse → resolve.
+
+---
+Task ID: 61
+Agent: orchestrator
+Task: My Activity Timeline on Profile — unified contribution history
+
+Work Log:
+- Identified gap: the Profile view showed reputation scores and impact stats, but had no way to see the user's recent contributions (reports filed, comments, missions joined, witness verifications). Users had no unified view of their own activity across the platform.
+- Built activity API (/api/activity?userId=...&limit=20): aggregates from 4 data sources in parallel:
+  - FeedItem where creatorId = userId → "Published" activity (with type, title, confidence, likes, comments)
+  - FeedEngagement where userId AND type="comment" → "Commented on" activity
+  - MissionParticipation where userId AND status="active" → "Joined mission" activity (with role)
+  - WitnessResponse where witnessId = user's citizenId → "Confirmed"/"Rejected"/"Can't verify" activity
+  - Merges into unified timeline sorted by timestamp descending, each item has: kind, action, title, subtitle, icon, color, meta, timestamp, actionView, actionId
+  - Returns time-ago labels (just now, Xm/h/d/w/mo ago)
+- Updated ProfileView to load activity data alongside identity data (Promise.all)
+- Added "My Activity" section to ProfileView with:
+  - Activity icon header with "My Activity" title
+  - Scrollable timeline (max-h-96 overflow-y-auto with custom scrollbar)
+  - Each item: color-coded icon, action label, title, subtitle, meta info, time-ago
+  - Clickable: report/comment items open FeedItemDetail, mission items navigate to Missions, witness items navigate to Community
+  - Empty state: "No activity yet. Start by reporting an event or joining a mission!"
+- Browser-verified via Agent Browser:
+  - Profile view loads with "My Activity" section ✅
+  - Timeline shows real activity: "Published" reports (Turbidity surge in Ankobra River, Illegal mining activity detected near Ankobra River) with confidence/likes/comments metadata ✅
+  - "Confirmed" witness response (Event CE-2026-0008, 5d ago) ✅
+  - Time-ago labels working (4d ago, 5d ago) ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ Activity API: /api/activity aggregates feed items, comments, mission joins, witness responses into unified timeline
+- ✅ Profile "My Activity" section: scrollable timeline with color-coded icons, action labels, titles, metadata, time-ago, clickable navigation
+- ✅ Browser-verified: real activity data visible (published reports + witness confirmations), time-ago labels working, 0 errors
+- Users can now see their full contribution history on their profile — every report filed, comment made, mission joined, and witness verification, all in one unified timeline. This gives users a clear sense of their impact over time and ties together all their actions across the platform.
