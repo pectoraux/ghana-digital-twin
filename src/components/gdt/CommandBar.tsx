@@ -6,8 +6,9 @@ import { OBSERVATIONS } from "@/lib/gdt/observations";
 import { cn } from "@/lib/utils";
 import { useSession, signOut } from "next-auth/react";
 import {
-  Search, Bell, Radio, Clock, ChevronDown, ShieldCheck, Activity, LogOut,
+  Search, Radio, Clock, ChevronDown, ShieldCheck, Activity, LogOut,
 } from "lucide-react";
+import { NotificationCenter } from "./NotificationCenter";
 import {
   Select,
   SelectContent,
@@ -138,11 +139,8 @@ export function CommandBar() {
           </ToggleGroupItem>
         </ToggleGroup>
 
-        {/* Notifications */}
-        <Button variant="ghost" size="icon" className="size-9 relative">
-          <Bell className="size-[18px]" />
-          <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-rose-500" />
-        </Button>
+        {/* Notifications — live notification center */}
+        <NotificationCenter />
 
         {/* User */}
         <div className="flex items-center gap-2 rounded-lg border border-border bg-background/40 pl-1.5 pr-2.5 h-9">

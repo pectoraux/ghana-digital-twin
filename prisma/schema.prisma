@@ -5841,3 +5841,30 @@ model FeedEngagement {
   @@index([feedItemId])
   @@index([userId])
 }
+
+// Notification — user-facing activity notifications tying the consumer experience together.
+// Generated when: reports need verification, feed items match user region/interests,
+// reports get verified/rejected, rewards earned, mission progress updates, mentions.
+model Notification {
+  id            String    @id @default(uuid())
+  notificationId String   @unique // NT-YYYY-NNNN
+  userId        String    // User.id — recipient
+  // content
+  type          String    // ALERT_NEARBY | REPORT_VERIFIED | REPORT_REJECTED | WITNESS_REQUESTED | MISSION_PROGRESS | REWARD_EARNED | FEED_MENTION | SYSTEM
+  title         String
+  body          String
+  // source linking — polymorphic
+  sourceType    String?   // feed_item | community_event | mission | reward | feed_item | system
+  sourceId      String?   // id of the source entity
+  // action
+  actionLabel   String?   // e.g. "View Report", "Join Mission"
+  actionView    String?   // ViewId to navigate to on click
+  // state
+  readAt        DateTime?
+  // temporal
+  createdAt     DateTime  @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@index([type])
+}

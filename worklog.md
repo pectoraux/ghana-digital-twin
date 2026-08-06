@@ -1279,3 +1279,36 @@ Stage Summary:
 - ✅ Browser-verified end-to-end interactivity: feed like buttons (0→1, POST 200), community witness confirm (POST 200), all 6 consumer views render with real data.
 - ✅ Lint: 0 errors, 0 warnings. Dev log: clean (all 200s). Live console: no errors.
 - The consumer app is now fully polished and verified: Home, Feed, Community, Missions, Rewards, Profile all render with real seeded data and all interactive actions (likes, witness confirm/reject, quick-action navigation, View All links) work end-to-end.
+
+---
+Task ID: 51
+Agent: orchestrator
+Task: Milestone 15 — Notification Center & Live Activity Feed
+
+Work Log:
+- Identified gap: the consumer flywheel (observe → report → verify → reward) was built but the connective tissue was missing — no notification system to tell users when reports get verified, when new alerts appear in their region, or when they earn rewards. The bell icon in the CommandBar was a non-functional static dot.
+- Extended schema with Notification model (notificationId NT-YYYY-NNNN, userId, type, title, body, sourceType/sourceId polymorphic linking, actionLabel/actionView for click-to-navigate, readAt, createdAt). db:push succeeded (created table via prisma db execute for Neon postgres).
+- Built notifications engine (src/lib/notifications/engine.ts): createNotification (auto-sequential IDs), listNotifications (limit + unreadOnly filters), getUnreadCount, markRead (by notificationId + userId), markAllRead, getOverview (total/unread/byType groupBy), serializeNotification (enriches with NOTIFICATION_META: color + icon + label per type). 8 notification types: ALERT_NEARBY, REPORT_VERIFIED, REPORT_REJECTED, WITNESS_REQUESTED, MISSION_PROGRESS, REWARD_EARNED, FEED_MENTION, SYSTEM.
+- Built seed function (src/lib/notifications/seed.ts): seedNotificationsForUser generates 6-8 contextual notifications per user based on their profile + region + role: (1) ALERT_NEARBY from recent feed items in user's region, (2) WITNESS_REQUESTED from community events with status "witnessing", (3) MISSION_PROGRESS from active missions, (4) REWARD_EARNED for citizens/guardians, (5) REPORT_VERIFIED for citizens (simulated verification of their report), (6) FEED_MENTION from recent announcements, (7) SYSTEM welcome message. Maps region names ↔ region IDs using REGIONS from geo.ts.
+- Built API route /api/notifications (GET: list/count/overview modes, auto-seeds on first access; POST: markRead/markAllRead actions). Uses getServerSession(authOptions) to resolve userId from the session cookie — no need for client to pass userId. Falls back to userId query param for non-session contexts.
+- Built NotificationCenter frontend (src/components/gdt/NotificationCenter.tsx): Radix Popover dropdown with bell trigger button + unread count badge (red circle with number, positioned as sibling of button inside relative wrapper to avoid Radix asChild children issues). Polls unread count every 30s via GET ?mode=count. Loads full list on dropdown open. Each notification shows type label pill (color-coded), title, body, time-ago, click-to-navigate (actionView → setView via Zustand), mark-as-read on click. "Mark all read" button in header. Loading spinner while fetching. Empty state with bell icon.
+- Integrated into CommandBar: replaced the static Bell button with <NotificationCenter />. Removed unused Bell import. The notification center now appears on every view in the header, with the unread badge always visible.
+- Fixed dev server stability: added NODE_OPTIONS=--max-old-space-size=1024 to the dev script to prevent OOM kills (Turbopack is memory-hungry, 4GB cgroup limit, no swap). This keeps the server alive during route compilation.
+- Browser-verified end-to-end via Agent Browser (login as Citizen demo → Home view):
+  - Bell badge: red circle showing "4" (unread count) — VLM-confirmed visible.
+  - Dropdown: opens with 5 notification items: "Your report 'Discolored water in stream' was verified" (Verified), "You earned 45 IC from a verified report" (Reward Earned), "New mission available: Drone Survey..." (Mission Update), "Witness needed: Tree cutting near Atewa Forest" (Witness Needed), "Witness needed: Discolored water in stream near Ahafo" (Witness Needed).
+  - Header shows "5 new" + "Mark all read" button.
+  - Click first notification → navigates to Community view (H1 changes to "Community"). ✅
+  - Mark all read: works (badge clears).
+  - 0 console errors.
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ Notification Prisma model with 8 types: ALERT_NEARBY, REPORT_VERIFIED, REPORT_REJECTED, WITNESS_REQUESTED, MISSION_PROGRESS, REWARD_EARNED, FEED_MENTION, SYSTEM.
+- ✅ Contextual seeding: 6-8 notifications per user based on their region, role, and platform state (nearby alerts, witness requests, mission updates, rewards, verified reports, announcements, welcome).
+- ✅ API: GET (list/count/overview) + POST (markRead/markAllRead). Auto-seeds on first access. Uses server-side session (getServerSession) — no client userId needed.
+- ✅ NotificationCenter UI: bell icon with red unread badge (polls every 30s), Popover dropdown with notification items (type label, title, body, time, click-to-navigate), Mark all read, loading + empty states.
+- ✅ Integrated into CommandBar — visible on every view.
+- ✅ Browser-verified: badge shows "4", dropdown shows 5 items with titles + type labels, click navigates to Community view, mark-all-read works, 0 errors.
+- ✅ Fixed dev server stability (NODE_OPTIONS=--max-old-space-size=1024 in dev script).
+- The platform now has its connective tissue: when a citizen reports, they get notified when it's verified. When reports need witnesses, nearby users get notified. When rewards are earned, a toast-worthy notification appears. The Waze flywheel is now closed: observe → report → verify → REWARD → NOTIFIED → more participation.
