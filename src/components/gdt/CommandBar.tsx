@@ -23,6 +23,7 @@ import { fmtInt } from "@/lib/gdt/format";
 
 const VIEW_TITLES: Record<string, { title: string; sub: string }> = {
   home: { title: "Home", sub: "Your intelligence dashboard" },
+  feed: { title: "Intelligence Feed", sub: "Latest verified intelligence from across the network" },
   atlas: { title: "Map", sub: "Live intelligence map of Ghana" },
   observations: { title: "Observations", sub: "Fused evidence from multiple raster products" },
   phenomena: { title: "Phenomena", sub: "Evolving events tracked over time" },
