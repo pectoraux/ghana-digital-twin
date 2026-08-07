@@ -7,7 +7,7 @@ import { timeAgo } from "@/lib/gdt/format";
 import {
   Loader2, Users, MapPin, Shield, Award, CheckCircle2,
   ThumbsUp, ThumbsDown, HelpCircle, Eye, TrendingUp, Zap,
-  Plus,
+  Plus, Trophy, Crown, Medal, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CommunityReportModal } from "@/components/gdt/CommunityReportModal";
@@ -158,43 +158,76 @@ export function CommunityConsumerView() {
           );
         })}
 
-        {/* Citizens tab */}
-        {tab === "citizens" && citizens.map((c, i) => (
-          <div key={c.citizenId} className="rounded-xl border border-border bg-card p-4 shadow-card">
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-[18px] font-bold w-8 text-center" style={{ color: i < 3 ? "#fbbf24" : "#71717a" }}>#{i + 1}</span>
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full font-bold text-[16px] bg-primary/15 text-primary">
-                {c.handle.charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-[16px] font-medium">{c.handle}</span>
-                  <span className="rounded-full px-2 py-0.5 text-[13px] font-medium capitalize" style={{
-                    color: c.trustLevel === "expert" ? "#22d3ee" : c.trustLevel === "verified" ? "#34d399" : c.trustLevel === "trusted" ? "#fbbf24" : "#a1a1aa",
-                    background: `${c.trustLevel === "expert" ? "#22d3ee" : c.trustLevel === "verified" ? "#34d399" : c.trustLevel === "trusted" ? "#fbbf24" : "#a1a1aa"}15`
-                  }}>{c.trustLevel}</span>
+        {/* Citizens tab — leaderboard style */}
+        {tab === "citizens" && citizens.length > 0 && (
+          <div className="rounded-xl border border-border bg-card p-4 shadow-card mb-3">
+            <div className="flex items-center gap-2 mb-3">
+              <Trophy className="size-5 text-amber-500" />
+              <h2 className="text-[16px] font-semibold">Top Contributors Leaderboard</h2>
+            </div>
+            <p className="text-[13px] text-muted-foreground">Climb the ranks by reporting, verifying, and contributing to the community.</p>
+          </div>
+        )}
+        {tab === "citizens" && citizens.map((c, i) => {
+          const rankColors = ['#fbbf24', '#a1a1aa', '#fb923c'];
+          const rankColor = i < 3 ? rankColors[i] : '#71717a';
+          const RankIcon = i === 0 ? Crown : i === 1 ? Medal : i === 2 ? Medal : null;
+          const trustColors: Record<string, string> = { expert: '#22d3ee', verified: '#34d399', trusted: '#fbbf24', new: '#a1a1aa' };
+          const trustColor = trustColors[c.trustLevel] ?? '#a1a1aa';
+          return (
+            <div key={c.citizenId} className={cn("rounded-xl border bg-card p-4 shadow-card transition-colors", i < 3 ? "border-amber-500/20" : "border-border")}>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 w-12 shrink-0">
+                  {RankIcon ? (
+                    <RankIcon className="size-6" style={{ color: rankColor }} />
+                  ) : (
+                    <span className="font-mono text-[16px] font-bold text-muted-foreground">#{i + 1}</span>
+                  )}
                 </div>
-                <div className="flex items-center gap-3 mt-1 text-[14px] text-muted-foreground">
-                  <span className="flex items-center gap-1"><Award className="size-4 text-amber-500" /> Civic {c.civicScore.toFixed(0)}</span>
-                  <span className="flex items-center gap-1"><CheckCircle2 className="size-4 text-emerald-500" /> {c.confirmedReports} confirmed</span>
-                  <span className="flex items-center gap-1"><Eye className="size-4 text-teal-500" /> {c.totalWitnessResponses} witnessed</span>
-                  {c.totalEarnings > 0 && <span className="flex items-center gap-1 text-amber-500"><Zap className="size-4" /> {c.totalEarnings.toFixed(0)} IC</span>}
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full font-bold text-[16px] bg-primary/15 text-primary">
+                  {c.handle.charAt(0).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[16px] font-medium">{c.handle}</span>
+                    <span className="rounded-full px-2 py-0.5 text-[12px] font-medium capitalize" style={{ color: trustColor, background: `${trustColor}15` }}>{c.trustLevel}</span>
+                    {i === 0 && <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-500"><Crown className="size-3" /> #1 Contributor</span>}
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 text-[13px] text-muted-foreground flex-wrap">
+                    <span className="flex items-center gap-1"><Award className="size-3.5 text-amber-500" /> Civic {c.civicScore.toFixed(0)}</span>
+                    <span className="flex items-center gap-1"><CheckCircle2 className="size-3.5 text-emerald-500" /> {c.confirmedReports} confirmed</span>
+                    <span className="flex items-center gap-1"><Eye className="size-3.5 text-teal-500" /> {c.totalWitnessResponses} witnessed</span>
+                    {c.totalEarnings > 0 && <span className="flex items-center gap-1 text-amber-500"><Zap className="size-3.5" /> {c.totalEarnings.toFixed(0)} IC</span>}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {!loading && tab === "events" && events.length === 0 && (
-          <div className="flex h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
-            <Users className="size-8 opacity-30" />
-            <span className="text-[15px]">No community reports yet</span>
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+            <div className="flex size-16 items-center justify-center rounded-full bg-emerald-500/10">
+              <Users className="size-8 text-emerald-500/50" />
+            </div>
+            <div>
+              <p className="text-[16px] font-medium">No active reports in your area</p>
+              <p className="text-[14px] text-muted-foreground mt-1">Be the first to report what you see. Your community needs your eyes.</p>
+            </div>
+            <Button onClick={() => setReportOpen(true)} className="mt-2 flex items-center gap-1.5">
+              <Plus className="size-4" /> Report an Incident
+            </Button>
           </div>
         )}
         {!loading && tab === "citizens" && citizens.length === 0 && (
-          <div className="flex h-32 flex-col items-center justify-center gap-2 text-muted-foreground">
-            <Award className="size-8 opacity-30" />
-            <span className="text-[15px]">No citizens registered yet</span>
+          <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+            <div className="flex size-16 items-center justify-center rounded-full bg-amber-500/10">
+              <Trophy className="size-8 text-amber-500/50" />
+            </div>
+            <div>
+              <p className="text-[16px] font-medium">Leaderboard is warming up</p>
+              <p className="text-[14px] text-muted-foreground mt-1">Start reporting and verifying to climb the ranks!</p>
+            </div>
           </div>
         )}
       </div>

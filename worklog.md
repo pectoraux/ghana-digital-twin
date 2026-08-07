@@ -1932,3 +1932,36 @@ Stage Summary:
 - ✅ MissionsConsumerView: progress bars (info gain % / 75% target), participant counts, color-coded bars
 - ✅ Browser-verified: progress bars + participant counts visible, VLM-confirmed, 0 errors
 - Mission cards now show progress toward the verification target and how many people have joined. This creates social proof (bandwagon effect) — users are more likely to join a mission that already has participants, and the progress bar gives a tangible sense of how close the mission is to completion.
+
+---
+Task ID: 69
+Agent: orchestrator
+Task: Community leaderboard + improved empty states
+
+Work Log:
+- VLM analysis of Community view recommended: "Eliminate the empty state dead zone" and "Gamify the Top Contributors tab — transform into a Live Leaderboard with avatars, reputation scores, and badges."
+- Enhanced CommunityConsumerView:
+  - **Events tab empty state**: replaced the tiny "No community reports yet" text with a full empty state — large emerald Users icon in a circle, "No active reports in your area" heading, "Be the first to report what you see. Your community needs your eyes." subtitle, and a "Report an Incident" button that opens the CommunityReportModal.
+  - **Citizens tab empty state**: replaced with a trophy icon, "Leaderboard is warming up" heading, "Start reporting and verifying to climb the ranks!" subtitle.
+  - **Leaderboard header card**: new card at the top of the citizens tab with Trophy icon, "Top Contributors Leaderboard" title, and "Climb the ranks by reporting, verifying, and contributing to the community." description.
+  - **Enhanced contributor cards**: 
+    - Rank icons: Crown (gold) for #1, Medal (silver) for #2, Medal (bronze) for #3, plain "#N" for the rest
+    - Top 3 cards get amber border highlight (border-amber-500/20)
+    - "#1 Contributor" badge with Crown icon on the first-place card
+    - Trust level badges with color mapping (expert=cyan, verified=emerald, trusted=amber, new=gray)
+    - Compact stats: Civic score, confirmed reports, witnessed, IC earnings (with smaller icons)
+- Browser-verified via Agent Browser + VLM:
+  - Events tab: "Active Reports (10)" with Confirm witness buttons ✅
+  - Citizens tab: "Top Contributors (6)" with leaderboard header ✅
+  - Rank icons present (#1 Contributor with crown) ✅
+  - VLM-confirmed: gold crown for #1, silver medal for #2, trust level badges (Verified=green, Trusted=gold), stats visible, clean design ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ Events empty state: full CTA with icon, heading, subtitle, and Report Incident button
+- ✅ Citizens empty state: trophy icon + "Leaderboard is warming up" message
+- ✅ Leaderboard header card with Trophy icon + description
+- ✅ Enhanced contributor cards: Crown/Medal rank icons, amber borders for top 3, #1 Contributor badge, trust level color badges, compact stats
+- ✅ Browser-verified: 10 events + 6 citizens with leaderboard, VLM-confirmed rank icons + badges, 0 errors
+- The Community view now has proper empty states that guide users to action, and the contributors tab is gamified as a leaderboard with rank icons and badges. This creates social proof and motivates users to climb the ranks by reporting and verifying.
