@@ -7,7 +7,10 @@ import { timeAgo } from "@/lib/gdt/format";
 import {
   Loader2, Users, MapPin, Shield, Award, CheckCircle2,
   ThumbsUp, ThumbsDown, HelpCircle, Eye, TrendingUp, Zap,
+  Plus,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CommunityReportModal } from "@/components/gdt/CommunityReportModal";
 import { CommunityEventDetail } from "@/components/gdt/CommunityEventDetail";
 
 async function api(path: string) {
@@ -39,6 +42,7 @@ export function CommunityConsumerView() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"events" | "citizens">("events");
   const [busy, setBusy] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const load = useCallback(() => {
@@ -72,12 +76,19 @@ export function CommunityConsumerView() {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-border px-4 md:px-6 py-3 md:py-4">
-        <h1 className="text-[20px] md:text-[24px] font-bold flex items-center gap-2">
-          <Users className="size-6 text-emerald-500" /> Community
-        </h1>
-        <p className="text-[15px] text-muted-foreground mt-1 hidden sm:block">Citizen intelligence network — reports, witnesses, and community reputation</p>
+      <div className="flex items-center justify-between border-b border-border px-4 md:px-6 py-3 md:py-4">
+        <div>
+          <h1 className="text-[20px] md:text-[24px] font-bold flex items-center gap-2">
+            <Users className="size-6 text-emerald-500" /> Community
+          </h1>
+          <p className="text-[15px] text-muted-foreground mt-1 hidden sm:block">Citizen intelligence network — reports, witnesses, and community reputation</p>
+        </div>
+        <Button onClick={() => setReportOpen(true)} className="flex items-center gap-1.5 shrink-0">
+          <Plus className="size-4" /> <span className="hidden sm:inline">Report Incident</span>
+        </Button>
       </div>
+
+      <CommunityReportModal open={reportOpen} onOpenChange={setReportOpen} onSubmitted={load} />
 
       {/* Tab switcher */}
       <div className="flex items-center gap-2 border-b border-border px-4 md:px-6 py-2 overflow-x-auto">

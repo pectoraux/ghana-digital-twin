@@ -1774,3 +1774,35 @@ Stage Summary:
 - ✅ Uses animate-pulse for smooth loading animation
 - ✅ Improves perceived performance when Neon APIs are slow (5-7s cold starts)
 - The app is now polished and production-ready across all consumer views.
+
+---
+Task ID: 64
+Agent: orchestrator
+Task: Community Report Modal — create CitizenEvents for witness verification
+
+Work Log:
+- Identified gap: the existing ReportModal creates a FeedItem (intelligence feed post), but there was no way for users to create a CitizenEvent (the structured incident reports that go into the witness verification queue with type, severity, GPS location, and confidence scoring).
+- Added citizenId to the NextAuth session (auth.ts): added citizenId to the authorize return, JWT callback (token.citizenId), and session callback (session.user.citizenId). This was missing — the CommunityReportModal needs citizenId to create events.
+- Built CommunityReportModal component (src/components/gdt/CommunityReportModal.tsx, ~290 lines): Dialog with form + success states:
+  - Form: 7 incident type cards (Illegal Mining, Flood Risk, Deforestation, Water Pollution, Cocoa Disease, Land Degradation, Other) with color-coded icons, 4 severity levels (Low/Moderate/High/Critical) with color dots, title input (120 char), description textarea (500 char), region select (16 Ghana regions), GPS location detection button (uses navigator.geolocation with fallback to Western Region), estimated confidence display (auto-calculated from severity + location bonus).
+  - Success state: green check, "Incident Reported!", event ID, initial confidence %, severity badge, "Earn rewards when witnesses verify your report" guidance.
+  - POST to /api/community/events with citizenId, type, severity, title, description, regionId, location, selfConfidence.
+  - Toast notifications via sonner.
+- Added "Report Incident" button (Plus icon) to CommunityConsumerView header that opens the modal. onSubmitted callback triggers list reload.
+- Browser-verified via Agent Browser (with fresh login to get citizenId in JWT):
+  - Session has citizenId "cit-ye7r1" ✅
+  - Click "Report Incident" → modal opens with title "Report Incident", 7 incident types, 4 severity levels, GPS detection ✅
+  - Fill title "Test: Illegal excavators at Pra River bridge" ✅
+  - Fill description ✅
+  - Click "Submit Report" → POST /api/community/events returns 200 ✅
+  - Success state shows "Incident Reported!" with Event ID "CE-2026-0010", 50% Initial Confidence ✅
+  - VLM-confirmed: success modal with event ID + confidence ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ CommunityReportModal: 7 incident types, 4 severity levels, GPS location detection, estimated confidence, success state with event ID.
+- ✅ Auth update: citizenId now in NextAuth session (JWT + session callback).
+- ✅ CommunityConsumerView: "Report Incident" button in header, modal wired with reload callback.
+- ✅ Browser-verified: full flow works — open modal, fill form, submit, success with CE-2026-0010.
+- Users can now create structured community incident reports that go into the witness verification queue. This is different from the FeedItem (which is just a social post) — CitizenEvents have type, severity, GPS location, and go through the witness confirm/reject flow. The flywheel is now fully complete: observe → REPORT INCIDENT → witness verification → confidence fusion → REWARDS.
