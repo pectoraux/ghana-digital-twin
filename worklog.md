@@ -1841,3 +1841,33 @@ Stage Summary:
 - ✅ HomeView: Activity Map section between reputation cards and Intelligence Pulse
 - ✅ Browser-verified: 13 markers visible on Ghana map, VLM-confirmed, 0 errors
 - The Home view now has geographic context — users can see where active alerts and events are happening across Ghana. This bridges the gap between data and physical reality, making the "Digital Twin" name more meaningful. The map shows feed alerts (red/amber/cyan) and community events needing witnesses, with the user's region highlighted.
+
+---
+Task ID: 66
+Agent: orchestrator
+Task: Sparklines + Tier Labels on Home reputation cards
+
+Work Log:
+- VLM analysis identified: "The four scorecards display raw numbers but lack immediate meaning. A user seeing '73' doesn't know if that is good or bad. Add sparklines and contextual benchmarks."
+- Built /api/reputation/trends API: generates 30-day trend data for trust/civic scores + report/verified counts. Computes tier labels (Trusted Leader/Trusted/Established/Building/Newcomer) with colors and percentiles (Top 5%/Top 15%/Top 35%/Top 60%/Getting started). Calculates week-over-week change.
+- Built Sparkline component (src/components/gdt/Sparkline.tsx): small SVG trend line with gradient area fill, end dot, configurable color/width/height. Uses polyline for the trend + polygon for the gradient fill.
+- Enhanced HomeView reputation cards:
+  - Trust Score: shield icon colored by tier, tier label badge ("Trusted"), score colored by tier, sparkline trend graph, percentile ("Top 15%")
+  - Civic Score: award icon colored by tier, tier label badge, score colored by tier, sparkline, percentile
+  - Reports Filed: eye icon, week-over-week change indicator (+N with TrendingUp icon), sparkline, count
+  - Verified: check icon, week-over-week change indicator, sparkline, count
+- Color mapping: Trusted Leader=emerald (#34d399), Trusted=cyan (#22d3ee), Established=amber (#fbbf24), Building=orange (#fb923c), Newcomer=rose (#f43f5e)
+- Browser-verified via Agent Browser + VLM:
+  - 41 SVGs on page (4 sparklines + map + others) ✅
+  - Tier labels found: "Trusted" (×2) ✅
+  - Percentiles found: "Top 15%" (×2) ✅
+  - VLM-confirmed: sparkline trend graphs on each card, tier labels, percentile text, color-coded scores ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ /api/reputation/trends API: 30-day trends + tier labels + percentiles + week-over-week changes
+- ✅ Sparkline component: SVG trend line with gradient fill + end dot
+- ✅ HomeView cards enhanced: sparklines + tier labels + percentiles + color-coded scores + change indicators
+- ✅ Browser-verified: all elements visible, VLM-confirmed, 0 errors
+- The reputation cards now have context — users can see if their scores are trending up, what tier they're in (Trusted, Top 15%), and how they compare. This transforms raw numbers into meaningful, motivating feedback that encourages continued participation.

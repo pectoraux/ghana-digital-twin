@@ -6,6 +6,7 @@ import { useGDT } from "@/lib/gdt/store";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
 import { MiniMap } from "@/components/gdt/MiniMap";
+import { Sparkline } from "@/components/gdt/Sparkline";
 import {
   MapPin, Shield, Award, TrendingUp, Zap, Users,
   AlertTriangle, Target, CheckCircle2, ChevronRight, Activity,
@@ -36,6 +37,7 @@ export function HomeView() {
   const [identity, setIdentity] = useState<any>(null);
   const [feedItems, setFeedItems] = useState<any[]>([]);
   const [missions, setMissions] = useState<any[]>([]);
+  const [trends, setTrends] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,10 +47,12 @@ export function HomeView() {
       api(`/api/identity?userId=${userId}`).catch(() => ({ identity: null })),
       api("/api/feed?limit=5").catch(() => ({ items: [] })),
       api("/api/missions?limit=3").catch(() => ({ missions: [] })),
-    ]).then(([idRes, feedRes, missionRes]) => {
+      api(`/api/reputation/trends?userId=${userId}`).catch(() => null),
+    ]).then(([idRes, feedRes, missionRes, trendsRes]) => {
       setIdentity(idRes.identity);
       setFeedItems(feedRes.items || []);
       setMissions(missionRes.missions || []);
+      setTrends(trendsRes);
     }).finally(() => setLoading(false));
   }, [session]);
 
@@ -109,28 +113,90 @@ export function HomeView() {
           </p>
         </div>
 
-        {/* Reputation snapshot */}
+        {/* Reputation snapshot with sparklines + tier labels */}
         {rep && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {/* Trust Score */}
             <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <Shield className="size-5 text-teal-500 mb-2" />
-              <div className="text-[32px] font-bold font-mono">{rep.trustScore.toFixed(0)}</div>
-              <div className="text-[13px] text-muted-foreground">Trust Score</div>
+              <div className="flex items-center justify-between mb-2">
+                <Shield className="size-5" style={{ color: trends?.trust?.tier?.color ?? '#14b8a6' }} />
+                {trends?.trust?.tier && (
+                  <span className="rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ color: trends.trust.tier.color, background: `${trends.trust.tier.color}15` }}>
+                    {trends.trust.tier.label}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-end justify-between">
+                <div className="text-[32px] font-bold font-mono" style={{ color: trends?.trust?.tier?.color }}>{rep.trustScore.toFixed(0)}</div>
+                {trends?.trust?.trend && (
+                  <Sparkline data={trends.trust.trend} color={trends.trust.tier.color} width={70} height={24} />
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-[13px] text-muted-foreground">Trust Score</span>
+                {trends?.trust?.tier?.percentile && (
+                  <span className="text-[11px] text-muted-foreground">{trends.trust.tier.percentile}</span>
+                )}
+              </div>
             </div>
+            {/* Civic Score */}
             <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <Award className="size-5 text-amber-500 mb-2" />
-              <div className="text-[32px] font-bold font-mono">{rep.civicScore.toFixed(0)}</div>
-              <div className="text-[13px] text-muted-foreground">Civic Score</div>
+              <div className="flex items-center justify-between mb-2">
+                <Award className="size-5" style={{ color: trends?.civic?.tier?.color ?? '#fbbf24' }} />
+                {trends?.civic?.tier && (
+                  <span className="rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ color: trends.civic.tier.color, background: `${trends.civic.tier.color}15` }}>
+                    {trends.civic.tier.label}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-end justify-between">
+                <div className="text-[32px] font-bold font-mono" style={{ color: trends?.civic?.tier?.color }}>{rep.civicScore.toFixed(0)}</div>
+                {trends?.civic?.trend && (
+                  <Sparkline data={trends.civic.trend} color={trends.civic.tier.color} width={70} height={24} />
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-[13px] text-muted-foreground">Civic Score</span>
+                {trends?.civic?.tier?.percentile && (
+                  <span className="text-[11px] text-muted-foreground">{trends.civic.tier.percentile}</span>
+                )}
+              </div>
             </div>
+            {/* Reports Filed */}
             <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <Eye className="size-5 text-emerald-500 mb-2" />
-              <div className="text-[32px] font-bold font-mono">{rep.totalReports}</div>
-              <div className="text-[13px] text-muted-foreground">Reports Filed</div>
+              <div className="flex items-center justify-between mb-2">
+                <Eye className="size-5 text-emerald-500" />
+                {trends?.reports?.change !== undefined && trends.reports.change > 0 && (
+                  <span className="flex items-center gap-0.5 text-[11px] font-medium text-emerald-500">
+                    <TrendingUp className="size-3" /> +{trends.reports.change}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-end justify-between">
+                <div className="text-[32px] font-bold font-mono text-emerald-500">{rep.totalReports}</div>
+                {trends?.reports?.trend && (
+                  <Sparkline data={trends.reports.trend} color="#34d399" width={70} height={24} />
+                )}
+              </div>
+              <div className="text-[13px] text-muted-foreground mt-1">Reports Filed</div>
             </div>
+            {/* Verified */}
             <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <CheckCircle2 className="size-5 text-violet-500 mb-2" />
-              <div className="text-[32px] font-bold font-mono">{rep.totalVerified}</div>
-              <div className="text-[13px] text-muted-foreground">Verified</div>
+              <div className="flex items-center justify-between mb-2">
+                <CheckCircle2 className="size-5 text-violet-500" />
+                {trends?.verified?.change !== undefined && trends.verified.change > 0 && (
+                  <span className="flex items-center gap-0.5 text-[11px] font-medium text-violet-500">
+                    <TrendingUp className="size-3" /> +{trends.verified.change}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-end justify-between">
+                <div className="text-[32px] font-bold font-mono text-violet-500">{rep.totalVerified}</div>
+                {trends?.verified?.trend && (
+                  <Sparkline data={trends.verified.trend} color="#a78bfa" width={70} height={24} />
+                )}
+              </div>
+              <div className="text-[13px] text-muted-foreground mt-1">Verified</div>
             </div>
           </div>
         )}
