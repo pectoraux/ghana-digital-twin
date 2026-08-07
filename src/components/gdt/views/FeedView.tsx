@@ -8,7 +8,7 @@ import { useGDT } from "@/lib/gdt/store";
 import {
   Loader2, MapPin, Shield, TrendingUp, Eye, CheckCircle2,
   AlertTriangle, Target, Users, Zap, Package, ChevronRight,
-  Building2, Search, ThumbsUp, Plus,
+  Building2, Search, ThumbsUp, Plus, MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -47,6 +47,7 @@ export function FeedView() {
   const [liked, setLiked] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
   const setReportOpen = useGDT((s) => s.setReportOpen);
+  const setView = useGDT((s) => s.setView);
   const setSelectedFeedItemId = useGDT((s) => s.setSelectedFeedItemId);
 
   const load = useCallback(() => {
@@ -126,7 +127,10 @@ export function FeedView() {
           const meta = FEED_TYPE_META[item.type] ?? FEED_TYPE_META.REPORT;
           const Icon = meta.icon;
           return (
-            <div key={item.feedItemId} onClick={() => setSelectedFeedItemId(item.feedItemId)} className="rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/30 transition-colors cursor-pointer">
+            <div key={item.feedItemId} onClick={() => setSelectedFeedItemId(item.feedItemId)} 
+              className="rounded-xl border border-border bg-card p-4 shadow-card hover:border-primary/30 transition-colors cursor-pointer relative overflow-hidden"
+              style={{ borderLeftWidth: '3px', borderLeftColor: meta.color }}
+            >
               <div className="flex items-start gap-3">
                 {/* Creator avatar */}
                 <div className="flex size-10 shrink-0 items-center justify-center rounded-full font-bold text-[15px]" style={{ color: meta.color, background: `${meta.color}15` }}>
@@ -166,13 +170,33 @@ export function FeedView() {
                     <span className="flex items-center gap-1 font-medium" style={{ color: meta.color }}>
                       <TrendingUp className="size-4" /> {(item.confidence * 100).toFixed(0)}% confidence
                     </span>
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <Eye className="size-4" /> {item.viewCount}
-                    </span>
+                  </div>
+
+                  {/* Inline quick actions */}
+                  <div className="flex items-center gap-1 mt-3 -ml-1">
                     <button onClick={(e) => { e.stopPropagation(); handleLike(item.feedItemId); }} disabled={busy === item.feedItemId || liked.has(item.feedItemId)}
-                      className={cn("flex items-center gap-1 transition-colors", liked.has(item.feedItemId) ? "text-emerald-500" : "text-muted-foreground hover:text-emerald-500")}>
-                      {busy === item.feedItemId ? <Loader2 className="size-4 animate-spin" /> : <ThumbsUp className="size-4" />} {item.likeCount}
+                      className={cn("flex items-center gap-1 rounded-md px-2 py-1 text-[13px] transition-colors", liked.has(item.feedItemId) ? "text-emerald-500 bg-emerald-500/10" : "text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10")}>
+                      {busy === item.feedItemId ? <Loader2 className="size-3.5 animate-spin" /> : <ThumbsUp className="size-3.5" />} {item.likeCount}
                     </button>
+                    <button onClick={(e) => { e.stopPropagation(); setSelectedFeedItemId(item.feedItemId); }}
+                      className="flex items-center gap-1 rounded-md px-2 py-1 text-[13px] text-muted-foreground hover:text-cyan-500 hover:bg-cyan-500/10 transition-colors">
+                      <MessageCircle className="size-3.5" /> {item.commentCount || 0}
+                    </button>
+                    <span className="flex items-center gap-1 rounded-md px-2 py-1 text-[13px] text-muted-foreground">
+                      <Eye className="size-3.5" /> {item.viewCount}
+                    </span>
+                    {(item.type === 'ALERT' || item.type === 'REPORT') && (
+                      <button onClick={(e) => { e.stopPropagation(); setView('community'); }}
+                        className="flex items-center gap-1 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[13px] font-medium text-emerald-500 hover:bg-emerald-500/15 transition-colors ml-auto">
+                        <CheckCircle2 className="size-3.5" /> Verify
+                      </button>
+                    )}
+                    {item.type === 'MISSION' && (
+                      <button onClick={(e) => { e.stopPropagation(); setView('missions'); }}
+                        className="flex items-center gap-1 rounded-md border border-cyan-500/30 bg-cyan-500/10 px-2 py-1 text-[13px] font-medium text-cyan-500 hover:bg-cyan-500/15 transition-colors ml-auto">
+                        <Target className="size-3.5" /> Join
+                      </button>
+                    )}
                   </div>
                 </div>
 

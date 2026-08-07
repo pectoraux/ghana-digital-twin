@@ -1871,3 +1871,35 @@ Stage Summary:
 - ✅ HomeView cards enhanced: sparklines + tier labels + percentiles + color-coded scores + change indicators
 - ✅ Browser-verified: all elements visible, VLM-confirmed, 0 errors
 - The reputation cards now have context — users can see if their scores are trending up, what tier they're in (Trusted, Top 15%), and how they compare. This transforms raw numbers into meaningful, motivating feedback that encourages continued participation.
+
+---
+Task ID: 67
+Agent: orchestrator
+Task: Feed card quick-actions + colored left borders
+
+Work Log:
+- VLM analysis of Feed view recommended: "Add context-sensitive icon buttons directly on the card (Verify, Join) to reduce click-depth" and "thin colored left-border for critical alerts."
+- Enhanced FeedView feed cards:
+  - **Colored left border** (3px, borderLeftWidth + borderLeftColor) matching the feed type: red for ALERT, amber for REPORT, violet for ANALYSIS, cyan for MISSION, green for DISCUSSION, blue for ASSET, emerald for ANNOUNCEMENT.
+  - **Inline quick-action buttons** row below the meta row:
+    - Like button (ThumbsUp icon + count, emerald when liked, hover emerald background)
+    - Comment button (MessageCircle icon + count, opens detail dialog, hover cyan)
+    - View count (Eye icon + count, display-only)
+    - **Verify button** (emerald, with CheckCircle2 icon) — shown only for ALERT and REPORT types, navigates to Community view
+    - **Join button** (cyan, with Target icon) — shown only for MISSION type, navigates to Missions view
+  - All inline buttons have stopPropagation so they don't trigger the card click (which opens detail dialog)
+  - Moved Like button from the meta row to the new quick-actions row for better visual grouping
+- Browser-verified via Agent Browser + VLM:
+  - Verify button present (for ALERT/REPORT types) ✅
+  - Join button present (for MISSION type) ✅
+  - Comment icons present ✅
+  - VLM-confirmed: colored left borders (amber for Report, green for Discussion), green "Verify" button, like/comment/view as clickable buttons ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ Colored left borders on feed cards (type-coded, 3px width)
+- ✅ Inline quick-action buttons: Like, Comment, View, Verify (ALERT/REPORT), Join (MISSION)
+- ✅ stopPropagation on all inline buttons to prevent card click conflict
+- ✅ Browser-verified: all buttons present, VLM-confirmed, 0 errors
+- Feed cards now have reduced click-depth — users can Like, Comment, Verify, or Join directly from the card without opening the detail dialog. The colored left borders provide instant visual type recognition (red=alert, amber=report, cyan=mission). This increases engagement by making the most common actions one click away.
