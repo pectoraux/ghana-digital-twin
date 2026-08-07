@@ -1903,3 +1903,32 @@ Stage Summary:
 - ✅ stopPropagation on all inline buttons to prevent card click conflict
 - ✅ Browser-verified: all buttons present, VLM-confirmed, 0 errors
 - Feed cards now have reduced click-depth — users can Like, Comment, Verify, or Join directly from the card without opening the detail dialog. The colored left borders provide instant visual type recognition (red=alert, amber=report, cyan=mission). This increases engagement by making the most common actions one click away.
+
+---
+Task ID: 68
+Agent: orchestrator
+Task: Mission progress bars + participant counts (social proof)
+
+Work Log:
+- VLM analysis of Missions view recommended: "Add a progress bar showing how close the mission is to the 75% threshold (e.g., '29% / 75% Verified') and display the number of active participants. This triggers the bandwagon effect and provides a sense of immediate momentum."
+- Built /api/missions/stats API: batch endpoint that accepts ?ids=id1,id2,id3 and returns participant counts per mission using Prisma groupBy on MissionParticipation (status=active).
+- Enhanced MissionsConsumerView:
+  - Added participantStats state (Record of missionId → { participants })
+  - After loading missions, fetches /api/missions/stats?ids=... in batch to get all participant counts in one request
+  - Added progress bar to each mission card: shows informationGain as percentage of the 75% verification target, color-coded (mission type color when below target, emerald when at/above 75%)
+  - Added participant count display: "N participants" with Users icon, below the progress bar
+  - Moved Join Mission button to the same row as participant count (flex justify-between)
+  - Added line-clamp-2 to reasoning text for better card height consistency
+- Browser-verified via Agent Browser + VLM:
+  - Progress bars present (X% / 75% format) ✅
+  - Participant counts present ("1 participant", "0 participants") ✅
+  - Join Mission button still present ✅
+  - VLM-confirmed: progress bar with percentage (18% / 75%), participant count (1 participant), color-coded bars (green when at target) ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ /api/missions/stats API: batch participant counts via groupBy
+- ✅ MissionsConsumerView: progress bars (info gain % / 75% target), participant counts, color-coded bars
+- ✅ Browser-verified: progress bars + participant counts visible, VLM-confirmed, 0 errors
+- Mission cards now show progress toward the verification target and how many people have joined. This creates social proof (bandwagon effect) — users are more likely to join a mission that already has participants, and the progress bar gives a tangible sense of how close the mission is to completion.

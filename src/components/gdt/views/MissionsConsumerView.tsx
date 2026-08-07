@@ -47,14 +47,24 @@ export function MissionsConsumerView() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"missions" | "bounties">("missions");
   const [selectedMission, setSelectedMission] = useState<any>(null);
+  const [participantStats, setParticipantStats] = useState<Record<string, { participants: number }>>({});
 
   const load = useCallback(() => {
     Promise.all([
       api("/api/missions?limit=20").catch(() => ({ missions: [] })),
       api("/api/marketplace/bounties?status=open").catch(() => ({ bounties: [] })),
     ]).then(([m, b]) => {
-      setMissions(m.missions || []);
+      const missionList = m.missions || [];
+      setMissions(missionList);
       setBounties(b.bounties || []);
+      // Load participant counts in batch
+      const ids = missionList.map((mi: any) => mi.id).filter(Boolean).join(",");
+      if (ids) {
+        fetch(`/api/missions/stats?ids=${ids}`)
+          .then((r) => r.ok ? r.json() : null)
+          .then((data) => { if (data?.stats) setParticipantStats(data.stats); })
+          .catch(() => {});
+      }
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -107,7 +117,7 @@ export function MissionsConsumerView() {
                     </span>
                     <span className="rounded-full bg-foreground/5 px-2 py-0.5 text-[13px]">{m.status}</span>
                   </div>
-                  <p className="text-[15px] text-muted-foreground mt-1 leading-relaxed">{m.reasoning}</p>
+                  <p className="text-[15px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">{m.reasoning}</p>
                   <div className="flex items-center gap-3 md:gap-4 mt-3 text-[14px] flex-wrap">
                     <span className="flex items-center gap-1 font-medium" style={{ color }}>
                       <Zap className="size-4" /> EVI {m.evi?.toFixed(2)}
@@ -122,11 +132,43 @@ export function MissionsConsumerView() {
                       <Clock className="size-4" /> {timeAgo(m.createdAt)}
                     </span>
                   </div>
-                  {m.status === "planned" && (
-                    <button onClick={(e) => { e.stopPropagation(); setSelectedMission(m); }} className="mt-3 flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-[14px] font-medium text-primary hover:bg-primary/15 transition-colors">
-                      <CheckCircle2 className="size-4" /> Join Mission
-                    </button>
-                  )}
+
+                  {/* Progress + participants */}
+                  {(() => {
+                    const participants = participantStats[m.id]?.participants ?? 0;
+                    const progressPct = Math.min(100, Math.round((m.informationGain ?? 0) * 100));
+                    const targetPct = 75;
+                    return (
+                      <div className="mt-3 space-y-1.5">
+                        {/* Progress bar */}
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 rounded-full bg-foreground/10 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{
+                                width: `${progressPct}%`,
+                                background: progressPct >= targetPct ? '#34d399' : color,
+                              }}
+                            />
+                          </div>
+                          <span className="text-[12px] font-mono text-muted-foreground shrink-0">
+                            {progressPct}% / {targetPct}%
+                          </span>
+                        </div>
+                        {/* Participants + join button row */}
+                        <div className="flex items-center justify-between">
+                          <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
+                            <Users className="size-3.5" /> {participants} {participants === 1 ? 'participant' : 'participants'}
+                          </span>
+                          {m.status === "planned" && (
+                            <button onClick={(e) => { e.stopPropagation(); setSelectedMission(m); }} className="flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/10 px-3 py-1.5 text-[14px] font-medium text-primary hover:bg-primary/15 transition-colors">
+                              <CheckCircle2 className="size-4" /> Join Mission
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <ChevronRight className="size-5 text-muted-foreground shrink-0 mt-1" />
               </div>
