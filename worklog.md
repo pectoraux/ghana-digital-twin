@@ -1806,3 +1806,38 @@ Stage Summary:
 - ✅ CommunityConsumerView: "Report Incident" button in header, modal wired with reload callback.
 - ✅ Browser-verified: full flow works — open modal, fill form, submit, success with CE-2026-0010.
 - Users can now create structured community incident reports that go into the witness verification queue. This is different from the FeedItem (which is just a social post) — CitizenEvents have type, severity, GPS location, and go through the witness confirm/reject flow. The flywheel is now fully complete: observe → REPORT INCIDENT → witness verification → confidence fusion → REWARDS.
+
+---
+Task ID: 65
+Agent: orchestrator
+Task: Mini-Map Widget on Home — geographic visualization of active alerts
+
+Work Log:
+- VLM analysis of Home view identified: "This is a Digital Twin platform, yet there is no map visible... a mini-map widget showing the location of active alerts would be highly valuable. It bridges the gap between data and physical reality."
+- Built /api/home/map-data API: gathers recent feed alerts (ALERT/REPORT/MISSION types) + community events (witnessing/created/broadcast status), maps each to coordinates using region centroids from REGIONS geo data, adds jitter to avoid overlap. Returns markers with kind (feed/event), type, title, region, confidence, lng, lat. Also returns user region + centroid for the "you are here" indicator.
+- Built MiniMap component (src/components/gdt/MiniMap.tsx, ~180 lines): SVG-based map of Ghana using the existing GHANA_OUTLINE + project() projection. Features:
+  - Ghana outline path rendered as a dark silhouette
+  - User region indicator: pulsing blue circle showing user's location
+  - Alert markers: colored circles (red for ALERT/illegal_mining, amber for REPORT, cyan for MISSION, etc.) with white stroke
+  - Pulsing rings on urgent items (ALERT type, illegal_mining, witnessing status)
+  - Hover tooltip: shows type badge, status, title, region, confidence
+  - Click handler (onMarkerClick prop for future navigation)
+  - Legend in bottom-right (Alert/Report/Mission color key)
+  - Loading state with spinner
+  - Region label below: "Showing activity near {region}"
+- Added MiniMap to HomeView between reputation cards and Intelligence Pulse section.
+- Browser-verified via Agent Browser + VLM:
+  - Home view loads with "Activity Map" section ✅
+  - SVG map of Ghana rendered ✅
+  - 13 active markers shown (colored dots on the map) ✅
+  - "Showing activity near {region}" label present ✅
+  - VLM-confirmed: "displays an SVG map of Ghana... colored markers (dots) on the map... 13 active markers" ✅
+  - 0 console errors ✅
+- Lint: 0 errors, 0 warnings.
+
+Stage Summary:
+- ✅ /api/home/map-data API: gathers feed alerts + community events, maps to coordinates via region centroids
+- ✅ MiniMap component: SVG Ghana outline, colored markers with pulse animations, hover tooltip, legend, user location indicator
+- ✅ HomeView: Activity Map section between reputation cards and Intelligence Pulse
+- ✅ Browser-verified: 13 markers visible on Ghana map, VLM-confirmed, 0 errors
+- The Home view now has geographic context — users can see where active alerts and events are happening across Ghana. This bridges the gap between data and physical reality, making the "Digital Twin" name more meaningful. The map shows feed alerts (red/amber/cyan) and community events needing witnesses, with the user's region highlighted.

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useGDT } from "@/lib/gdt/store";
 import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/gdt/format";
+import { MiniMap } from "@/components/gdt/MiniMap";
 import {
   MapPin, Shield, Award, TrendingUp, Zap, Users,
   AlertTriangle, Target, CheckCircle2, ChevronRight, Activity,
@@ -133,6 +134,9 @@ export function HomeView() {
             </div>
           </div>
         )}
+
+        {/* Activity Map */}
+        <MiniMap />
 
         {/* Intelligence Pulse */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-card">
