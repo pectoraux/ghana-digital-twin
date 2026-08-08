@@ -2241,3 +2241,32 @@ Stage Summary:
 - ✅ No plain spinners remaining in consumer views
 - ✅ Accessibility verified (alt text, aria attributes)
 - The consumer experience is now polished end-to-end: every view shows shaped skeleton placeholders that mimic the final layout during loading, rather than plain spinners.
+
+---
+Task ID: 82
+Agent: orchestrator
+Task: Login page redesign — branding, security, collapsible demos
+
+Work Log:
+- VLM analysis of login page identified 3 improvements: (1) enhance branding, (2) add security indicators, (3) simplify user path with collapsible demos.
+- Redesigned login page (src/app/login/page.tsx):
+  - Larger branding: size-16 logo (was 14), text-2xl heading (was xl), added feature badges (Satellite/teal, Real-time/rose, Verified/emerald with icons).
+  - Security indicators: Lock icon next to password label, "Secured by NextAuth · Sessions encrypted" footer with lock icon.
+  - Collapsible demo accounts: hidden by default (showDemos state), toggle with ChevronDown/Up arrow. Reduces clutter for registered users.
+  - Subtle background pattern: radial gradient dots at 3% opacity.
+  - Better typography: 13px labels (was xs/12px), 14px subtitle.
+  - Rounded form card with shadow-card.
+- Browser-verified:
+  - Login page has branding, feature badges, security label, lock icon, demo toggle ✅
+  - Demo accounts hidden by default (demosVisible: false) ✅
+  - After clicking toggle, demos become visible ✅
+  - Login works after clicking Citizen demo ✅
+  - All 7 nav buttons work ✅
+  - 0 errors ✅
+- VLM-confirmed: "prominent branding, feature badges, security indicator, hidden demos behind toggle" ✅
+- Lint: 0 errors, 0 warnings.
+- Committed to GitHub (c3d9149).
+
+Stage Summary:
+- ✅ Login page redesigned with enhanced branding, security indicators, and collapsible demos
+- The login page now makes a strong first impression: prominent branding with feature badges, visible security indicators that build trust, and a clean form that's not cluttered with demo accounts
