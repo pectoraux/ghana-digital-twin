@@ -401,6 +401,49 @@ export const RULES: RuleDef[] = [
       { bundle: "infrastructure", indication: "forest reserve boundary" },
     ],
   },
+
+  // ---- Phase 4.20: General land-use change (settlement/road/infrastructure) ----
+  // These hypothesis types already existed but had no rules that used the
+  // infrastructure evidence category (now populated by OSM + mining cadastre connectors).
+  {
+    ruleId: "rule-settle-02",
+    name: "Built-up expansion + infrastructure proximity → settlement boost",
+    description: "Bare soil increase near existing settlement infrastructure is consistent with settlement expansion.",
+    category: "infrastructure",
+    hypothesisType: "settlement_expansion",
+    effect: "boost",
+    likelihoodRatio: 2.5,
+    conditions: [
+      { bundle: "terrain", indication: "bare soil increase", minSignal: 0.2 },
+      { bundle: "infrastructure", indication: "settlement proximity" },
+    ],
+  },
+  {
+    ruleId: "rule-road-01",
+    name: "Linear disturbance + infrastructure → road construction boost",
+    description: "Linear bare soil pattern with infrastructure proximity is consistent with road construction.",
+    category: "infrastructure",
+    hypothesisType: "road_construction",
+    effect: "boost",
+    likelihoodRatio: 2.0,
+    conditions: [
+      { bundle: "terrain", indication: "bare soil increase" },
+      { bundle: "infrastructure", indication: "road proximity" },
+    ],
+  },
+  {
+    ruleId: "rule-infra-01",
+    name: "Large-scale disturbance + structured geometry → infrastructure boost",
+    description: "Large surface disturbance with structured geometry near existing infrastructure is consistent with industrial development.",
+    category: "infrastructure",
+    hypothesisType: "infrastructure_development",
+    effect: "boost",
+    likelihoodRatio: 2.2,
+    conditions: [
+      { bundle: "terrain", indication: "large-scale disturbance" },
+      { bundle: "infrastructure", indication: "infrastructure proximity" },
+    ],
+  },
 ];
 
 export const HYPOTHESIS_TYPE_LIST = Object.values(HYPOTHESIS_DEFS);

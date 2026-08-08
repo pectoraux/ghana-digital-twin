@@ -4,18 +4,33 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
 import { verifyPassword } from "./password";
 import { AuditLog } from "@prisma/client";
+import { logger } from "@/lib/logging/logger";
 
+// Phase 5.23a: Fixed audit-log reliability — no longer silently swallows failures.
+// The audit (§Phase 5.24) noted: "audit-log reliability (currently logAudit()
+// silently swallows failures) — increasingly important once missions carry
+// reputation/reward stakes that create an incentive to game the system."
 async function logAudit(action: string, actorId: string | null, actorName: string | null, actorRole: string | null, targetId?: string, targetName?: string, metadata?: any) {
+  const logId = `LOG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`;
   try {
     await db.auditLog.create({
       data: {
-        logId: `LOG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 5).toUpperCase()}`,
+        logId,
         actorId, actorName, actorRole,
         action, targetId, targetName,
         metadata: JSON.stringify(metadata ?? {}),
       },
     });
-  } catch {}
+  } catch (e: any) {
+    // Phase 5.23a: Log the failure instead of silently swallowing it.
+    // This makes audit-log failures visible in structured logs.
+    logger.error("audit.log.failed", {
+      logId,
+      action,
+      actorId,
+      error: e.message?.slice(0, 200),
+    });
+  }
 }
 
 export const authOptions: NextAuthOptions = {

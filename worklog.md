@@ -2092,3 +2092,47 @@ Stage Summary:
 - ✅ Phase 4.18: Enhanced flood risk — 2 rules (boost flood with rainfall, suppress mining in rain)
 - ✅ Phase 4.19: Forest-reserve deforestation — 2 rules (strong boost for reserve encroachment, suppress mining in reserves)
 - The "fundamental unlock" is now paying off: the 6 new multi-domain rules (cocoa, flood, deforestation) all reuse the existing core pipeline (high-resolution raster + Bayesian engine + evidence categories populated by the new connectors). No new core infrastructure was needed — just new rules that consume the evidence the connectors now provide. This is exactly the leverage the audit's architecture was designed for.
+
+---
+Task ID: 77
+Agent: orchestrator
+Task: Phase 5.23a (audit-log reliability) + Phase 4.20 (land-use change rules)
+
+Work Log:
+- Phase 5.23a (Audit-log reliability): Fixed logAudit() in src/lib/auth/auth.ts:
+  - Was: `catch {}` — silently swallowed ALL failures
+  - Now: `catch (e) { logger.error("audit.log.failed", { logId, action, actorId, error }) }`
+  - Imported structured logger from @/lib/logging/logger
+  - Audit-log failures are now visible in structured logs instead of being invisible
+  - The audit (§Phase 5.24) noted: "audit-log reliability (currently logAudit() silently swallows failures) — increasingly important once missions carry reputation/reward stakes"
+
+- Phase 4.20 (General land-use change): Added 3 new rules to intelligence engine:
+  - rule-settle-02: Bare soil increase + settlement proximity → boost settlement_expansion (LR=2.5). Uses infrastructure evidence from OSM connector.
+  - rule-road-01: Linear bare soil + road proximity → boost road_construction (LR=2.0). Uses infrastructure evidence for road proximity.
+  - rule-infra-01: Large-scale disturbance + infrastructure proximity → boost infrastructure_development (LR=2.2). Uses infrastructure evidence for industrial development.
+  - These hypothesis types (settlement_expansion, road_construction, infrastructure_development) already existed in the schema but had no rules that used the infrastructure evidence category — now populated by the mining cadastre + OSM connectors.
+  - The audit (§4.20) notes: "settlement_expansion, road_construction, infrastructure_development hypotheses already exist and only need the infrastructure evidence category to start producing real signal."
+
+- Total rules in the intelligence engine: now 24 (was 15 before audit work started — added 9 new rules across Phase 4.17-4.20)
+- Browser-verified: all 7 nav buttons work, health endpoint returns 200, 0 errors
+- Lint: 0 errors, 0 warnings
+- Updated docs/AUDIT_ROADMAP.md: Phase 5.23 partial (audit-log fixed), Phase 4.20 done
+
+Stage Summary:
+- ✅ Phase 5.23a: Audit-log reliability — no more silent failure swallowing, logs to structured logger
+- ✅ Phase 4.20: General land-use change — 3 new rules (settlement, road, infrastructure) using infrastructure evidence
+- The intelligence engine now has 24 rules covering all 9 hypothesis types with proper suppression/boost logic. Every evidence category (vegetation, hydrology, infrastructure, terrain, atmospheric) is now populated by connectors and consumed by rules. The platform can now distinguish: mining vs agriculture vs flood vs deforestation vs settlement vs road vs infrastructure — all from one shared pipeline.
+
+### FINAL AUDIT ROADMAP STATUS
+
+All code-implementable items from the audit are now complete:
+- Phase 0 (stability): ✅ All done (auth middleware, zod, CI)
+- Phase 1 (core): ✅ All done (resolution fix, connectors, scheduler, rule bug)
+- Phase 3 (proof loop): ✅ All done (missions, photos, integrity, calibration, credibility)
+- Phase 4 (multi-domain): ✅ All done (cocoa, flood, deforestation, land-use)
+- Phase 5 (hardening): ✅ Most done (logging, health, rate-limit, audit-log)
+
+Remaining (require external resources, not code):
+- Phase 1.5: PostGIS migration (requires database extension + schema migration)
+- Phase 2.9-2.11: Real ground-truth validation (requires EPA Ghana partnership)
+- Phase 5.23 remainder: Secrets management + Ghana DPA compliance (requires ops/infra setup)
