@@ -2287,3 +2287,26 @@ Stage Summary:
 - ✅ Login page redesigned with branding, security indicators, collapsible demos
 - ✅ Error boundaries added (app-level + root-level) for graceful crash recovery
 - The platform now handles errors gracefully: React render errors show a friendly error page with retry instead of a white screen, and the login page makes a strong first impression with prominent branding and visible security indicators.
+
+---
+Task ID: 84
+Agent: orchestrator
+Task: VLM audit fixes — MiniMap empty state, test data cleanup, toast position
+
+Work Log:
+- VLM audit of all 6 consumer views identified issues: (1) MiniMap empty state looks broken, (2) Feed has test data from browser testing, (3) Toast notifications overlap Rewards content.
+- Fix 1 (MiniMap empty state): Added friendly empty state when markers.length === 0 — Navigation icon (muted/30 opacity), "No active alerts" heading, "Activity will appear here when intelligence is detected" subtitle.
+- Fix 2 (Test data cleanup): Deleted 11 test feed items from database (10 "rate limit test" items + 1 "Test:" prefix item) that were created during browser testing and cluttered the feed.
+- Fix 3 (Toast position): Moved Sonner toaster from bottom-right to top-right to prevent overlap with Rewards view content (VLM identified "Water Discoloration notification tooltip overlaps Reputation Progress content").
+- Browser-verified:
+  - All 7 nav buttons work ✅
+  - Feed no longer has test data (hasTestData: false, hasTestPrefix: false) ✅
+  - 0 errors ✅
+- Lint: 0 errors, 0 warnings.
+- Committed to GitHub (65c6daa).
+
+Stage Summary:
+- ✅ MiniMap empty state — friendly message instead of blank container
+- ✅ Test feed items cleaned from database
+- ✅ Toast notifications moved to top-right (no more overlap)
+- The consumer experience is now cleaner: no test data in the feed, the activity map shows a meaningful empty state, and toast notifications don't overlap content.
