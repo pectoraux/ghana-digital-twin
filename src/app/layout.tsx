@@ -53,7 +53,7 @@ export default function RootLayout({
           </Providers>
         </ThemeProvider>
         <Toaster />
-        <SonnerToaster position="bottom-right" richColors={false} closeButton />
+        <SonnerToaster position="top-right" richColors={false} closeButton />
       </body>
     </html>
   );

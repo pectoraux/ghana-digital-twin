@@ -91,6 +91,12 @@ export function MiniMap({ onMarkerClick, height = 260 }: MiniMapProps) {
           <div className="flex h-full items-center justify-center">
             <Loader2 className="size-5 animate-spin text-muted-foreground" />
           </div>
+        ) : markers.length === 0 ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-center px-4">
+            <Navigation className="size-8 text-muted-foreground/30" />
+            <p className="text-[14px] font-medium text-muted-foreground">No active alerts</p>
+            <p className="text-[12px] text-muted-foreground/60">Activity will appear here when intelligence is detected</p>
+          </div>
         ) : (
           <svg
             viewBox={`0 0 ${width} ${h}`}
