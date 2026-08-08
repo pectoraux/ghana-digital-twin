@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { uploadPhotoSchema, validateBody, parseBody } from "@/lib/validation/schemas";
 
 const LOCATION_MATCH_RADIUS_M = 500;
 const MAX_PHOTO_BYTES = 3 * 1024 * 1024; // 3MB safety — client compresses to <2MB
@@ -69,20 +70,13 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params();
-  let body: any;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
+  const body = await parseBody(req);
+  const validation = validateBody(uploadPhotoSchema, body);
+  if (!validation.success) return validation.response;
+  const validated = validation.data;
 
-  const citizenId: string | undefined = body.citizenId;
-  const dataUrl: string | undefined = body.dataUrl;
-  const thumbnailUrl: string | undefined = body.thumbnailUrl;
+  const { citizenId, dataUrl, thumbnailUrl } = validated;
 
-  if (!citizenId || !dataUrl) {
-    return NextResponse.json({ error: "Missing required fields: citizenId, dataUrl" }, { status: 400 });
-  }
   if (!dataUrl.startsWith("data:image/")) {
     return NextResponse.json({ error: "dataUrl must be a base64 image data URL" }, { status: 400 });
   }
@@ -95,8 +89,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!event) return NextResponse.json({ error: `Event ${id} not found` }, { status: 404 });
 
   // Cross-check photo GPS against event location
-  const photoLat: number | undefined = typeof body.gpsLat === "number" ? body.gpsLat : undefined;
-  const photoLng: number | undefined = typeof body.gpsLng === "number" ? body.gpsLng : undefined;
+  const photoLat: number | undefined = typeof validated.gpsLat === "number" ? validated.gpsLat : undefined;
+  const photoLng: number | undefined = typeof validated.gpsLng === "number" ? validated.gpsLng : undefined;
   const eventLoc = parseEventLocation(event.location);
 
   let locationVerified = false;
@@ -106,7 +100,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const photoId = await nextPhotoId();
-  const capturedAt = body.capturedAt ? new Date(body.capturedAt) : new Date();
+  const capturedAt = validated.capturedAt ? new Date(validated.capturedAt) : new Date();
 
   const photo = await db.eventPhoto.create({
     data: {
@@ -118,11 +112,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       capturedAt,
       gpsLat: photoLat ?? null,
       gpsLng: photoLng ?? null,
-      accuracyM: typeof body.accuracyM === "number" ? body.accuracyM : null,
+      accuracyM: typeof validated.accuracyM === "number" ? validated.accuracyM : null,
       locationVerified,
-      fileSizeKb: typeof body.fileSizeKb === "number" ? Math.round(body.fileSizeKb) : 0,
-      width: typeof body.width === "number" ? Math.round(body.width) : 0,
-      height: typeof body.height === "number" ? Math.round(body.height) : 0,
+      fileSizeKb: typeof validated.fileSizeKb === "number" ? Math.round(validated.fileSizeKb) : 0,
+      width: typeof validated.width === "number" ? Math.round(validated.width) : 0,
+      height: typeof validated.height === "number" ? Math.round(validated.height) : 0,
       perceptualHash: null,
     },
   });

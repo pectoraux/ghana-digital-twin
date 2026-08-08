@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listFeedItems, createFeedItem, getFeedOverview } from "@/lib/feed/engine";
 import { seedCommunityApp } from "@/lib/feed/seed";
+import { createFeedItemSchema, validateBody, parseBody } from "@/lib/validation/schemas";
 
 export async function GET(req: NextRequest) {
   await seedCommunityApp().catch(() => null);
@@ -19,7 +20,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const item = await createFeedItem(body);
+  const body = await parseBody(req);
+  const validation = validateBody(createFeedItemSchema, body);
+  if (!validation.success) return validation.response;
+  const item = await createFeedItem(validation.data);
   return NextResponse.json({ item });
 }

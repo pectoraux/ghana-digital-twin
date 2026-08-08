@@ -283,6 +283,15 @@ export async function submitWitnessResponse(input: WitnessInput): Promise<any> {
   // Recompute fused confidence
   await recomputeFusedConfidence(input.eventId);
 
+  // Phase 3.15: Check if this event should be auto-confirmed
+  // (creates GroundTruth + triggers calibration if threshold met)
+  try {
+    const { checkAutoConfirmation } = await import("@/lib/calibration/loop");
+    await checkAutoConfirmation(input.eventId);
+  } catch {
+    // non-fatal — calibration loop is best-effort
+  }
+
   return serializeWitness(resp);
 }
 

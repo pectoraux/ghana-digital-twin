@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { joinMission, getMissionParticipants } from "@/lib/mission/participation";
+import { joinMissionSchema, validateBody, parseBody } from "@/lib/validation/schemas";
 
 export async function GET(
   req: NextRequest,
@@ -18,20 +19,17 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const body = await req.json().catch(() => ({}));
-  const userId = body.userId;
-  const userName = body.userName;
-
-  if (!userId || !userName) {
-    return NextResponse.json({ error: "userId and userName required" }, { status: 400 });
-  }
+  const body = await parseBody(req);
+  const validation = validateBody(joinMissionSchema, body);
+  if (!validation.success) return validation.response;
+  const { userId, userName, role } = validation.data;
 
   try {
     const participation = await joinMission({
       userId,
       userName,
       missionId: id,
-      role: body.role,
+      role,
     });
     return NextResponse.json({ participation });
   } catch (e: any) {

@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { listCitizenEvents, createCitizenEvent } from "@/lib/community/engine";
 import { seedCommunity } from "@/lib/community/seed";
+import { createCitizenEventSchema, validateBody, parseBody } from "@/lib/validation/schemas";
 
 export async function GET(req: NextRequest) {
   await seedCommunity();
@@ -19,7 +20,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const event = await createCitizenEvent(body);
+  const body = await parseBody(req);
+  const validation = validateBody(createCitizenEventSchema, body);
+  if (!validation.success) return validation.response;
+  const event = await createCitizenEvent(validation.data);
   return NextResponse.json({ event });
 }

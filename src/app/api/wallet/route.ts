@@ -15,6 +15,7 @@ import {
   MOBILE_MONEY_PROVIDERS,
   type MobileMoneyProvider,
 } from "@/lib/wallet/service";
+import { withdrawalSchema, validateBody, parseBody } from "@/lib/validation/schemas";
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId");
@@ -39,21 +40,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => ({}));
-  const { userId, action, amount, mobileMoneyNumber, provider } = body ?? {};
-
-  if (!userId) {
-    return NextResponse.json({ error: "userId required" }, { status: 400 });
-  }
-  if (action !== "withdraw") {
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
-  }
-  if (typeof amount !== "number" || !Number.isFinite(amount)) {
-    return NextResponse.json({ error: "amount must be a number" }, { status: 400 });
-  }
-  if (typeof mobileMoneyNumber !== "string" || !mobileMoneyNumber.trim()) {
-    return NextResponse.json({ error: "mobileMoneyNumber required" }, { status: 400 });
-  }
+  const body = await parseBody(req);
+  const validation = validateBody(withdrawalSchema, body);
+  if (!validation.success) return validation.response;
+  const { userId, amount, mobileMoneyNumber, provider } = validation.data;
 
   const prov: MobileMoneyProvider = (MOBILE_MONEY_PROVIDERS as readonly string[]).includes(
     provider,

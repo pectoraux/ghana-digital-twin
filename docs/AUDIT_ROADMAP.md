@@ -154,16 +154,18 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 | Phase | Item | Status | Commit |
 |---|---|---|---|
 | 0.1 | API auth middleware | ✅ Done | `src/middleware.ts` — `withAuth` enforcing session on all `/api/*` except auth/seed-auth/stats/pipeline-schedule. Admin routes require ADMIN role. `/api/admin/users` now returns 307 redirect. |
+| 0.2 | Zod request validation | ✅ Done | `src/lib/validation/schemas.ts` — 8 schemas. Wired into 7 mutating routes (feed, engage, events, wallet, identity, missions/join, photos). Invalid input returns 400 with structured error details. |
 | 1.7 | Continuous scheduler | ✅ Done | `src/app/api/pipeline/schedule/route.ts` — GET returns scheduler status + next-run-due flag. POST triggers pipeline run (with optional `CRON_API_KEY` for cron auth). Includes Vercel cron config example. |
 | 1.8 | Rule-matching bug fix | ✅ Done | `src/lib/intelligence/engine.ts:178` — replaced `split(" ")[0]` with multi-word matching: checks if ANY significant word (len > 2) from the condition appears in the bundle indication. "seasonal water expansion" now matches "water expansion" via "water" and "expansion". |
 | 3.12 | Auto-trigger missions | ✅ Done | `src/lib/continuous/pipeline.ts` — `planMissions()` now called after `generateHypotheses()` for each new observation. Added `missionsPlanned` to `PipelineResult`. |
 | 3.13 | Photo capture (proof of work) | ✅ Done | New `EventPhoto` model. Photo upload API at `/api/community/events/[id]/photos`. `CommunityReportModal` now has camera capture (`<input type="file" accept="image/*" capture="environment">`). `CommunityEventDetail` shows photo gallery with location-verified badges. Client-side EXIF GPS extraction + image compression. Location cross-check (500m haversine). |
 | 3.14 | Proof integrity checks | ✅ Partial | GPS cross-check implemented (locationVerified flag). EXIF extraction implemented. Perceptual-hash dedup field exists but not yet computed. Camera-capture-only enforcement not yet implemented (gallery upload still possible). |
+| 3.15 | Close the loop into calibration | ✅ Done | `src/lib/calibration/loop.ts` — `checkAutoConfirmation()` runs after every witness submission. When ≥3 confirms and ≥60% agreement ratio, auto-transitions event to "verified", creates a GroundTruth record, triggers `computeCalibration()`, marks learningApplied. New `/api/calibration` endpoint shows loop stats. |
 
 ### Remaining work (from the roadmap)
 
 **Phase 0 (still needed):**
-- 0.2: Wire zod into request validation for mutating routes (zod is installed but unused)
+- 0.2: ✅ Done (zod validation wired into 7 mutating routes)
 - 0.3: CI pipeline + test suite (lint + typecheck + test on PR)
 
 **Phase 1 (still needed):**
@@ -181,7 +183,7 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 - 3.12: ✅ Done (auto-trigger missions)
 - 3.13: ✅ Done (photo capture)
 - 3.14: ✅ Partial (GPS cross-check done, perceptual-hash dedup pending)
-- 3.15: Close the loop into calibration (confirmed mission → GroundTruth → computeCalibration)
+- 3.15: ✅ Done (close the loop into calibration — auto-confirm at 3 confirms + 60% ratio, creates GroundTruth, triggers computeCalibration)
 - 3.16: Tie proof quality to reputation (verifierCredibility)
 
 **Phase 4-5:** Not yet started (multi-domain payoff + platform hardening)
