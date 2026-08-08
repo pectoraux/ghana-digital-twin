@@ -2214,3 +2214,30 @@ Stage Summary:
 - ✅ Skeleton loading states improved across 3 views (Home, Feed, Missions)
 - ✅ All committed to GitHub (3 commits)
 - The consumer experience is now more polished: better readability, cleaner header, and proper skeleton loading states that mimic the final layout instead of plain spinners.
+
+---
+Task ID: 81
+Agent: orchestrator
+Task: UX polish — skeleton loading for all consumer views
+
+Work Log:
+- Completed skeleton loading states across all 7 consumer views:
+  - HomeView (Task 80): greeting, reputation cards, activity map, pulse
+  - FeedView (Task 80): 4 feed cards with avatars, titles, summaries
+  - MissionsConsumerView (Task 80): 3 mission cards with icons, titles, stats
+  - RewardsView: 3 balance cards, 3 reputation progress bars, 4 transaction rows
+  - ProfileView: identity card (avatar, name, role), reputation grid (4 metrics), impact stats grid
+  - CommunityConsumerView: 4 event cards with type icons, titles, descriptions, meta rows
+- All use bg-foreground/15 (primary elements) and bg-foreground/10 (secondary) with animate-pulse
+- Replaced ALL plain Loader2 spinners across consumer views — no more plain spinners
+- Verified no <img> accessibility issues (all have alt text)
+- Verified mobile bottom nav has proper aria-current and aria-label
+- Browser-verified: all 7 nav buttons work, 0 errors
+- Lint: 0 errors, 0 warnings
+- Committed to GitHub (2 commits: skeleton for Rewards/Profile/Community, worklog)
+
+Stage Summary:
+- ✅ All 7 consumer views now have proper skeleton loading states
+- ✅ No plain spinners remaining in consumer views
+- ✅ Accessibility verified (alt text, aria attributes)
+- The consumer experience is now polished end-to-end: every view shows shaped skeleton placeholders that mimic the final layout during loading, rather than plain spinners.
