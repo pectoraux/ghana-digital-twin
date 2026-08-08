@@ -2190,3 +2190,27 @@ Stage Summary:
 - ✅ Calibration system now has data to produce non-zero accuracy metrics
 - ✅ Final comprehensive verification passed — all features work, 0 errors
 - The audit's "0% measured accuracy" concern is now addressable — the calibration loop has real (synthetic) data to learn from. In production, these would be replaced by real ground truth from EPA Ghana partnerships (Phase 2.9).
+
+---
+Task ID: 80
+Agent: orchestrator
+Task: UX polish — contrast, header declutter, skeleton loading
+
+Work Log:
+- VLM analysis identified 3 polish improvements: (1) better text contrast, (2) declutter header (remove version), (3) improve skeleton states.
+- Polish 1 (Visual contrast): In globals.css, increased --muted-foreground from oklch(0.68) to oklch(0.72) for brighter secondary text. Increased --border opacity from 8% to 14% and --input from 12% to 16% for more visible card boundaries. VLM-confirmed: "text contrast better, card borders more visible."
+- Polish 2 (Header declutter): Removed version badge (v4.2.0) from CommandBar header. Moved version to StatusBar (bottom bar) where it's less intrusive. Removed unused Badge import. VLM-confirmed: "header is cleaner, no version number visible in main navigation bar."
+- Polish 3 (Skeleton loading): 
+  - HomeView: increased placeholder opacity (10%→15%), used rounded-full for icon placeholders, added Activity Map skeleton section with map area placeholder, added header icon + title placeholders in Pulse skeleton.
+  - FeedView: replaced plain spinner with 4 skeleton feed cards (avatar circles, title/summary bars, type badges, meta row).
+  - MissionsConsumerView: replaced plain spinner with 3 skeleton mission cards (icon squares, title bars, priority badges, stats row).
+- All changes committed to GitHub (3 commits: contrast+header, skeleton home, skeleton feed+missions).
+- Browser-verified after each commit: all 7 nav buttons work, 0 errors.
+- Lint: 0 errors, 0 warnings throughout.
+
+Stage Summary:
+- ✅ Visual contrast improved (brighter muted-foreground, more visible borders)
+- ✅ Header decluttered (version moved to status bar)
+- ✅ Skeleton loading states improved across 3 views (Home, Feed, Missions)
+- ✅ All committed to GitHub (3 commits)
+- The consumer experience is now more polished: better readability, cleaner header, and proper skeleton loading states that mimic the final layout instead of plain spinners.
