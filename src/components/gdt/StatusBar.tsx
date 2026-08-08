@@ -74,6 +74,8 @@ export function StatusBar() {
         gdt-worldmodel
       </span>
       <span className="text-border">│</span>
+      <span className="text-muted-foreground font-mono text-[12px]">v4.2.0</span>
+      <span className="text-border">│</span>
       <span className="tabular-nums">{now.toUTCString().slice(17, 25)} UTC</span>
     </footer>
   );

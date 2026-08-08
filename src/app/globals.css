@@ -99,12 +99,12 @@
   --secondary: oklch(0.24 0.008 250);
   --secondary-foreground: oklch(0.96 0.005 250);
   --muted: oklch(0.235 0.008 250);
-  --muted-foreground: oklch(0.68 0.01 250);
+  --muted-foreground: oklch(0.72 0.01 250);           /* brighter gray for better contrast */
   --accent: oklch(0.26 0.01 250);
   --accent-foreground: oklch(0.96 0.005 250);
   --destructive: oklch(0.68 0.2 22);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
+  --border: oklch(1 0 0 / 14%);                         /* more visible borders */
+  --input: oklch(1 0 0 / 16%);                          /* more visible inputs */
   --ring: oklch(0.65 0.18 250 / 50%);
   --chart-1: oklch(0.65 0.18 155);   /* verified green */
   --chart-2: oklch(0.68 0.16 250);   /* intelligence blue */

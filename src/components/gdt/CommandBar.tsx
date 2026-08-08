@@ -18,7 +18,6 @@ import {
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { StatusDot } from "./atoms";
 import { fmtInt } from "@/lib/gdt/format";
 
@@ -80,11 +79,8 @@ export function CommandBar() {
         <div className="flex flex-col leading-tight min-w-0">
           <div className="flex items-center gap-2">
             <h1 className="text-sm font-semibold truncate">{meta.title}</h1>
-            <Badge variant="outline" className="h-4 px-1 text-[13px] font-mono text-muted-foreground border-border shrink-0">
-              v4.2.0
-            </Badge>
           </div>
-          <span className="text-[15px] text-muted-foreground truncate hidden sm:block">{meta.sub}</span>
+          <span className="text-[14px] text-muted-foreground truncate hidden sm:block">{meta.sub}</span>
         </div>
       </div>
 
