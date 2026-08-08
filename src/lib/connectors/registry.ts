@@ -14,6 +14,8 @@ import { OsmOverpassConnector } from "./osm-overpass";
 import { StacSentinel2Connector } from "./stac-sentinel2";
 import { MiningCadastreConnector } from "./mining-cadastre";
 import { ChirpsRainfallConnector } from "./chirps-rainfall";
+import { Sentinel1SarConnector } from "./sentinel1-sar";
+import { DemTerrainConnector } from "./dem-terrain";
 
 // ---- Register live connectors ----
 registerConnector("geoboundaries", () => new GeoBoundariesConnector());
@@ -22,6 +24,8 @@ registerConnector("stac-sentinel-2", () => new StacSentinel2Connector());
 // Phase 1.6: Missing sensors that populate evidence categories
 registerConnector("mining-cadastre-gha", () => new MiningCadastreConnector());
 registerConnector("chirps-rainfall", () => new ChirpsRainfallConnector());
+registerConnector("sentinel-1-grd", () => new Sentinel1SarConnector());
+registerConnector("dem-terrain-gha", () => new DemTerrainConnector());
 
 // ---- Metadata-only connectors (register provenance; no live fetch) ----
 // These datasets require offline bulk ingest (raster tiles, large extracts).

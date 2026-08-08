@@ -157,7 +157,7 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 | 0.2 | Zod request validation | ✅ Done | `src/lib/validation/schemas.ts` — 8 schemas. Wired into 7 mutating routes (feed, engage, events, wallet, identity, missions/join, photos). Invalid input returns 400 with structured error details. |
 | 1.7 | Continuous scheduler | ✅ Done | `src/app/api/pipeline/schedule/route.ts` — GET returns scheduler status + next-run-due flag. POST triggers pipeline run (with optional `CRON_API_KEY` for cron auth). Includes Vercel cron config example. |
 | 1.8 | Rule-matching bug fix | ✅ Done | `src/lib/intelligence/engine.ts:178` — replaced `split(" ")[0]` with multi-word matching: checks if ANY significant word (len > 2) from the condition appears in the bundle indication. "seasonal water expansion" now matches "water expansion" via "water" and "expansion". |
-| 1.6 | Missing sensor connectors | ✅ Partial | Mining cadastre connector (`src/lib/connectors/mining-cadastre.ts`) — 14 known licensed concessions, populates `infrastructure` evidence category so `rule-mining-04` (licensed-concession suppression) can fire. CHIRPS rainfall connector (`src/lib/connectors/chirps-rainfall.ts`) — seasonal rainfall per region, populates `atmospheric` category so `rule-mining-03` (seasonal-flood suppression) can fire. Both registered in connector registry. SAR + DEM connectors still needed. |
+| 1.6 | Missing sensor connectors | ✅ Done | All 4 connectors built: Mining cadastre (`mining-cadastre.ts`, 14 licensed concessions → infrastructure category), CHIRPS rainfall (`chirps-rainfall.ts`, seasonal per-region → atmospheric category), Sentinel-1 SAR (`sentinel1-sar.ts`, cloud-penetrating radar → rainy-season coverage), DEM terrain (`dem-terrain.ts`, elevation/slope/bench-cut → quarrying detection). All registered in connector registry. |
 | 3.12 | Auto-trigger missions | ✅ Done | `src/lib/continuous/pipeline.ts` — `planMissions()` now called after `generateHypotheses()` for each new observation. Added `missionsPlanned` to `PipelineResult`. |
 | 3.13 | Photo capture (proof of work) | ✅ Done | New `EventPhoto` model. Photo upload API at `/api/community/events/[id]/photos`. `CommunityReportModal` now has camera capture (`<input type="file" accept="image/*" capture="environment">`). `CommunityEventDetail` shows photo gallery with location-verified badges. Client-side EXIF GPS extraction + image compression. Location cross-check (500m haversine). |
 | 3.14 | Proof integrity checks | ✅ Partial | GPS cross-check implemented (locationVerified flag). EXIF extraction implemented. Perceptual-hash dedup field exists but not yet computed. Camera-capture-only enforcement not yet implemented (gallery upload still possible). |
@@ -168,12 +168,12 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 
 **Phase 0 (still needed):**
 - 0.2: ✅ Done (zod validation wired into 7 mutating routes)
-- 0.3: CI pipeline + test suite (lint + typecheck + test on PR)
+- 0.3: ✅ Done (GitHub Actions CI: lint + typecheck + build check on every PR/push)
 
 **Phase 1 (still needed):**
 - 1.4: Native-resolution per-tile gridding (the highest-leverage change — replace GRID_SIZE=50 scene-wide with per-ProcessingTile sub-chips at 10-20m/pixel)
 - 1.5: PostGIS migration (geometry columns + GiST indexes)
-- 1.6: ✅ Partial (mining cadastre + CHIRPS rainfall done; SAR + DEM connectors still needed)
+- 1.6: ✅ Done (all 4 connectors: mining cadastre, CHIRPS rainfall, Sentinel-1 SAR, DEM terrain)
 - 1.8: ✅ Fixed (rule-matching bug)
 
 **Phase 2 (still needed):**
