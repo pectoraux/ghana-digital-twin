@@ -61,29 +61,40 @@ export function HomeView() {
       <div className="mx-auto max-w-4xl p-4 md:p-6 space-y-6">
         {/* Greeting skeleton */}
         <div className="space-y-2">
-          <div className="h-8 w-64 rounded-lg bg-foreground/10 animate-pulse" />
-          <div className="h-4 w-48 rounded bg-foreground/5 animate-pulse" />
+          <div className="h-8 w-64 rounded-lg bg-foreground/15 animate-pulse" />
+          <div className="h-4 w-48 rounded bg-foreground/10 animate-pulse" />
         </div>
         {/* Reputation cards skeleton */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-card">
-              <div className="size-5 mb-2 rounded bg-foreground/10 animate-pulse" />
-              <div className="h-8 w-16 mb-1 rounded bg-foreground/10 animate-pulse" />
-              <div className="h-3 w-20 rounded bg-foreground/5 animate-pulse" />
+              <div className="size-5 mb-2 rounded-full bg-foreground/15 animate-pulse" />
+              <div className="h-8 w-16 mb-1 rounded bg-foreground/15 animate-pulse" />
+              <div className="h-3 w-20 rounded bg-foreground/10 animate-pulse" />
             </div>
           ))}
         </div>
+        {/* Activity Map skeleton */}
+        <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="size-5 rounded-full bg-foreground/15 animate-pulse" />
+            <div className="h-5 w-32 rounded bg-foreground/15 animate-pulse" />
+          </div>
+          <div className="h-48 rounded-lg border border-border/60 bg-foreground/5 animate-pulse" />
+        </div>
         {/* Pulse skeleton */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-card space-y-3">
-          <div className="h-5 w-40 rounded bg-foreground/10 animate-pulse" />
+          <div className="flex items-center gap-2">
+            <div className="size-5 rounded-full bg-foreground/15 animate-pulse" />
+            <div className="h-5 w-40 rounded bg-foreground/15 animate-pulse" />
+          </div>
           {[0, 1, 2].map((i) => (
             <div key={i} className="flex items-start gap-3 rounded-lg border border-border/60 p-3">
-              <div className="size-9 rounded-lg bg-foreground/10 animate-pulse shrink-0" />
+              <div className="size-9 rounded-lg bg-foreground/15 animate-pulse shrink-0" />
               <div className="flex-1 space-y-2">
-                <div className="h-4 w-3/4 rounded bg-foreground/10 animate-pulse" />
-                <div className="h-3 w-full rounded bg-foreground/5 animate-pulse" />
-                <div className="h-3 w-1/2 rounded bg-foreground/5 animate-pulse" />
+                <div className="h-4 w-3/4 rounded bg-foreground/15 animate-pulse" />
+                <div className="h-3 w-full rounded bg-foreground/10 animate-pulse" />
+                <div className="h-3 w-1/2 rounded bg-foreground/10 animate-pulse" />
               </div>
             </div>
           ))}
