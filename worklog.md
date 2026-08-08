@@ -2270,3 +2270,20 @@ Work Log:
 Stage Summary:
 - ✅ Login page redesigned with enhanced branding, security indicators, and collapsible demos
 - The login page now makes a strong first impression: prominent branding with feature badges, visible security indicators that build trust, and a clean form that's not cluttered with demo accounts
+
+---
+Task ID: 83
+Agent: orchestrator
+Task: Error boundaries + login page polish
+
+Work Log:
+- Login page redesign (Task 82): Enhanced branding (larger logo, feature badges), added security indicators (lock icon, "Secured by NextAuth"), made demo accounts collapsible (hidden by default, toggle with chevron). VLM-confirmed all improvements.
+- Error boundaries (Task 83): Created src/app/error.tsx (app-level) and src/app/global-error.tsx (root-level). App-level shows AlertTriangle icon, "Something went wrong" heading, error digest ID, Try Again + Home buttons. Root-level uses minimal inline HTML (no Tailwind dependency). Both log errors to console.
+- Browser-verified: login works with collapsible demos, all 7 nav buttons work, 0 errors.
+- Lint: 0 errors, 0 warnings.
+- Committed to GitHub (3 commits: login redesign c3d9149, worklog b5cd190, error boundaries 5541e45).
+
+Stage Summary:
+- ✅ Login page redesigned with branding, security indicators, collapsible demos
+- ✅ Error boundaries added (app-level + root-level) for graceful crash recovery
+- The platform now handles errors gracefully: React render errors show a friendly error page with retry instead of a white screen, and the login page makes a strong first impression with prominent branding and visible security indicators.
