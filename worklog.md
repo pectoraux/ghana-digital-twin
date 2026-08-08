@@ -2136,3 +2136,29 @@ Remaining (require external resources, not code):
 - Phase 1.5: PostGIS migration (requires database extension + schema migration)
 - Phase 2.9-2.11: Real ground-truth validation (requires EPA Ghana partnership)
 - Phase 5.23 remainder: Secrets management + Ghana DPA compliance (requires ops/infra setup)
+
+---
+Task ID: 78
+Agent: orchestrator
+Task: Final documentation — comprehensive README
+
+Work Log:
+- Created README.md with comprehensive project documentation:
+  - Architecture overview with pipeline diagram
+  - Consumer experience (7 primary views with key features)
+  - Technical stack (Next.js 16, TypeScript, Prisma, NextAuth, Zustand, Zod)
+  - Security & platform hardening summary (auth middleware, zod, rate limiting, photo anti-fraud, verifier credibility, audit logging, health checks, CI pipeline)
+  - Intelligence engine rules table (25 rules across 9 hypothesis types)
+  - Connectors table (7 live connectors with evidence categories)
+  - Development instructions (install, dev, lint, db:push, env vars)
+  - Demo accounts (7 accounts with credentials)
+  - Project statistics (34 views, 259 API routes, 224 models, 7 connectors, 25 rules)
+  - Documentation links (AUDIT_ROADMAP, PLATFORM_SPECIFICATION, KERNEL_FREEZE, worklog)
+- Browser-verified: all 7 nav buttons work, health endpoint returns 200, notifications show 7, report modal opens, feed detail opens with actions, 0 errors
+- Lint: 0 errors, 0 warnings
+
+Stage Summary:
+- ✅ README.md created — comprehensive project documentation
+- The project is now fully documented with architecture, features, security, intelligence engine, connectors, development setup, and demo accounts
+- All code-implementable audit items are complete (27/31 done, 4 remaining require external resources)
+- The platform is production-ready for code-level concerns: auth, validation, rate limiting, structured logging, health checks, CI pipeline, photo anti-fraud, calibration loop
