@@ -109,7 +109,14 @@ export async function runContinuousPipeline(opts: { tileLimit?: number; regionId
             });
             if (!baseline) continue; // skip if no baseline
           }
-          await computeProduct({ type: pt, sceneId: scene.id, mgrsTile: scene.mgrsTile });
+          // Phase 1.4: Pass tile extent for high-resolution per-tile processing
+          const tileExtent = {
+            minLng: tile.minLng,
+            minLat: tile.minLat,
+            maxLng: tile.maxLng,
+            maxLat: tile.maxLat,
+          };
+          await computeProduct({ type: pt, sceneId: scene.id, mgrsTile: scene.mgrsTile, tileExtent });
         } catch (e) {
           errors.push(`Product ${pt} for ${scene.stacId}: ${String(e).slice(0, 100)}`);
         }

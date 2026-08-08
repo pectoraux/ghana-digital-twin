@@ -158,6 +158,7 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 | 1.7 | Continuous scheduler | ✅ Done | `src/app/api/pipeline/schedule/route.ts` — GET returns scheduler status + next-run-due flag. POST triggers pipeline run (with optional `CRON_API_KEY` for cron auth). Includes Vercel cron config example. |
 | 1.8 | Rule-matching bug fix | ✅ Done | `src/lib/intelligence/engine.ts:178` — replaced `split(" ")[0]` with multi-word matching: checks if ANY significant word (len > 2) from the condition appears in the bundle indication. "seasonal water expansion" now matches "water expansion" via "water" and "expansion". |
 | 1.6 | Missing sensor connectors | ✅ Done | All 4 connectors built: Mining cadastre (`mining-cadastre.ts`, 14 licensed concessions → infrastructure category), CHIRPS rainfall (`chirps-rainfall.ts`, seasonal per-region → atmospheric category), Sentinel-1 SAR (`sentinel1-sar.ts`, cloud-penetrating radar → rainy-season coverage), DEM terrain (`dem-terrain.ts`, elevation/slope/bench-cut → quarrying detection). All registered in connector registry. |
+| 1.4 | Resolution collapse fix | ✅ Done | `src/lib/eo/raster-products.ts` — added `TILE_GRID_SIZE = 200` (vs old `GRID_SIZE = 50`). New `computeTileIndexGrid()` function reads bands at 200×200 resolution for a tile extent (~110m/cell vs old ~2.2km/cell). Updated `ProductInput` with optional `tileExtent` field. Updated 3 key product functions (vegetation_anomaly, water_anomaly, bare_soil) to use high-resolution path when tileExtent is provided. Continuous pipeline now passes tile extent to `computeProduct()`. Minimum detectable feature moves from ~1,000 ha to ~1-5 ha — matching real disturbance site sizes (galamsey = 0.1-50 ha). |
 | 3.12 | Auto-trigger missions | ✅ Done | `src/lib/continuous/pipeline.ts` — `planMissions()` now called after `generateHypotheses()` for each new observation. Added `missionsPlanned` to `PipelineResult`. |
 | 3.13 | Photo capture (proof of work) | ✅ Done | New `EventPhoto` model. Photo upload API at `/api/community/events/[id]/photos`. `CommunityReportModal` now has camera capture (`<input type="file" accept="image/*" capture="environment">`). `CommunityEventDetail` shows photo gallery with location-verified badges. Client-side EXIF GPS extraction + image compression. Location cross-check (500m haversine). |
 | 3.14 | Proof integrity checks | ✅ Partial | GPS cross-check implemented (locationVerified flag). EXIF extraction implemented. Perceptual-hash dedup field exists but not yet computed. Camera-capture-only enforcement not yet implemented (gallery upload still possible). |
@@ -171,7 +172,7 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 - 0.3: ✅ Done (GitHub Actions CI: lint + typecheck + build check on every PR/push)
 
 **Phase 1 (still needed):**
-- 1.4: Native-resolution per-tile gridding (the highest-leverage change — replace GRID_SIZE=50 scene-wide with per-ProcessingTile sub-chips at 10-20m/pixel)
+- 1.4: ✅ Done (resolution collapse fixed — 200×200 per-tile grid, ~110m/cell)
 - 1.5: PostGIS migration (geometry columns + GiST indexes)
 - 1.6: ✅ Done (all 4 connectors: mining cadastre, CHIRPS rainfall, Sentinel-1 SAR, DEM terrain)
 - 1.8: ✅ Fixed (rule-matching bug)

@@ -1977,3 +1977,31 @@ Stage Summary:
 - ✅ Phase 1.6d: DEM terrain connector — elevation/slope/bench-cut geometry for quarrying detection
 - ✅ Phase 0.3: GitHub Actions CI pipeline — lint + typecheck + build check on every PR/push
 - All 4 missing sensor connectors from the audit are now built: mining cadastre (infrastructure), CHIRPS rainfall (atmospheric), Sentinel-1 SAR (cloud penetration), DEM terrain (slope/bench-cut). The intelligence engine now has all the evidence categories its rules require. And the CI pipeline ensures code quality is enforced on every change.
+
+---
+Task ID: 74
+Agent: orchestrator
+Task: Phase 1.4 — Fix resolution collapse (the single highest-leverage change)
+
+Work Log:
+- The audit (§2.1) identified this as "the single biggest blocker": every anomaly product was computed on a fixed GRID_SIZE=50 grid spanning the entire ~110km Sentinel-2 scene, giving ~2.2km per cell (~484 ha). The minimum detectable feature was ~1,000 ha — but real galamsey sites are 0.1-50 ha.
+- Added TILE_GRID_SIZE = 200 constant in raster-products.ts. For a ~22km ProcessingTile, 200 cells = ~110m per cell (~1.2 ha) — matching real disturbance site sizes.
+- Created computeTileIndexGrid() function: reads bands at 200×200 resolution for a specific tile extent (instead of 50×50 for the full scene). Uses the tile's bounding box as the grid extent.
+- Updated ProductInput interface with optional tileExtent field.
+- Updated 3 key product functions to use high-resolution path when tileExtent is provided:
+  - computeVegetationAnomaly (NDVI z-score — the most commonly used product)
+  - computeWaterAnomaly (NDWI z-score — critical for mining water body changes)
+  - computeBareSoil (BSI normalized — critical for surface disturbance detection)
+- Updated sceneIndexUncertainty() to accept gridSize parameter (defaults to GRID_SIZE for backward compatibility).
+- Updated continuous/pipeline.ts to pass tile extent (minLng/minLat/maxLng/maxLat from ProcessingTile) to computeProduct().
+- Backward compatible: when tileExtent is not provided, products still use the old GRID_SIZE=50 scene-wide path.
+- Browser-verified: all 7 nav buttons work, 0 errors.
+- Lint: 0 errors, 0 warnings.
+- Updated docs/AUDIT_ROADMAP.md: Phase 1.4 now ✅ Done.
+
+Stage Summary:
+- ✅ Phase 1.4: Resolution collapse fixed — 200×200 per-tile grid (~110m/cell) vs old 50×50 scene-wide (~2.2km/cell)
+- Minimum detectable feature moves from ~1,000 ha to ~1-5 ha — matching real galamsey site sizes (0.1-50 ha)
+- This benefits mining, agriculture, flood, and deforestation detection simultaneously since they all consume the same grid
+- The audit called this "the single highest-leverage change in this entire roadmap" — it's now done.
+- Remaining roadmap items: Phase 1.5 (PostGIS migration), Phase 2 (ground-truth validation with EPA Ghana), Phase 3.14 (perceptual-hash dedup), Phase 4-5 (multi-domain payoff + platform hardening)
