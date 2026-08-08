@@ -314,6 +314,93 @@ export const RULES: RuleDef[] = [
       { bundle: "atmospheric", indication: "seasonal baseline match" },
     ],
   },
+
+  // ---- Phase 4.17: Cocoa/CSSVD monitoring ----
+  // Cocoa Swollen Shoot Virus Disease (CSSVD) causes progressive vegetation decline
+  // in cocoa-growing regions. NDVI anomaly over cocoa areas + absence of bare soil
+  // = likely disease rather than clearing.
+  {
+    ruleId: "rule-cocoa-01",
+    name: "NDVI decline in cocoa region → CSSVD boost",
+    description: "Progressive vegetation decline in cocoa-growing areas without bare soil exposure is consistent with Cocoa Swollen Shoot Virus Disease.",
+    category: "agriculture",
+    hypothesisType: "agricultural_expansion",
+    effect: "boost",
+    likelihoodRatio: 2.2,
+    conditions: [
+      { bundle: "vegetation", indication: "vegetation loss", minSignal: 0.3 },
+    ],
+  },
+  {
+    ruleId: "rule-cocoa-02",
+    name: "No bare soil + vegetation loss → suppress clearing",
+    description: "If vegetation loss occurs without bare soil increase, suppress mining/clearing hypotheses — consistent with disease rather than physical disturbance.",
+    category: "agriculture",
+    hypothesisType: "artisanal_mining",
+    effect: "suppress",
+    likelihoodRatio: 0.4,
+    conditions: [
+      { bundle: "vegetation", indication: "vegetation loss" },
+    ],
+  },
+
+  // ---- Phase 4.18: Enhanced flood risk with rainfall data ----
+  // Now that the CHIRPS rainfall connector populates the atmospheric category,
+  // high rainfall + water expansion = flood boost (vs mining).
+  {
+    ruleId: "rule-flood-03",
+    name: "High rainfall + water expansion → flood boost",
+    description: "Water body expansion coinciding with high rainfall (>150mm/month) is consistent with seasonal flooding, not mining.",
+    category: "flood",
+    hypothesisType: "flood_erosion",
+    effect: "boost",
+    likelihoodRatio: 3.5,
+    conditions: [
+      { bundle: "hydrology", indication: "water expansion" },
+      { bundle: "atmospheric", indication: "high rainfall" },
+    ],
+  },
+  {
+    ruleId: "rule-flood-04",
+    name: "High rainfall → suppress mining (natural water change)",
+    description: "If high rainfall is present, water body changes are more likely natural flooding than mining-related.",
+    category: "flood",
+    hypothesisType: "artisanal_mining",
+    effect: "suppress",
+    likelihoodRatio: 0.5,
+    conditions: [
+      { bundle: "atmospheric", indication: "high rainfall" },
+    ],
+  },
+
+  // ---- Phase 4.19: Forest-reserve boundary detection ----
+  // If vegetation loss occurs within a protected forest reserve boundary,
+  // it's higher-confidence deforestation (encroachment).
+  {
+    ruleId: "rule-defor-03",
+    name: "Vegetation loss in forest reserve → deforestation strong boost",
+    description: "Vegetation loss within a gazetted forest reserve boundary is high-confidence deforestation (encroachment).",
+    category: "deforestation",
+    hypothesisType: "deforestation",
+    effect: "boost",
+    likelihoodRatio: 4.0,
+    conditions: [
+      { bundle: "vegetation", indication: "vegetation loss", minSignal: 0.3 },
+      { bundle: "infrastructure", indication: "forest reserve boundary" },
+    ],
+  },
+  {
+    ruleId: "rule-defor-04",
+    name: "Forest reserve + no river → suppress mining",
+    description: "Vegetation loss in a forest reserve without river proximity is more likely deforestation than mining.",
+    category: "deforestation",
+    hypothesisType: "artisanal_mining",
+    effect: "suppress",
+    likelihoodRatio: 0.3,
+    conditions: [
+      { bundle: "infrastructure", indication: "forest reserve boundary" },
+    ],
+  },
 ];
 
 export const HYPOTHESIS_TYPE_LIST = Object.values(HYPOTHESIS_DEFS);

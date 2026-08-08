@@ -11,6 +11,7 @@ import { runTemporalMerge } from "@/lib/temporal/engine";
 import { generateHypotheses } from "@/lib/intelligence/engine";
 import { planMissions } from "@/lib/mission/planner";
 import { emit } from "@/lib/worldmodel/event-bus";
+import { logger } from "@/lib/logging/logger";
 
 export interface PipelineResult {
   runId: string;
@@ -34,6 +35,9 @@ export interface PipelineResult {
 export async function runContinuousPipeline(opts: { tileLimit?: number; regionId?: string } = {}): Promise<PipelineResult> {
   const startedAt = new Date();
   const errors: string[] = [];
+  const pipeLogger = logger.child({ runId: startedAt.getTime().toString(36) });
+
+  pipeLogger.info("pipeline.start", { tileLimit: opts.tileLimit ?? 20, regionId: opts.regionId ?? "all" });
 
   // 1. ensure grid exists
   await initializeGrid();
@@ -209,6 +213,22 @@ export async function runContinuousPipeline(opts: { tileLimit?: number; regionId
 
   emit.connectorCompleted("continuous-pipeline", "Continuous pipeline", tilesProcessed);
 
+  const durationMs = finishedAt.getTime() - startedAt.getTime();
+  const status = errors.length > 0 && tilesProcessed < tiles.length ? "partial" : "success";
+
+  if (status === "success") {
+    pipeLogger.info("pipeline.complete", {
+      tilesProcessed, tilesTotal: tiles.length, scenesProcessed,
+      observationsCreated, hypothesesCreated, missionsPlanned,
+      durationMs,
+    });
+  } else {
+    pipeLogger.warn("pipeline.partial", {
+      tilesProcessed, tilesTotal: tiles.length, errorCount: errors.length,
+      durationMs, firstError: errors[0]?.slice(0, 100),
+    });
+  }
+
   return {
     runId: run.id,
     tilesProcessed,
@@ -219,8 +239,8 @@ export async function runContinuousPipeline(opts: { tileLimit?: number; regionId
     hypothesesCreated,
     phenomenaCreated,
     missionsPlanned,
-    durationMs: finishedAt.getTime() - startedAt.getTime(),
-    status: errors.length > 0 && tilesProcessed < tiles.length ? "partial" : "success",
+    durationMs,
+    status,
     errors,
   };
 }

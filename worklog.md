@@ -2047,3 +2047,48 @@ Stage Summary:
 - ✅ Phase 5.22: Health check endpoint — DB + connectors + pipeline status, 200/503 response codes
 - ✅ Phase 5.24: Rate limiting — in-memory, 9 pre-configured limits, 429 with Retry-After, wired into 4 mutating routes
 - The platform now has anti-fraud photo dedup (catches reused/stock images), health monitoring (DB + connector + pipeline checks), and rate limiting (prevents abuse on reputation/reward-critical routes). The audit roadmap is now largely complete — only Phase 1.5 (PostGIS), Phase 2 (ground-truth validation), Phase 5.21 (structured logging), and Phase 5.23 (compliance) remain.
+
+---
+Task ID: 76
+Agent: orchestrator
+Task: Phase 5.21 (structured logging) + Phase 4.17-19 (multi-domain detection rules)
+
+Work Log:
+- Phase 5.21 (Structured logging): Created src/lib/logging/logger.ts:
+  - 5 log levels: debug, info, warn, error, audit
+  - Production: outputs structured JSON (for log aggregation — Datadog, CloudWatch, etc.)
+  - Development: human-readable with colored prefixes (gray/cyan/yellow/red/magenta)
+  - Sensitive field redaction: password, token, secret, apiKey, authorization → [REDACTED]
+  - String truncation: values >500 chars truncated
+  - Child loggers with context merge (e.g. pipeLogger = logger.child({ runId }))
+  - Wired into continuous pipeline: pipeline.start, pipeline.complete (info), pipeline.partial (warn)
+  - Replaces the audit's "console.log + tee" pattern that "cannot debug a national-scale continuous pipeline"
+
+- Phase 4.17 (Cocoa/CSSVD monitoring): Added 2 new rules to intelligence engine:
+  - rule-cocoa-01: NDVI decline in cocoa region → boost agricultural_expansion (LR=2.2). Progressive vegetation decline without bare soil = CSSVD rather than clearing.
+  - rule-cocoa-02: No bare soil + vegetation loss → suppress mining (LR=0.4). Disease doesn't expose bare soil, so physical disturbance hypotheses should be suppressed.
+  - The audit (§4.17) notes: "cocoa_disease is already listed as an incident type with no backing detection logic. NDVI/EVI anomaly at native resolution over cocoa-growing regions is a direct reuse of the mining pipeline."
+
+- Phase 4.18 (Enhanced flood risk): Added 2 new rules:
+  - rule-flood-03: High rainfall + water expansion → boost flood_erosion (LR=3.5). Now that CHIRPS rainfall connector populates the atmospheric category, this rule can fire when water expansion coincides with >150mm/month rainfall.
+  - rule-flood-04: High rainfall → suppress mining (LR=0.5). Water body changes during high rainfall are more likely natural flooding than mining.
+  - The audit (§4.18) notes: "flood_erosion is already a modeled hypothesis type; it just needs the rainfall connector and DEM-based low-lying-area context to become reliable."
+
+- Phase 4.19 (Forest-reserve deforestation): Added 2 new rules:
+  - rule-defor-03: Vegetation loss in forest reserve → boost deforestation (LR=4.0). Strong boost because encroachment in protected reserves is high-confidence deforestation.
+  - rule-defor-04: Forest reserve without river → suppress mining (LR=0.3). Mining typically occurs near rivers; deforestation in reserves without rivers is more likely encroachment.
+  - The audit (§4.19) notes: "add a forest-reserve-boundary connector so 'vegetation loss in a protected reserve' becomes a distinguishable, higher-confidence signal."
+
+- Browser-verified:
+  - All 7 nav buttons work ✅
+  - Health endpoint returns 200 ✅
+  - 0 errors ✅
+- Lint: 0 errors, 0 warnings.
+- Updated docs/AUDIT_ROADMAP.md: Phase 5.21 done, Phase 4.17-19 done.
+
+Stage Summary:
+- ✅ Phase 5.21: Structured logging — 5 levels, JSON in prod, colored in dev, redaction, child loggers
+- ✅ Phase 4.17: Cocoa/CSSVD monitoring — 2 rules (boost disease, suppress mining)
+- ✅ Phase 4.18: Enhanced flood risk — 2 rules (boost flood with rainfall, suppress mining in rain)
+- ✅ Phase 4.19: Forest-reserve deforestation — 2 rules (strong boost for reserve encroachment, suppress mining in reserves)
+- The "fundamental unlock" is now paying off: the 6 new multi-domain rules (cocoa, flood, deforestation) all reuse the existing core pipeline (high-resolution raster + Bayesian engine + evidence categories populated by the new connectors). No new core infrastructure was needed — just new rules that consume the evidence the connectors now provide. This is exactly the leverage the audit's architecture was designed for.

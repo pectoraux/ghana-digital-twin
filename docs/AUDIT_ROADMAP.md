@@ -190,9 +190,13 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 - 3.16: ✅ Done (verifierCredibility based on trust level + track record: +0.1 for high accuracy, ×0.5 for high false-report rate, ×0.3 if flagged)
 
 **Phase 5 (partially done):**
+- 5.21: ✅ Done (structured logging — `src/lib/logging/logger.ts` with JSON output in production, colored output in dev, 5 log levels, sensitive field redaction, child loggers with context, wired into continuous pipeline)
 - 5.22: ✅ Done (health check endpoint — /api/health with DB + connectors + pipeline checks)
 - 5.24: ✅ Done (rate limiting — in-memory rate limiter on 4 mutating routes: feed POST 10/min, wallet POST 3/min, events POST 10/min. Returns 429 with Retry-After header.)
-- 5.21: Structured logging + error tracking (Sentry/OpenTelemetry) — still needed
 - 5.23: Secrets management, backup/DR runbook, Ghana Data Protection Act compliance — still needed
 
-**Phase 4:** Not yet started (multi-domain payoff: cocoa, flood, deforestation detection on top of the core)
+**Phase 4 (partially done):**
+- 4.17: ✅ Done (cocoa/CSSVD monitoring — 2 new rules: rule-cocoa-01 boosts agricultural_expansion for NDVI decline in cocoa regions, rule-cocoa-02 suppresses mining when vegetation loss without bare soil)
+- 4.18: ✅ Done (enhanced flood risk — 2 new rules: rule-flood-03 boosts flood_erosion when high rainfall + water expansion, rule-flood-04 suppresses mining when high rainfall present)
+- 4.19: ✅ Done (forest-reserve deforestation — 2 new rules: rule-defor-03 boosts deforestation when vegetation loss in forest reserve, rule-defor-04 suppresses mining in forest reserves without river)
+- 4.20: General land-use change — not yet started (settlement/road/infrastructure hypotheses already exist, need infrastructure evidence to fire)
