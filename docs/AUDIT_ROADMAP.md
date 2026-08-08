@@ -157,10 +157,12 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 | 0.2 | Zod request validation | ✅ Done | `src/lib/validation/schemas.ts` — 8 schemas. Wired into 7 mutating routes (feed, engage, events, wallet, identity, missions/join, photos). Invalid input returns 400 with structured error details. |
 | 1.7 | Continuous scheduler | ✅ Done | `src/app/api/pipeline/schedule/route.ts` — GET returns scheduler status + next-run-due flag. POST triggers pipeline run (with optional `CRON_API_KEY` for cron auth). Includes Vercel cron config example. |
 | 1.8 | Rule-matching bug fix | ✅ Done | `src/lib/intelligence/engine.ts:178` — replaced `split(" ")[0]` with multi-word matching: checks if ANY significant word (len > 2) from the condition appears in the bundle indication. "seasonal water expansion" now matches "water expansion" via "water" and "expansion". |
+| 1.6 | Missing sensor connectors | ✅ Partial | Mining cadastre connector (`src/lib/connectors/mining-cadastre.ts`) — 14 known licensed concessions, populates `infrastructure` evidence category so `rule-mining-04` (licensed-concession suppression) can fire. CHIRPS rainfall connector (`src/lib/connectors/chirps-rainfall.ts`) — seasonal rainfall per region, populates `atmospheric` category so `rule-mining-03` (seasonal-flood suppression) can fire. Both registered in connector registry. SAR + DEM connectors still needed. |
 | 3.12 | Auto-trigger missions | ✅ Done | `src/lib/continuous/pipeline.ts` — `planMissions()` now called after `generateHypotheses()` for each new observation. Added `missionsPlanned` to `PipelineResult`. |
 | 3.13 | Photo capture (proof of work) | ✅ Done | New `EventPhoto` model. Photo upload API at `/api/community/events/[id]/photos`. `CommunityReportModal` now has camera capture (`<input type="file" accept="image/*" capture="environment">`). `CommunityEventDetail` shows photo gallery with location-verified badges. Client-side EXIF GPS extraction + image compression. Location cross-check (500m haversine). |
 | 3.14 | Proof integrity checks | ✅ Partial | GPS cross-check implemented (locationVerified flag). EXIF extraction implemented. Perceptual-hash dedup field exists but not yet computed. Camera-capture-only enforcement not yet implemented (gallery upload still possible). |
 | 3.15 | Close the loop into calibration | ✅ Done | `src/lib/calibration/loop.ts` — `checkAutoConfirmation()` runs after every witness submission. When ≥3 confirms and ≥60% agreement ratio, auto-transitions event to "verified", creates a GroundTruth record, triggers `computeCalibration()`, marks learningApplied. New `/api/calibration` endpoint shows loop stats. |
+| 3.16 | Tie proof quality to reputation | ✅ Done | `computeVerifierCredibility()` in calibration/loop.ts — computes credibility from citizen's trust level (expert=0.95, verified=0.85, trusted=0.75, new=0.60) adjusted by track record: +0.1 for >80% accuracy, ×0.5 for >30% false-report rate, ×0.3 if flagged for review. Stored as verifierCredibility on GroundTruth records. |
 
 ### Remaining work (from the roadmap)
 
@@ -171,7 +173,7 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 **Phase 1 (still needed):**
 - 1.4: Native-resolution per-tile gridding (the highest-leverage change — replace GRID_SIZE=50 scene-wide with per-ProcessingTile sub-chips at 10-20m/pixel)
 - 1.5: PostGIS migration (geometry columns + GiST indexes)
-- 1.6: Missing sensor connectors (Sentinel-1 SAR, CHIRPS rainfall, DEM terrain, mining cadastre)
+- 1.6: ✅ Partial (mining cadastre + CHIRPS rainfall done; SAR + DEM connectors still needed)
 - 1.8: ✅ Fixed (rule-matching bug)
 
 **Phase 2 (still needed):**
@@ -184,6 +186,6 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 - 3.13: ✅ Done (photo capture)
 - 3.14: ✅ Partial (GPS cross-check done, perceptual-hash dedup pending)
 - 3.15: ✅ Done (close the loop into calibration — auto-confirm at 3 confirms + 60% ratio, creates GroundTruth, triggers computeCalibration)
-- 3.16: Tie proof quality to reputation (verifierCredibility)
+- 3.16: ✅ Done (verifierCredibility based on trust level + track record: +0.1 for high accuracy, ×0.5 for high false-report rate, ×0.3 if flagged)
 
 **Phase 4-5:** Not yet started (multi-domain payoff + platform hardening)

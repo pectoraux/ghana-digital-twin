@@ -1909,3 +1909,39 @@ Stage Summary:
 - ✅ Phase 3.15: Calibration loop closed — witness confirmations ≥3 + 60% ratio → auto-verify → GroundTruth → computeCalibration
 - ✅ /api/calibration endpoint for loop stats
 - The platform now has proper input validation (no more unvalidated API mutations) and a closed learning loop (community confirmations feed back into calibration automatically). This means the system can now actually learn from real human verification — every confirmed event becomes a training signal.
+
+---
+Task ID: 72
+Agent: orchestrator
+Task: Audit roadmap Phase 1.6 (missing connectors) + Phase 3.16 (verifier credibility)
+
+Work Log:
+- Phase 1.6a (Mining cadastre connector): Created src/lib/connectors/mining-cadastre.ts with 14 known licensed mining concessions in Ghana (Tarkwa, Damang, Ahafo, Akyem, Chirano, Bibiani, Prestea, Wassa, Obuasi, Iduapriem, Bogoso, Nsuta, Awaso, Abosso). Each has company, commodity (gold/manganese/bauxite), coordinates, regionId, areaKm2. Populates the `infrastructure` evidence category so `rule-mining-04` (licensed-concession suppression) can now fire — this is "the single fix that most directly makes 'illegal' mining detection meaningfully different from 'any' mining detection."
+
+- Phase 1.6b (CHIRPS rainfall connector): Created src/lib/connectors/chirps-rainfall.ts with seasonal rainfall data for all 16 Ghana regions. Uses rainfall-by-tier mapping (coastal/forest/northern/transitional) with dry/wet season logic (wet=Apr-Oct, dry=Nov-Mar). Populates the `atmospheric` evidence category so `rule-mining-03` (seasonal-flood suppression) and `rule-flood-01` can now fire.
+
+- Registered both connectors in src/lib/connectors/registry.ts alongside the existing 3 (geoboundaries, osm-overpass, stac-sentinel-2).
+
+- Phase 3.16 (Verifier credibility): Updated src/lib/calibration/loop.ts:
+  - Created computeVerifierCredibility(citizen) function that computes credibility from:
+    - Base: expert=0.95, verified=0.85, trusted=0.75, new=0.60
+    - +0.1 if accuracy rate > 80% (confirmed/total reports)
+    - ×0.5 if false-report rate > 30%
+    - ×0.75 if false-report rate > 15%
+    - ×0.3 if flagged for review
+  - Updated checkAutoConfirmation() to fetch the reporter's Citizen record and compute actual credibility instead of hardcoded 0.8
+  - GroundTruth records now store verifierCredibility based on the reporter's real track record
+  - Evidence summary includes reporter's trust level, civic score, and computed credibility
+
+- Browser-verified:
+  - All 7 nav buttons work ✅
+  - Calibration stats endpoint returns 200 with threshold:3, totalGT:0 ✅
+  - 0 errors ✅
+- Lint: 0 errors, 0 warnings.
+- Updated docs/AUDIT_ROADMAP.md with Phase 1.6 (partial) and 3.16 (done) status.
+
+Stage Summary:
+- ✅ Phase 1.6a: Mining cadastre connector — 14 licensed concessions, populates infrastructure evidence
+- ✅ Phase 1.6b: CHIRPS rainfall connector — seasonal rainfall per region, populates atmospheric evidence
+- ✅ Phase 3.16: Verifier credibility — trust level + track record (accuracy + false-report rate + flagged status)
+- The two missing evidence categories (infrastructure + atmospheric) are now populated, so the intelligence engine's suppression rules (licensed-concession, seasonal-flood) can actually fire. And the calibration loop now weights GroundTruth records by the reporter's actual credibility — bad-faith reporters get down-weighted over time.

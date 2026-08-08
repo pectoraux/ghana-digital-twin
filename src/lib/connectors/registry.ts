@@ -12,11 +12,16 @@ import { DATASET_CATALOG } from "./../worldmodel/catalog";
 import { GeoBoundariesConnector } from "./geoboundaries";
 import { OsmOverpassConnector } from "./osm-overpass";
 import { StacSentinel2Connector } from "./stac-sentinel2";
+import { MiningCadastreConnector } from "./mining-cadastre";
+import { ChirpsRainfallConnector } from "./chirps-rainfall";
 
 // ---- Register live connectors ----
 registerConnector("geoboundaries", () => new GeoBoundariesConnector());
 registerConnector("osm-overpass", () => new OsmOverpassConnector());
 registerConnector("stac-sentinel-2", () => new StacSentinel2Connector());
+// Phase 1.6: Missing sensors that populate evidence categories
+registerConnector("mining-cadastre-gha", () => new MiningCadastreConnector());
+registerConnector("chirps-rainfall", () => new ChirpsRainfallConnector());
 
 // ---- Metadata-only connectors (register provenance; no live fetch) ----
 // These datasets require offline bulk ingest (raster tiles, large extracts).

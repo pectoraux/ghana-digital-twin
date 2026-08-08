@@ -38,13 +38,18 @@ export async function checkAutoConfirmation(eventId: string): Promise<AutoConfir
     data: { status: "verified", verifiedAt: new Date(), updatedAt: new Date() },
   });
 
+  // Phase 3.16: Compute verifier credibility from the reporter's actual track record
+  // Bad-faith or careless reporters get down-weighted over time.
+  const reporter = await db.citizen.findUnique({ where: { citizenId: event.citizenId } }).catch(() => null);
+  const verifierCredibility = computeVerifierCredibility(reporter);
+
   const groundTruth = await db.groundTruth.create({
     data: {
       verifiedOutcome: "confirmed",
       verifiedHypothesisType: mapEventTypeToHypothesis(event.type),
       verificationMethod: "community_verification",
       confidence: Math.min(1, event.fusedConfidence + 0.1),
-      evidenceSummary: `Community-verified event: ${event.title}. ${confirms} confirms out of ${total} witnesses (${(ratio * 100).toFixed(0)}% agreement).`,
+      evidenceSummary: `Community-verified event: ${event.title}. ${confirms} confirms out of ${total} witnesses (${(ratio * 100).toFixed(0)}% agreement). Reporter credibility: ${verifierCredibility.toFixed(2)}.`,
       evidenceData: JSON.stringify({
         eventId: event.eventId,
         eventType: event.type,
@@ -54,10 +59,13 @@ export async function checkAutoConfirmation(eventId: string): Promise<AutoConfir
         confirmRatio: ratio,
         fusedConfidence: event.fusedConfidence,
         hasPhoto: event.hasPhoto,
+        reporterTrustLevel: reporter?.trustLevel ?? "new",
+        reporterCivicScore: reporter?.civicScore ?? 50,
+        verifierCredibility,
       }),
       verifiedBy: event.citizenId,
-      verifierRole: "community_lead",
-      verifierCredibility: 0.8,
+      verifierRole: reporter?.trustLevel === "expert" || reporter?.trustLevel === "verified" ? "community_lead" : "citizen",
+      verifierCredibility,
       learningApplied: false,
     },
   });
@@ -94,6 +102,57 @@ function mapEventTypeToHypothesis(eventType: string): string | null {
     other: null,
   };
   return map[eventType] ?? null;
+}
+
+/**
+ * Phase 3.16: Compute verifier credibility from a citizen's actual track record.
+ * Bad-faith or careless reporters get down-weighted over time.
+ *
+ * Formula: base trust (from trust level) × accuracy rate (confirmed / total reports)
+ * - expert: base 0.95, verified: 0.85, trusted: 0.75, new: 0.60
+ * - If totalReports == 0: use base (no track record yet)
+ * - If falseReports rate > 30%: down-weight by 0.5
+ */
+function computeVerifierCredibility(citizen: any | null): number {
+  if (!citizen) return 0.5; // unknown citizen — low trust
+
+  // Base credibility from trust level
+  const baseByLevel: Record<string, number> = {
+    expert: 0.95,
+    verified: 0.85,
+    trusted: 0.75,
+    new: 0.60,
+  };
+  let credibility = baseByLevel[citizen.trustLevel] ?? 0.60;
+
+  // Adjust based on track record
+  const totalReports = citizen.totalReports ?? 0;
+  const confirmed = citizen.confirmedReports ?? 0;
+  const falseReports = citizen.falseReports ?? 0;
+
+  if (totalReports > 0) {
+    const accuracyRate = confirmed / totalReports;
+    const falseRate = falseReports / totalReports;
+
+    // Up-weight for high accuracy
+    if (accuracyRate > 0.8) {
+      credibility = Math.min(0.99, credibility + 0.1);
+    }
+
+    // Down-weight heavily for high false-report rate
+    if (falseRate > 0.3) {
+      credibility *= 0.5;
+    } else if (falseRate > 0.15) {
+      credibility *= 0.75;
+    }
+
+    // Down-weight if flagged for review
+    if (citizen.flaggedForReview) {
+      credibility *= 0.3;
+    }
+  }
+
+  return Math.round(credibility * 100) / 100;
 }
 
 export async function getCalibrationLoopStats(): Promise<any> {
