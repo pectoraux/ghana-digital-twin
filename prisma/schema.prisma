@@ -5909,3 +5909,32 @@ model MissionParticipation {
   @@index([missionId])
   @@index([status])
 }
+
+// EventPhoto — geotagged photos attached to community event reports
+// Phase 3.13: Proof-of-work capture for the mission/verification loop
+model EventPhoto {
+  id          String   @id @default(uuid())
+  photoId     String   @unique // PHOTO-YYYY-NNNN
+  eventId     String   // CitizenEvent.eventId
+  citizenId   String   // uploader
+  // storage — base64 data URL (simplest approach, no external storage dep)
+  dataUrl     String   // data:image/jpeg;base64,...
+  thumbnailUrl String? // smaller version for list views
+  // metadata extracted from EXIF (Phase 3.14: proof integrity)
+  capturedAt  DateTime? // from EXIF DateTimeOriginal
+  gpsLat      Float?   // from EXIF GPS
+  gpsLng      Float?   // from EXIF GPS
+  accuracyM   Float?   // GPS accuracy if available
+  // cross-check result (Phase 3.14)
+  locationVerified Boolean @default(false) // GPS matches event location?
+  fileSizeKb  Int      @default(0)
+  width       Int      @default(0)
+  height      Int      @default(0)
+  // perceptual hash for dedup (Phase 3.14: anti-fraud)
+  perceptualHash String? // pHash for detecting reused/stock photos
+  // temporal
+  uploadedAt  DateTime @default(now())
+
+  @@index([eventId])
+  @@index([citizenId])
+}

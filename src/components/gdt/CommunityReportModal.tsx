@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { REGIONS } from "@/lib/gdt/geo";
+import { preparePhoto, getBrowserLocation, type PhotoMeta } from "@/lib/gdt/photo";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,10 @@ import {
   Mountain,
   FileQuestion,
   Navigation,
+  Camera,
+  X,
+  ShieldCheck,
+  Upload,
 } from "lucide-react";
 
 const INCIDENT_TYPES = [
@@ -60,6 +65,13 @@ interface CommunityReportModalProps {
   onSubmitted?: () => void;
 }
 
+interface PhotoUploadResult {
+  photoId: string;
+  locationVerified: boolean;
+  thumbnailUrl: string;
+  fileSizeKb: number;
+}
+
 export function CommunityReportModal({ open, onOpenChange, onSubmitted }: CommunityReportModalProps) {
   const { data: session } = useSession();
   const [type, setType] = useState("illegal_mining");
@@ -68,9 +80,18 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
   const [description, setDescription] = useState("");
   const [regionId, setRegionId] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState<{ eventId: string; confidence: number } | null>(null);
+  const [success, setSuccess] = useState<{
+    eventId: string;
+    confidence: number;
+    photo?: PhotoUploadResult;
+  } | null>(null);
   const [detectingLocation, setDetectingLocation] = useState(false);
-  const [location, setLocation] = useState<{ lng: number; lat: number } | null>(null);
+  const [location, setLocation] = useState<{ lng: number; lat: number; accuracyM?: number } | null>(null);
+
+  // Photo capture state
+  const [photoMeta, setPhotoMeta] = useState<PhotoMeta | null>(null);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const citizenId = (session?.user as any)?.citizenId;
 
@@ -79,7 +100,7 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setLocation({ lng: pos.coords.longitude, lat: pos.coords.latitude });
+          setLocation({ lng: pos.coords.longitude, lat: pos.coords.latitude, accuracyM: pos.coords.accuracy });
           setDetectingLocation(false);
           toast.success("Location detected!", {
             description: `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`,
@@ -91,7 +112,7 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
           setDetectingLocation(false);
           toast.info("Using approximate location (Western Region)");
         },
-        { timeout: 5000 }
+        { timeout: 5000, enableHighAccuracy: true }
       );
     } else {
       setLocation({ lng: -2.07, lat: 5.1 });
@@ -103,8 +124,53 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
   const estimatedConfidence = (() => {
     const base = severity === "critical" ? 0.7 : severity === "high" ? 0.6 : severity === "moderate" ? 0.5 : 0.4;
     const locBonus = location ? 0.1 : 0;
-    return Math.round((base + locBonus) * 100);
+    const photoBonus = photoMeta ? 0.1 : 0;
+    return Math.round((base + locBonus + photoBonus) * 100);
   })();
+
+  const handlePhotoSelect = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error("Image too large (max 15MB raw). Please pick a smaller photo.");
+      return;
+    }
+
+    setPhotoProcessing(true);
+    try {
+      // Capture browser location as fallback for EXIF GPS
+      const fallback = location ?? (await getBrowserLocation(4000));
+      const meta = await preparePhoto(file, fallback);
+      setPhotoMeta(meta);
+      toast.success("Photo attached", {
+        description:
+          meta.source === "exif"
+            ? "GPS extracted from photo EXIF"
+            : meta.source === "geolocation"
+            ? "GPS attached from device location"
+            : "No GPS data found",
+      });
+    } catch (e) {
+      toast.error("Failed to process photo", {
+        description: e instanceof Error ? e.message : "Unknown error",
+      });
+    } finally {
+      setPhotoProcessing(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handlePhotoSelect(file);
+    // Reset value so the same file can be re-selected after remove
+    e.target.value = "";
+  };
+
+  const removePhoto = () => {
+    setPhotoMeta(null);
+  };
 
   const handleSubmit = async () => {
     if (!title.trim() || !description.trim()) {
@@ -117,6 +183,7 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
     }
     setSubmitting(true);
     try {
+      // Step 1: create the event
       const res = await fetch("/api/community/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,14 +195,58 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
           description: description.trim(),
           regionId: regionId || undefined,
           location: location ?? undefined,
+          accuracyM: location?.accuracyM ?? 50,
           selfConfidence: estimatedConfidence / 100,
         }),
       });
       if (!res.ok) throw new Error(`Failed: ${res.status}`);
       const data = await res.json();
-      setSuccess({ eventId: data.event?.eventId ?? "CE-NEW", confidence: estimatedConfidence });
+      const eventId: string = data.event?.eventId ?? "CE-NEW";
+
+      // Step 2: if a photo is attached, upload it
+      let photoResult: PhotoUploadResult | undefined;
+      if (photoMeta) {
+        try {
+          const photoRes = await fetch(`/api/community/events/${eventId}/photos`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              citizenId,
+              dataUrl: photoMeta.dataUrl,
+              thumbnailUrl: photoMeta.thumbnailUrl,
+              capturedAt: photoMeta.capturedAt,
+              gpsLat: photoMeta.gpsLat,
+              gpsLng: photoMeta.gpsLng,
+              accuracyM: photoMeta.accuracyM,
+              fileSizeKb: photoMeta.fileSizeKb,
+              width: photoMeta.width,
+              height: photoMeta.height,
+            }),
+          });
+          if (!photoRes.ok) throw new Error(`Photo upload failed: ${photoRes.status}`);
+          const photoData = await photoRes.json();
+          photoResult = {
+            photoId: photoData.photo?.photoId ?? "PHOTO",
+            locationVerified: !!photoData.locationVerified,
+            thumbnailUrl: photoData.photo?.thumbnailUrl ?? photoMeta.thumbnailUrl,
+            fileSizeKb: photoData.photo?.fileSizeKb ?? photoMeta.fileSizeKb,
+          };
+          if (photoResult.locationVerified) {
+            toast.success("Photo evidence verified", {
+              description: "Photo GPS matches event location ✓",
+            });
+          }
+        } catch (e) {
+          // Don't fail the whole report if photo upload fails
+          toast.warning("Photo upload failed", {
+            description: e instanceof Error ? e.message : "Report created without photo",
+          });
+        }
+      }
+
+      setSuccess({ eventId, confidence: estimatedConfidence, photo: photoResult });
       toast.success("Incident reported!", {
-        description: `${data.event?.eventId ?? "Event"} is now in the witness queue.`,
+        description: `${eventId} is now in the witness queue.`,
       });
       onSubmitted?.();
     } catch (e) {
@@ -155,6 +266,7 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
     setRegionId("");
     setLocation(null);
     setSuccess(null);
+    setPhotoMeta(null);
   };
 
   const handleClose = (open: boolean) => {
@@ -199,6 +311,34 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
                   {selectedSeverity.label}
                 </span>
               </div>
+              {success.photo && (
+                <div className="pt-2 mt-2 border-t border-border space-y-2">
+                  <span className="text-[13px] font-medium flex items-center gap-1.5">
+                    <Camera className="size-3.5 text-teal-500" /> Photo Evidence Attached
+                  </span>
+                  <div className="flex items-center gap-3">
+                    { }
+                    <img
+                      src={success.photo.thumbnailUrl}
+                      alt="Attached photo evidence thumbnail"
+                      className="size-16 rounded-lg object-cover border border-border"
+                    />
+                    <div className="min-w-0 flex-1 text-left">
+                      <div className="text-[13px] font-mono text-muted-foreground">{success.photo.photoId}</div>
+                      <div className="text-[12px] text-muted-foreground">{success.photo.fileSizeKb} KB</div>
+                      {success.photo.locationVerified ? (
+                        <span className="inline-flex items-center gap-1 mt-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[12px] font-medium text-emerald-500">
+                          <ShieldCheck className="size-3" /> Location verified ✓
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 mt-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[12px] font-medium text-amber-500">
+                          <AlertTriangle className="size-3" /> Location not verified
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <p className="text-[13px] text-muted-foreground">
               Earn rewards when witnesses verify your report. Check the Community tab for updates.
@@ -312,6 +452,95 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
                 </div>
               </div>
 
+              {/* Photo Evidence */}
+              <div className="space-y-2">
+                <label className="text-[14px] font-medium flex items-center gap-1.5">
+                  <Camera className="size-3.5 text-teal-500" /> Photo Evidence
+                  <span className="text-[12px] text-muted-foreground font-normal">(optional, improves confidence)</span>
+                </label>
+
+                {photoMeta ? (
+                  <div className="rounded-xl border border-border bg-card p-3 flex items-start gap-3">
+                    { }
+                    <img
+                      src={photoMeta.thumbnailUrl}
+                      alt="Photo evidence preview"
+                      className="size-20 rounded-lg object-cover border border-border shrink-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-[13px] font-medium truncate">Photo attached</div>
+                      <div className="text-[12px] text-muted-foreground mt-0.5">
+                        {photoMeta.width}×{photoMeta.height} · {photoMeta.fileSizeKb} KB
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                        {photoMeta.gpsLat != null && photoMeta.gpsLng != null ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-teal-500/15 px-2 py-0.5 text-[12px] font-medium text-teal-500">
+                            <MapPin className="size-3" />
+                            GPS {photoMeta.source === "exif" ? "from photo" : "from device"}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[12px] font-medium text-amber-500">
+                            <AlertTriangle className="size-3" /> No GPS
+                          </span>
+                        )}
+                        {photoMeta.capturedAt && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-foreground/10 px-2 py-0.5 text-[12px] text-muted-foreground">
+                            EXIF timestamp
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <button
+                      onClick={removePhoto}
+                      disabled={photoProcessing || submitting}
+                      aria-label="Remove photo"
+                      className="size-7 shrink-0 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-rose-500/10 hover:border-rose-500/30 hover:text-rose-500 transition-colors"
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={photoProcessing || submitting}
+                    className={cn(
+                      "w-full rounded-xl border border-dashed border-border bg-card/50 px-4 py-5 flex flex-col items-center justify-center gap-2 transition-all",
+                      "hover:border-teal-500/40 hover:bg-teal-500/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    )}
+                  >
+                    {photoProcessing ? (
+                      <>
+                        <Loader2 className="size-6 animate-spin text-teal-500" />
+                        <span className="text-[13px] text-muted-foreground">Processing photo…</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex size-10 items-center justify-center rounded-full bg-teal-500/10 text-teal-500">
+                          <Camera className="size-5" />
+                        </div>
+                        <span className="text-[14px] font-medium">Capture or select photo</span>
+                        <span className="text-[12px] text-muted-foreground">
+                          On mobile opens camera · on desktop opens file picker
+                        </span>
+                        <span className="text-[11px] text-muted-foreground/80 mt-1">
+                          Auto-resized &amp; EXIF GPS extracted
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileChange}
+                  className="sr-only"
+                  aria-label="Photo capture input"
+                />
+              </div>
+
               {/* Region + Location */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
@@ -361,7 +590,7 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
                   <span className="font-mono text-[15px] font-bold text-emerald-500">{estimatedConfidence}%</span>
                 </div>
                 <p className="text-[12px] text-muted-foreground mt-1">
-                  Based on severity + location accuracy. Confidence increases when witnesses confirm your report.
+                  Based on severity + location accuracy{photoMeta ? " + photo evidence" : ""}. Confidence increases when witnesses confirm your report.
                 </p>
               </div>
             </div>
@@ -378,7 +607,7 @@ export function CommunityReportModal({ open, onOpenChange, onSubmitted }: Commun
                   {submitting ? (
                     <><Loader2 className="size-4 animate-spin mr-1" /> Submitting...</>
                   ) : (
-                    <><AlertTriangle className="size-4 mr-1" /> Submit Report</>
+                    <>{photoMeta ? <Upload className="size-4 mr-1" /> : <AlertTriangle className="size-4 mr-1" />} Submit Report</>
                   )}
                 </Button>
               </div>

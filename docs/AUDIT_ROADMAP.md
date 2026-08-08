@@ -128,3 +128,60 @@ This is where the "fundamental unlock" framing pays off — none of this require
 ## 6. Bottom line
 
 The fastest path to "state of the art" here is not new features — it's fixing the resolution at which the existing, well-designed pipeline operates, connecting the two data sources (cadastre, rainfall) the model's own rules already assume exist, scheduling the pipeline so it actually runs, and building the proof-capture step that turns a statistical anomaly into a confirmed fact. Because the domain model was built generically from day one (nine hypothesis types, not just "mining"), every one of those fixes pays off across illegal mining, cocoa disease, flood risk, and deforestation at once — which is exactly the leverage the project's own architecture was designed for.
+
+---
+
+## 7. Validation & Implementation Progress
+
+**Date:** 2026-08-08
+**Validator:** Z.ai Code (orchestrator)
+
+### Findings validated against actual code
+
+| # | Audit claim | Status | Evidence |
+|---|---|---|---|
+| 0.1 | No API auth middleware — 256/257 routes unauthenticated | ✅ Validated | `src/middleware.ts` did not exist. `/api/admin/users` returned user PII with no auth. 0/4 spot-checked routes (feed, identity, community/events, wallet) used `getServerSession`. |
+| 1.4 | Resolution collapse — 50×50 grid over ~110km scene = ~2.2km/cell | ✅ Validated | `src/lib/eo/raster-products.ts:58` confirms `GRID_SIZE = 50`. `readBandScene(band.href, GRID_SIZE)` decimates the full scene. |
+| 1.6 | Missing sensors — no SAR, no rainfall (CHIRPS), no mining cadastre | ✅ Validated | `src/lib/connectors/` contains only: `geoboundaries.ts`, `osm-overpass.ts`, `registry.ts`, `stac-sentinel2.ts`. No Sentinel-1, CHIRPS, or cadastre connector. |
+| 1.7 | No continuous scheduler — pipeline only runs on manual POST | ✅ Validated | `grep -rn "cron\|schedule\|setInterval" src/lib/continuous/` returns nothing. `runContinuousPipeline` only reachable via `POST /api/pipeline/run-continuous`. |
+| 1.8 | Rule-matching bug — substring matching breaks multi-word indications | ✅ Validated | `src/lib/intelligence/engine.ts:178` used `cond.indication.split(" ")[0]` — "seasonal water expansion" → "seasonal" which never matches "water expansion". |
+| 2.5 | 0% measured accuracy | ✅ Validated | `worklog.md` records "F1=0%, ECE=0%" and "0% precision". |
+| 3.12 | `planMissions()` never called automatically | ✅ Validated | `grep "planMissions" src/lib/continuous/pipeline.ts` returned nothing. |
+| 3.13 | No photo/video capture in community reports | ✅ Validated | `CommunityReportModal.tsx` had no file input, camera capture, or upload functionality. `package.json` has no S3/Cloudinary/multer/busboy dependency. |
+
+### Implementation status
+
+| Phase | Item | Status | Commit |
+|---|---|---|---|
+| 0.1 | API auth middleware | ✅ Done | `src/middleware.ts` — `withAuth` enforcing session on all `/api/*` except auth/seed-auth/stats/pipeline-schedule. Admin routes require ADMIN role. `/api/admin/users` now returns 307 redirect. |
+| 1.7 | Continuous scheduler | ✅ Done | `src/app/api/pipeline/schedule/route.ts` — GET returns scheduler status + next-run-due flag. POST triggers pipeline run (with optional `CRON_API_KEY` for cron auth). Includes Vercel cron config example. |
+| 1.8 | Rule-matching bug fix | ✅ Done | `src/lib/intelligence/engine.ts:178` — replaced `split(" ")[0]` with multi-word matching: checks if ANY significant word (len > 2) from the condition appears in the bundle indication. "seasonal water expansion" now matches "water expansion" via "water" and "expansion". |
+| 3.12 | Auto-trigger missions | ✅ Done | `src/lib/continuous/pipeline.ts` — `planMissions()` now called after `generateHypotheses()` for each new observation. Added `missionsPlanned` to `PipelineResult`. |
+| 3.13 | Photo capture (proof of work) | ✅ Done | New `EventPhoto` model. Photo upload API at `/api/community/events/[id]/photos`. `CommunityReportModal` now has camera capture (`<input type="file" accept="image/*" capture="environment">`). `CommunityEventDetail` shows photo gallery with location-verified badges. Client-side EXIF GPS extraction + image compression. Location cross-check (500m haversine). |
+| 3.14 | Proof integrity checks | ✅ Partial | GPS cross-check implemented (locationVerified flag). EXIF extraction implemented. Perceptual-hash dedup field exists but not yet computed. Camera-capture-only enforcement not yet implemented (gallery upload still possible). |
+
+### Remaining work (from the roadmap)
+
+**Phase 0 (still needed):**
+- 0.2: Wire zod into request validation for mutating routes (zod is installed but unused)
+- 0.3: CI pipeline + test suite (lint + typecheck + test on PR)
+
+**Phase 1 (still needed):**
+- 1.4: Native-resolution per-tile gridding (the highest-leverage change — replace GRID_SIZE=50 scene-wide with per-ProcessingTile sub-chips at 10-20m/pixel)
+- 1.5: PostGIS migration (geometry columns + GiST indexes)
+- 1.6: Missing sensor connectors (Sentinel-1 SAR, CHIRPS rainfall, DEM terrain, mining cadastre)
+- 1.8: ✅ Fixed (rule-matching bug)
+
+**Phase 2 (still needed):**
+- 2.9: Real ground-truth validation (partner with EPA Ghana for confirmed sites)
+- 2.10: Excavation-geometry + turbidity signals
+- 2.11: Expanded benchmark evaluation
+
+**Phase 3 (partially done):**
+- 3.12: ✅ Done (auto-trigger missions)
+- 3.13: ✅ Done (photo capture)
+- 3.14: ✅ Partial (GPS cross-check done, perceptual-hash dedup pending)
+- 3.15: Close the loop into calibration (confirmed mission → GroundTruth → computeCalibration)
+- 3.16: Tie proof quality to reputation (verifierCredibility)
+
+**Phase 4-5:** Not yet started (multi-domain payoff + platform hardening)

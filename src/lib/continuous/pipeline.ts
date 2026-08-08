@@ -9,6 +9,7 @@ import { computeProduct } from "@/lib/eo/raster-products";
 import { runObservationScan } from "@/lib/observation/engine";
 import { runTemporalMerge } from "@/lib/temporal/engine";
 import { generateHypotheses } from "@/lib/intelligence/engine";
+import { planMissions } from "@/lib/mission/planner";
 import { emit } from "@/lib/worldmodel/event-bus";
 
 export interface PipelineResult {
@@ -20,6 +21,7 @@ export interface PipelineResult {
   observationsUpdated: number;
   hypothesesCreated: number;
   phenomenaCreated: number;
+  missionsPlanned: number;
   durationMs: number;
   status: string;
   errors: string[];
@@ -56,6 +58,7 @@ export async function runContinuousPipeline(opts: { tileLimit?: number; regionId
   let observationsUpdated = 0;
   let hypothesesCreated = 0;
   let phenomenaCreated = 0;
+  let missionsPlanned = 0;
 
   for (const tile of tiles) {
     try {
@@ -115,6 +118,7 @@ export async function runContinuousPipeline(opts: { tileLimit?: number; regionId
       // generate observations for this tile
       let tileObsCreated = 0;
       let tileHypCreated = 0;
+      let tileMissionsPlanned = 0;
       try {
         const obsResult = await runObservationScan({ mgrsTile: scene.mgrsTile });
         tileObsCreated = obsResult.observationsCreated;
@@ -134,6 +138,22 @@ export async function runContinuousPipeline(opts: { tileLimit?: number; regionId
               const hypResult = await generateHypotheses(o.id);
               tileHypCreated += hypResult.hypothesesCreated;
               hypothesesCreated += hypResult.hypothesesCreated;
+
+              // Phase 3.12: Auto-trigger verification missions for new hypotheses
+              // This closes the gap between "detected" and "a mission exists to verify it"
+              if (hypResult.hypothesesCreated > 0) {
+                try {
+                  const missionResult = await planMissions({
+                    observationId: o.id,
+                    confidenceThreshold: 0.6, // lower threshold so missions get created for borderline hypotheses
+                  });
+                  tileMissionsPlanned += missionResult.created;
+                  missionsPlanned += missionResult.created;
+                } catch (e) {
+                  // non-fatal — missions are best-effort
+                  errors.push(`Mission planning for ${o.id}: ${String(e).slice(0, 80)}`);
+                }
+              }
             } catch (e) {
               errors.push(`Hypotheses for ${o.id}: ${String(e).slice(0, 80)}`);
             }
@@ -191,6 +211,7 @@ export async function runContinuousPipeline(opts: { tileLimit?: number; regionId
     observationsUpdated,
     hypothesesCreated,
     phenomenaCreated,
+    missionsPlanned,
     durationMs: finishedAt.getTime() - startedAt.getTime(),
     status: errors.length > 0 && tilesProcessed < tiles.length ? "partial" : "success",
     errors,

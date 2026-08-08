@@ -175,9 +175,15 @@ function matchRule(rule: RuleDef, bundles: any[], hasRiverProximity: boolean): b
     if (cond.bundle) {
       const bundle = bundles.find((b) => b.category === cond.bundle);
       if (!bundle) return false;
-      if (cond.indication && !bundle.indication.includes(cond.indication.split(" ")[0])) {
-        // loose match — check if the indication keyword appears
-        if (!bundle.indication.toLowerCase().includes(cond.indication.split(" ")[0].toLowerCase())) return false;
+      if (cond.indication) {
+        // Fixed matching: check if ANY significant word from the condition
+        // appears in the bundle indication (case-insensitive).
+        // The old code used split(" ")[0] which broke for multi-word qualifiers
+        // like "seasonal water expansion" → "seasonal" (never matched "water expansion").
+        const condWords = cond.indication.toLowerCase().split(" ").filter((w) => w.length > 2);
+        const bundleInd = bundle.indication.toLowerCase();
+        const matches = condWords.some((word) => bundleInd.includes(word));
+        if (!matches) return false;
       }
       if (cond.minSignal && bundle.meanSignal < cond.minSignal) return false;
     }
