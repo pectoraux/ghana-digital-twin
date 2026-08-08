@@ -120,8 +120,46 @@ export function RewardsView() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-primary" />
+      <div className="h-full overflow-y-auto gdt-scroll">
+        <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
+          {/* Balance cards skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-5 shadow-card">
+                <div className="size-5 mb-2 rounded-full bg-foreground/15 animate-pulse" />
+                <div className="h-9 w-24 mb-1 rounded bg-foreground/15 animate-pulse" />
+                <div className="h-3 w-20 rounded bg-foreground/10 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {/* Reputation progress skeleton */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-card space-y-4">
+            <div className="h-5 w-40 rounded bg-foreground/15 animate-pulse" />
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="h-4 w-28 rounded bg-foreground/15 animate-pulse" />
+                  <div className="h-4 w-16 rounded bg-foreground/10 animate-pulse" />
+                </div>
+                <div className="h-3 w-full rounded-full bg-foreground/10 animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {/* Transactions skeleton */}
+          <div className="rounded-xl border border-border bg-card p-5 shadow-card space-y-3">
+            <div className="h-5 w-32 rounded bg-foreground/15 animate-pulse" />
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-3 border border-border/60 rounded-lg p-3">
+                <div className="size-8 rounded-full bg-foreground/15 animate-pulse shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-4 w-32 rounded bg-foreground/10 animate-pulse" />
+                  <div className="h-3 w-20 rounded bg-foreground/10 animate-pulse" />
+                </div>
+                <div className="h-5 w-16 rounded bg-foreground/10 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

@@ -106,7 +106,30 @@ export function CommunityConsumerView() {
 
       {/* Content */}
       <div className="min-h-0 flex-1 overflow-y-auto gdt-scroll p-4 space-y-3 md:space-y-4">
-        {loading && <div className="flex h-32 items-center justify-center"><Loader2 className="size-6 animate-spin text-primary" /></div>}
+        {loading && (
+          <div className="space-y-3">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-card">
+                <div className="flex items-start gap-3">
+                  <div className="size-10 rounded-lg bg-foreground/15 animate-pulse shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-24 rounded-full bg-foreground/10 animate-pulse" />
+                      <div className="h-4 w-16 rounded-full bg-foreground/10 animate-pulse" />
+                    </div>
+                    <div className="h-5 w-3/4 rounded bg-foreground/15 animate-pulse" />
+                    <div className="h-4 w-full rounded bg-foreground/10 animate-pulse" />
+                    <div className="flex items-center gap-4 mt-2">
+                      <div className="h-4 w-16 rounded bg-foreground/10 animate-pulse" />
+                      <div className="h-4 w-20 rounded bg-foreground/10 animate-pulse" />
+                      <div className="h-4 w-14 rounded bg-foreground/10 animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Events tab */}
         {tab === "events" && events.map((ev) => {

@@ -55,7 +55,44 @@ export function ProfileView() {
 
   useEffect(() => { load(); }, [session]);
 
-  if (loading || !identity) return <div className="flex h-full items-center justify-center"><Loader2 className="size-6 animate-spin text-primary" /></div>;
+  if (loading || !identity) return (
+    <div className="h-full overflow-y-auto gdt-scroll">
+      <div className="mx-auto max-w-3xl p-4 md:p-6 space-y-4 md:space-y-6">
+        {/* Identity card skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 shadow-card text-center">
+          <div className="mx-auto mb-3 size-20 rounded-full bg-foreground/15 animate-pulse" />
+          <div className="h-6 w-40 mx-auto rounded bg-foreground/15 animate-pulse" />
+          <div className="h-4 w-24 mx-auto mt-2 rounded bg-foreground/10 animate-pulse" />
+          <div className="h-4 w-32 mx-auto mt-2 rounded bg-foreground/10 animate-pulse" />
+        </div>
+        {/* Reputation skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 shadow-card space-y-4">
+          <div className="h-5 w-32 rounded bg-foreground/15 animate-pulse" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="text-center space-y-2">
+                <div className="size-6 mx-auto rounded-full bg-foreground/15 animate-pulse" />
+                <div className="h-8 w-12 mx-auto rounded bg-foreground/15 animate-pulse" />
+                <div className="h-3 w-20 mx-auto rounded bg-foreground/10 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Impact skeleton */}
+        <div className="rounded-xl border border-border bg-card p-6 shadow-card space-y-3">
+          <div className="h-5 w-28 rounded bg-foreground/15 animate-pulse" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="text-center space-y-1.5">
+                <div className="h-7 w-12 mx-auto rounded bg-foreground/15 animate-pulse" />
+                <div className="h-3 w-16 mx-auto rounded bg-foreground/10 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   const user = identity.user;
   const profile = identity.profile;
