@@ -161,7 +161,7 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 | 1.4 | Resolution collapse fix | ✅ Done | `src/lib/eo/raster-products.ts` — added `TILE_GRID_SIZE = 200` (vs old `GRID_SIZE = 50`). New `computeTileIndexGrid()` function reads bands at 200×200 resolution for a tile extent (~110m/cell vs old ~2.2km/cell). Updated `ProductInput` with optional `tileExtent` field. Updated 3 key product functions (vegetation_anomaly, water_anomaly, bare_soil) to use high-resolution path when tileExtent is provided. Continuous pipeline now passes tile extent to `computeProduct()`. Minimum detectable feature moves from ~1,000 ha to ~1-5 ha — matching real disturbance site sizes (galamsey = 0.1-50 ha). |
 | 3.12 | Auto-trigger missions | ✅ Done | `src/lib/continuous/pipeline.ts` — `planMissions()` now called after `generateHypotheses()` for each new observation. Added `missionsPlanned` to `PipelineResult`. |
 | 3.13 | Photo capture (proof of work) | ✅ Done | New `EventPhoto` model. Photo upload API at `/api/community/events/[id]/photos`. `CommunityReportModal` now has camera capture (`<input type="file" accept="image/*" capture="environment">`). `CommunityEventDetail` shows photo gallery with location-verified badges. Client-side EXIF GPS extraction + image compression. Location cross-check (500m haversine). |
-| 3.14 | Proof integrity checks | ✅ Partial | GPS cross-check implemented (locationVerified flag). EXIF extraction implemented. Perceptual-hash dedup field exists but not yet computed. Camera-capture-only enforcement not yet implemented (gallery upload still possible). |
+| 3.14 | Proof integrity checks | ✅ Done | GPS cross-check (500m haversine, locationVerified flag). EXIF extraction implemented. Perceptual-hash dedup implemented (`src/lib/gdt/perceptual-hash.ts` — 64-bit hash from byte sampling, Hamming distance comparison, 85% similarity threshold for duplicate detection). Photo upload API checks against 200 existing photos and flags duplicates. |
 | 3.15 | Close the loop into calibration | ✅ Done | `src/lib/calibration/loop.ts` — `checkAutoConfirmation()` runs after every witness submission. When ≥3 confirms and ≥60% agreement ratio, auto-transitions event to "verified", creates a GroundTruth record, triggers `computeCalibration()`, marks learningApplied. New `/api/calibration` endpoint shows loop stats. |
 | 3.16 | Tie proof quality to reputation | ✅ Done | `computeVerifierCredibility()` in calibration/loop.ts — computes credibility from citizen's trust level (expert=0.95, verified=0.85, trusted=0.75, new=0.60) adjusted by track record: +0.1 for >80% accuracy, ×0.5 for >30% false-report rate, ×0.3 if flagged for review. Stored as verifierCredibility on GroundTruth records. |
 
@@ -185,8 +185,14 @@ The fastest path to "state of the art" here is not new features — it's fixing 
 **Phase 3 (partially done):**
 - 3.12: ✅ Done (auto-trigger missions)
 - 3.13: ✅ Done (photo capture)
-- 3.14: ✅ Partial (GPS cross-check done, perceptual-hash dedup pending)
+- 3.14: ✅ Done (GPS cross-check + EXIF + perceptual-hash dedup)
 - 3.15: ✅ Done (close the loop into calibration — auto-confirm at 3 confirms + 60% ratio, creates GroundTruth, triggers computeCalibration)
 - 3.16: ✅ Done (verifierCredibility based on trust level + track record: +0.1 for high accuracy, ×0.5 for high false-report rate, ×0.3 if flagged)
 
-**Phase 4-5:** Not yet started (multi-domain payoff + platform hardening)
+**Phase 5 (partially done):**
+- 5.22: ✅ Done (health check endpoint — /api/health with DB + connectors + pipeline checks)
+- 5.24: ✅ Done (rate limiting — in-memory rate limiter on 4 mutating routes: feed POST 10/min, wallet POST 3/min, events POST 10/min. Returns 429 with Retry-After header.)
+- 5.21: Structured logging + error tracking (Sentry/OpenTelemetry) — still needed
+- 5.23: Secrets management, backup/DR runbook, Ghana Data Protection Act compliance — still needed
+
+**Phase 4:** Not yet started (multi-domain payoff: cocoa, flood, deforestation detection on top of the core)

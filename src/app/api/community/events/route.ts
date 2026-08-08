@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listCitizenEvents, createCitizenEvent } from "@/lib/community/engine";
 import { seedCommunity } from "@/lib/community/seed";
 import { createCitizenEventSchema, validateBody, parseBody } from "@/lib/validation/schemas";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/validation/rate-limit";
 
 export async function GET(req: NextRequest) {
   await seedCommunity();
@@ -20,6 +21,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = checkRateLimit(req, RATE_LIMITS.communityEvent.action, RATE_LIMITS.communityEvent.max, RATE_LIMITS.communityEvent.windowMs);
+  if (!rl.allowed) return rl.response;
   const body = await parseBody(req);
   const validation = validateBody(createCitizenEventSchema, body);
   if (!validation.success) return validation.response;

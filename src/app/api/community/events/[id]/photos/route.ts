@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { uploadPhotoSchema, validateBody, parseBody } from "@/lib/validation/schemas";
+import { computePerceptualHash, findDuplicate } from "@/lib/gdt/perceptual-hash";
 
 const LOCATION_MATCH_RADIUS_M = 500;
 const MAX_PHOTO_BYTES = 3 * 1024 * 1024; // 3MB safety — client compresses to <2MB
@@ -102,6 +103,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const photoId = await nextPhotoId();
   const capturedAt = validated.capturedAt ? new Date(validated.capturedAt) : new Date();
 
+  // Phase 3.14: Compute perceptual hash and check for duplicates (anti-fraud)
+  const perceptualHash = computePerceptualHash(dataUrl) || null;
+  let duplicateOf: string | null = null;
+  if (perceptualHash) {
+    // Check existing photos for near-duplicates
+    const existingPhotos = await db.eventPhoto.findMany({
+      where: { perceptualHash: { not: null } },
+      select: { photoId: true, perceptualHash: true },
+      take: 200, // check against recent photos
+    }).catch(() => []);
+    const match = findDuplicate(
+      perceptualHash,
+      existingPhotos.map((p: any) => ({ photoId: p.photoId, hash: p.perceptualHash }))
+    );
+    if (match) {
+      duplicateOf = match.photoId;
+    }
+  }
+
   const photo = await db.eventPhoto.create({
     data: {
       photoId,
@@ -117,7 +137,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       fileSizeKb: typeof validated.fileSizeKb === "number" ? Math.round(validated.fileSizeKb) : 0,
       width: typeof validated.width === "number" ? Math.round(validated.width) : 0,
       height: typeof validated.height === "number" ? Math.round(validated.height) : 0,
-      perceptualHash: null,
+      perceptualHash,
     },
   });
 
@@ -137,5 +157,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     await db.citizenEvent.update({ where: { eventId: id }, data: { fusedConfidence: next } }).catch(() => null);
   }
 
-  return NextResponse.json({ photo: serializePhoto(photo), locationVerified });
+  return NextResponse.json({
+    photo: serializePhoto(photo),
+    locationVerified,
+    duplicateOf,
+    duplicateWarning: duplicateOf ? `This photo appears to be a duplicate of ${duplicateOf}` : null,
+  });
 }

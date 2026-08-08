@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { listFeedItems, createFeedItem, getFeedOverview } from "@/lib/feed/engine";
 import { seedCommunityApp } from "@/lib/feed/seed";
 import { createFeedItemSchema, validateBody, parseBody } from "@/lib/validation/schemas";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/validation/rate-limit";
 
 export async function GET(req: NextRequest) {
   await seedCommunityApp().catch(() => null);
@@ -20,6 +21,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = checkRateLimit(req, RATE_LIMITS.feedPost.action, RATE_LIMITS.feedPost.max, RATE_LIMITS.feedPost.windowMs);
+  if (!rl.allowed) return rl.response;
   const body = await parseBody(req);
   const validation = validateBody(createFeedItemSchema, body);
   if (!validation.success) return validation.response;

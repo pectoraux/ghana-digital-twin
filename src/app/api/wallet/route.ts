@@ -16,6 +16,7 @@ import {
   type MobileMoneyProvider,
 } from "@/lib/wallet/service";
 import { withdrawalSchema, validateBody, parseBody } from "@/lib/validation/schemas";
+import { checkRateLimit, RATE_LIMITS } from "@/lib/validation/rate-limit";
 
 export async function GET(req: NextRequest) {
   const userId = req.nextUrl.searchParams.get("userId");
@@ -40,6 +41,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = checkRateLimit(req, RATE_LIMITS.withdraw.action, RATE_LIMITS.withdraw.max, RATE_LIMITS.withdraw.windowMs);
+  if (!rl.allowed) return rl.response;
   const body = await parseBody(req);
   const validation = validateBody(withdrawalSchema, body);
   if (!validation.success) return validation.response;

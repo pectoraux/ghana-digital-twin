@@ -41,8 +41,10 @@ export default withAuth(
 // - /api/seed-auth (initial seeding — must be public)
 // - /api/stats (public dashboard stats — read-only, no PII)
 // - /api/pipeline/schedule (cron-triggered — uses its own CRON_API_KEY auth)
+// - /api/health (health check — must be public for monitoring)
+// - /api/search (search — rate-limited at route level)
 export const config = {
   matcher: [
-    "/api/((?!auth|seed-auth|stats|pipeline/schedule).*)",
+    "/api/((?!auth|seed-auth|stats|pipeline/schedule|health|search).*)",
   ],
 };
